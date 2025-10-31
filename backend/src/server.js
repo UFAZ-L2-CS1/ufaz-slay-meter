@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import mongoose from "mongoose";
+import authRoutes from "./routes/authRoutes.js";
+
 
 dotenv.config();
 
@@ -14,10 +16,14 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+
+
 // Healthcheck route
 app.get("/health", (req, res) => {
   res.json({ ok: true, db: !!mongoose?.connection?.readyState });
 });
+
+app.use("/api/auth", authRoutes);
 
 // Start server after DB connects
 const PORT = process.env.PORT || 5000;
