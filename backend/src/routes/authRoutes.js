@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import auth from "../middleware/auth.js";
+import { authLimiter } from "../middleware/rateLimit.js"; // ⬅️ add this
 
 const router = Router();
 
@@ -17,6 +18,7 @@ function signToken(userId) {
 // @route   POST /api/auth/register
 router.post(
   "/register",
+  authLimiter, // ⬅️ limit register attempts
   [
     body("name").isLength({ min: 2 }),
     body("email").isEmail(),
@@ -46,7 +48,7 @@ router.post(
 );
 
 // @route   POST /api/auth/login
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
