@@ -1,86 +1,112 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import auth from "../middleware/auth.js";
-import { authLimiter } from "../middleware/rateLimit.js"; // ⬅️ add this
-
-
 
 const router = Router();
 
-// Helper function to sign JWTs
-function signToken(userId) {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+// --- Helper to sign JWTs ---
+function signToken(id) {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES || "7d",
   });
 }
 
-// @route   POST /api/auth/register
+// --- Helper to hide sensitive fields ---
+function publicUser(u) {
+  return {
+    id: u._id,
+    name: u.name,
+    email: u.email,
+    handle: u.handle,
+    bio: u.bio,
+    avatarUrl: u.avatarUrl,
+    links: u.links,
+    createdAt: u.createdAt,
+  };
+}
+
+// --- POST /api/auth/register ---
 router.post(
   "/register",
-  authLimiter, // ⬅️ limit register attempts
   [
-    body("name").isLength({ min: 2 }),
+    body("name").isLength({ min: 2, max: 60 }),
     body("email").isEmail(),
     body("password").isLength({ min: 6 }),
+    body("handle")
+      .optional()
+      .isLength({ min: 2, max: 30 })
+      .matches(/^[a-zA-Z0-9_]+$/)
+      .withMessage("Handle may contain only letters, numbers, and underscores."),
   ],
-  async (req, res) => {
+  async (req, res, next) => {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, handle } = req.body;
 
-      const existing = await User.findOne({ email });
-      if (existing) {
+      // --- Check for duplicates ---
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail)
         return res.status(400).json({ message: "Email already registered" });
+
+      if (handle) {
+        const existingHandle = await User.findOne({
+          handle: handle.trim().toLowerCase(),
+        });
+        if (existingHandle)
+          return res.status(400).json({ message: "Handle already in use" });
       }
 
-      const hashed = await bcrypt.hash(password, 10);
-      const user = await User.create({ name, email, password: hashed });
+      // --- Create new user ---
+      const user = new User({
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password, // hashed automatically in pre-save hook
+        handle: handle ? handle.trim().toLowerCase() : undefined,
+      });
+
+      await user.save();
 
       const token = signToken(user._id);
-      res.status(201).json({
-        user: { id: user._id, name: user.name, email: user.email },
-        token,
-      });
+      res.status(201).json({ user: publicUser(user), token });
     } catch (err) {
-      res.status(500).json({ message: "Server error" });
+      next(err);
     }
   }
 );
 
-// @route   POST /api/auth/login
-router.post("/login", authLimiter, async (req, res) => {
+// --- POST /api/auth/login ---
+router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      email: (email || "").toLowerCase().trim(),
+    });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials" });
+    const ok = await user.matchPassword(password);
+    if (!ok) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = signToken(user._id);
-    res.json({
-      user: { id: user._id, name: user.name, email: user.email },
-      token,
-    });
-  } catch {
-    res.status(500).json({ message: "Server error" });
+    res.json({ user: publicUser(user), token });
+  } catch (err) {
+    next(err);
   }
 });
 
-// @route   GET /api/auth/me
-router.get("/me", auth, async (req, res) => {
-  res.json({ user: req.user });
+// --- GET /api/auth/me (protected) ---
+router.get("/me", auth, async (req, res, next) => {
+  try {
+    res.json({ user: publicUser(req.user) });
+  } catch (err) {
+    next(err);
+  }
 });
 
-// @route   POST /api/auth/logout
-router.post("/logout", auth, (req, res) => {
-  // For localStorage-based tokens, client should just remove the token
-  // This route is just for confirmation
-  res.json({ message: "Logged out successfully" });
+// --- POST /api/auth/logout ---
+router.post("/logout", (req, res) => {
+  res.json({ message: "Logged out" });
 });
 
 export default router;

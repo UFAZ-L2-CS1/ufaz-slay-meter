@@ -1,45 +1,43 @@
+// src/middleware/auth.js
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// Middleware: verifies JWT and loads the user
 export default async function auth(req, res, next) {
   try {
     const header = req.headers.authorization || "";
     let token = null;
 
-    // Get token from Authorization header (Bearer <token>)
-    if (header.toLowerCase().startsWith("bearer ")) {
+    // Accept "Bearer <token>" (case-insensitive)
+    if (/^bearer\s/i.test(header)) {
       token = header.slice(7).trim();
     }
 
-    // Optional: also support cookie token (future use)
+    // Optional cookie support
     if (!token && req.cookies?.token) {
       token = req.cookies.token;
     }
 
     if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+      return res.status(401).json({ message: "No token" });
     }
 
-    // Verify the JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify token (defaults to HS256). Add issuer/audience if you use them.
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Get user ID from the decoded payload
-    const userId = decoded.id || decoded.userId || decoded._id;
-    if (!userId) {
+    // Enforce a consistent payload shape: { id: "<mongoId>" }
+    if (!payload?.id) {
       return res.status(401).json({ message: "Invalid token payload" });
     }
 
-    // Find user in DB
-    const user = await User.findById(userId).select("-password");
+    // Load user (without password)
+    const user = await User.findById(payload.id).select("-password");
     if (!user) {
-      return res.status(401).json({ message: "Invalid token (user not found)" });
+      return res.status(401).json({ message: "Invalid token" });
     }
 
-    // Attach to request
+    // Attach to request for downstream handlers
     req.user = user;
     req.token = token;
-
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
