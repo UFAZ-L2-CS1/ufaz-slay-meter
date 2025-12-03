@@ -1,13 +1,13 @@
-# Build mərhələsi
-FROM node:18 AS build
+# ---------- Build stage ----------
+FROM node:18-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# Run mərhələsi
-FROM node:18
+# ---------- Run stage ----------
+FROM node:18-alpine
 WORKDIR /app
 RUN npm install -g serve
 COPY --from=build /app/build ./build
