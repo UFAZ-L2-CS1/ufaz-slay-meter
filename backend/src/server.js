@@ -12,7 +12,7 @@ import vibeRoutes from "./routes/vibeRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
 
 import errorHandler from "./middleware/errorHandler.js";
-import { apiLimiter, authLimiter } from "./middleware/rateLimit.js"; // ⬅️ add authLimiter
+import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
 
 dotenv.config();
 
@@ -47,6 +47,11 @@ app.use(cookieParser());
 // --- Global (soft) rate limiter for all routes ---
 app.use(apiLimiter);
 
+// ✅ NEW — Root test route (fixes "Cannot GET /")
+app.get("/", (_req, res) => {
+  res.send("✅ Backend is running correctly!");
+});
+
 // --- Healthcheck ---
 app.get("/health", (_req, res) => {
   res.json({ ok: true, db: !!mongoose?.connection?.readyState });
@@ -59,9 +64,9 @@ app.get("/test", (req, res) => {
     instance: process.env.PORT || "unknown",
   });
 });
+
 // --- API routes ---
 app.use("/api", apiRoutes);
-// apply stricter limiter only for auth endpoints
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/vibes", vibeRoutes);
