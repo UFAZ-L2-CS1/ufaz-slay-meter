@@ -1,0 +1,9 @@
+{
+  "short_name": "UFAZ Slay Meter",
+  "name": "UFAZ Slay Meter App",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ff69b4",
+  "background_color": "#ffffff"
+}
