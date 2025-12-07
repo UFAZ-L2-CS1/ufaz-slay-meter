@@ -1,0 +1,479 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './SettingsPage.css';
+
+const SettingsPage = ({ user }) => {
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('profile');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  // Profile Settings
+  const [profileData, setProfileData] = useState({
+    name: user?.name || '',
+    handle: user?.handle || '',
+    bio: user?.bio || '',
+    avatarUrl: user?.avatarUrl || ''
+  });
+
+  // Privacy Settings
+  const [privacySettings, setPrivacySettings] = useState({
+    profileVisibility: 'public',
+    allowAnonymousVibes: true,
+    showVibesOnProfile: true,
+    showStatsPublicly: true
+  });
+
+  // Notification Settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    vibeReceived: true,
+    weeklyDigest: true,
+    newFollowers: false,
+    vibeMilestones: true
+  });
+
+  const handleProfileChange = (e) => {
+    setProfileData({ ...profileData, [e.target.name]: e.target.value });
+    setError('');
+    setSuccess('');
+  };
+
+  const handlePrivacyChange = (name, value) => {
+    setPrivacySettings({ ...privacySettings, [name]: value });
+  };
+
+  const handleNotificationChange = (name) => {
+    setNotificationSettings({
+      ...notificationSettings,
+      [name]: !notificationSettings[name]
+    });
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSuccess('Profile updated successfully!');
+    } catch (err) {
+      setError('Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePrivacy = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSuccess('Privacy settings updated successfully!');
+    } catch (err) {
+      setError('Failed to update privacy settings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSuccess('Notification settings updated successfully!');
+    } catch (err) {
+      setError('Failed to update notification settings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (
+      window.confirm(
+        'Are you sure you want to delete your account? This action cannot be undone.'
+      )
+    ) {
+      setLoading(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        navigate('/');
+      } catch (err) {
+        setError('Failed to delete account.');
+        setLoading(false);
+      }
+    }
+  };
+
+  return (
+    <div className="settings-page">
+      <div className="container">
+        {/* Header */}
+        <div className="settings-header">
+          <h1 className="page-title">
+            <span className="shimmer-text">⚙️ Settings</span>
+          </h1>
+          <p className="page-subtitle">Manage your account and preferences</p>
+        </div>
+
+        <div className="settings-content">
+          {/* Sidebar Navigation */}
+          <div className="settings-sidebar">
+            <nav className="settings-nav">
+              <button
+                className={`nav-item ${activeSection === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveSection('profile')}
+              >
+                <span className="nav-icon">👤</span>
+                Profile
+              </button>
+              <button
+                className={`nav-item ${activeSection === 'privacy' ? 'active' : ''}`}
+                onClick={() => setActiveSection('privacy')}
+              >
+                <span className="nav-icon">🔒</span>
+                Privacy
+              </button>
+              <button
+                className={`nav-item ${activeSection === 'notifications' ? 'active' : ''}`}
+                onClick={() => setActiveSection('notifications')}
+              >
+                <span className="nav-icon">🔔</span>
+                Notifications
+              </button>
+              <button
+                className={`nav-item ${activeSection === 'account' ? 'active' : ''}`}
+                onClick={() => setActiveSection('account')}
+              >
+                <span className="nav-icon">⚠️</span>
+                Account
+              </button>
+            </nav>
+          </div>
+
+          {/* Main Content */}
+          <div className="settings-main">
+            {/* Success/Error Messages */}
+            {success && (
+              <div className="success-message">
+                <span>✓</span>
+                <span>{success}</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="error-message">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Profile Section */}
+            {activeSection === 'profile' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Profile Information</h2>
+                <form onSubmit={handleSaveProfile} className="settings-form">
+                  <div className="input-group">
+                    <label htmlFor="name">Full Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={profileData.name}
+                      onChange={handleProfileChange}
+                      placeholder="Enter your name"
+                      required
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="handle">Username</label>
+                    <input
+                      type="text"
+                      id="handle"
+                      name="handle"
+                      value={profileData.handle}
+                      onChange={handleProfileChange}
+                      placeholder="@username"
+                      pattern="[a-zA-Z0-9_]+"
+                      required
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="bio">
+                      Bio
+                      <span className="char-count">
+                        {profileData.bio.length}/150
+                      </span>
+                    </label>
+                    <textarea
+                      id="bio"
+                      name="bio"
+                      value={profileData.bio}
+                      onChange={handleProfileChange}
+                      placeholder="Tell us about yourself..."
+                      maxLength={150}
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="avatarUrl">Avatar URL</label>
+                    <input
+                      type="url"
+                      id="avatarUrl"
+                      name="avatarUrl"
+                      value={profileData.avatarUrl}
+                      onChange={handleProfileChange}
+                      placeholder="https://example.com/avatar.jpg"
+                    />
+                    <p className="input-hint">
+                      Enter a URL to your profile picture
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Privacy Section */}
+            {activeSection === 'privacy' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Privacy Settings</h2>
+                <div className="settings-form">
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Profile Visibility</h3>
+                      <p>Control who can see your profile</p>
+                    </div>
+                    <select
+                      value={privacySettings.profileVisibility}
+                      onChange={(e) =>
+                        handlePrivacyChange('profileVisibility', e.target.value)
+                      }
+                      className="select-input"
+                    >
+                      <option value="public">Public</option>
+                      <option value="friends">Friends Only</option>
+                      <option value="private">Private</option>
+                    </select>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Allow Anonymous Vibes</h3>
+                      <p>Let people send you vibes anonymously</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={privacySettings.allowAnonymousVibes}
+                        onChange={(e) =>
+                          handlePrivacyChange(
+                            'allowAnonymousVibes',
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Show Vibes on Profile</h3>
+                      <p>Display vibes you've received on your profile</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={privacySettings.showVibesOnProfile}
+                        onChange={(e) =>
+                          handlePrivacyChange(
+                            'showVibesOnProfile',
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Show Stats Publicly</h3>
+                      <p>Display your vibe statistics to everyone</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={privacySettings.showStatsPublicly}
+                        onChange={(e) =>
+                          handlePrivacyChange(
+                            'showStatsPublicly',
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSavePrivacy}
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Privacy Settings'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Notifications Section */}
+            {activeSection === 'notifications' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Notification Preferences</h2>
+                <div className="settings-form">
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Email Notifications</h3>
+                      <p>Receive notifications via email</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.emailNotifications}
+                        onChange={() =>
+                          handleNotificationChange('emailNotifications')
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Vibe Received</h3>
+                      <p>Get notified when you receive a new vibe</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.vibeReceived}
+                        onChange={() => handleNotificationChange('vibeReceived')}
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Weekly Digest</h3>
+                      <p>Receive a weekly summary of your vibes</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.weeklyDigest}
+                        onChange={() => handleNotificationChange('weeklyDigest')}
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>New Followers</h3>
+                      <p>Get notified when someone follows you</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.newFollowers}
+                        onChange={() => handleNotificationChange('newFollowers')}
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Vibe Milestones</h3>
+                      <p>Celebrate when you reach vibe milestones</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.vibeMilestones}
+                        onChange={() =>
+                          handleNotificationChange('vibeMilestones')
+                        }
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSaveNotifications}
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Notification Settings'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Account Section */}
+            {activeSection === 'account' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Account Management</h2>
+                <div className="settings-form">
+                  <div className="danger-zone">
+                    <h3>⚠️ Danger Zone</h3>
+                    <p>
+                      Once you delete your account, there is no going back.
+                      Please be certain.
+                    </p>
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleDeleteAccount}
+                      disabled={loading}
+                    >
+                      Delete Account
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SettingsPage;
