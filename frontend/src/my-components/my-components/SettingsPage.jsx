@@ -1,411 +1,472 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 import './SettingsPage.css';
 
-const SettingsPage = () => {
-  const { user, updateProfile } = useAuth();
+const SettingsPage = ({ user }) => {
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('profile');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('profile');
-  
+
+  // Profile Settings
   const [profileData, setProfileData] = useState({
-    name: '',
-    handle: '',
-    bio: '',
-    avatarUrl: '',
-    links: {
-      instagram: '',
-      tiktok: '',
-      website: ''
-    }
+    name: user?.name || '',
+    handle: user?.handle || '',
+    bio: user?.bio || '',
+    avatarUrl: user?.avatarUrl || ''
   });
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+  // Privacy Settings
+  const [privacySettings, setPrivacySettings] = useState({
+    profileVisibility: 'public',
+    allowAnonymousVibes: true,
+    showVibesOnProfile: true,
+    showStatsPublicly: true
   });
 
-  useEffect(() => {
-    if (user) {
-      setProfileData({
-        name: user.name || '',
-        handle: user.handle || '',
-        bio: user.bio || '',
-        avatarUrl: user.avatarUrl || '',
-        links: {
-          instagram: user.links?.instagram || '',
-          tiktok: user.links?.tiktok || '',
-          website: user.links?.website || ''
-        }
-      });
-    }
-  }, [user]);
+  // Notification Settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    vibeReceived: true,
+    weeklyDigest: true,
+    newFollowers: false,
+    vibeMilestones: true
+  });
 
   const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith('links.')) {
-      const linkName = name.split('.')[1];
-      setProfileData(prev => ({
-        ...prev,
-        links: {
-          ...prev.links,
-          [linkName]: value
-        }
-      }));
-    } else {
-      setProfileData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-
-  const handlePasswordChange = (e) => {
-    setPasswordData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    setProfileData({ ...profileData, [e.target.name]: e.target.value });
     setError('');
+    setSuccess('');
   };
 
-  const handleProfileSubmit = async (e) => {
+  const handlePrivacyChange = (name, value) => {
+    setPrivacySettings({ ...privacySettings, [name]: value });
+  };
+
+  const handleNotificationChange = (name) => {
+    setNotificationSettings({
+      ...notificationSettings,
+      [name]: !notificationSettings[name]
+    });
+  };
+
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
     setError('');
+    setSuccess('');
 
     try {
-      await updateProfile(profileData);
-      setMessage('Profile updated successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSuccess('Profile updated successfully!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile');
+      setError('Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError('New passwords do not match');
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      setError('New password must be at least 6 characters');
-      return;
-    }
-
+  const handleSavePrivacy = async () => {
     setLoading(true);
-    setMessage('');
     setError('');
+    setSuccess('');
 
     try {
-      await api.put('/auth/change-password', {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
-      
-      setMessage('Password changed successfully!');
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      setTimeout(() => setMessage(''), 3000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSuccess('Privacy settings updated successfully!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change password');
+      setError('Failed to update privacy settings.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image size must be less than 5MB');
-      return;
-    }
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
-      return;
-    }
-
+  const handleSaveNotifications = async () => {
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const formData = new FormData();
-      formData.append('avatar', file);
-      
-      const response = await api.post('/upload/avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      setProfileData(prev => ({
-        ...prev,
-        avatarUrl: response.data.url
-      }));
-      
-      setMessage('Avatar uploaded successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSuccess('Notification settings updated successfully!');
     } catch (err) {
-      setError('Failed to upload avatar. Please try again.');
+      setError('Failed to update notification settings.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (
+      window.confirm(
+        'Are you sure you want to delete your account? This action cannot be undone.'
+      )
+    ) {
+      setLoading(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        navigate('/');
+      } catch (err) {
+        setError('Failed to delete account.');
+        setLoading(false);
+      }
     }
   };
 
   return (
-    <div className="settings-page page-container">
+    <div className="settings-page">
       <div className="container">
+        {/* Header */}
         <div className="settings-header">
-          <h1>Settings</h1>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => navigate(`/profile/${user?.handle}`)}
-          >
-            View Profile
-          </button>
+          <h1 className="page-title">
+            <span className="shimmer-text">⚙️ Settings</span>
+          </h1>
+          <p className="page-subtitle">Manage your account and preferences</p>
         </div>
 
         <div className="settings-content">
-          <div className="settings-tabs">
-            <button
-              className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
-              onClick={() => setActiveTab('profile')}
-            >
-              Profile
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'password' ? 'active' : ''}`}
-              onClick={() => setActiveTab('password')}
-            >
-              Password
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'privacy' ? 'active' : ''}`}
-              onClick={() => setActiveTab('privacy')}
-            >
-              Privacy
-            </button>
+          {/* Sidebar Navigation */}
+          <div className="settings-sidebar">
+            <nav className="settings-nav">
+              <button
+                className={`nav-item ${activeSection === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveSection('profile')}
+              >
+                <span className="nav-icon">👤</span>
+                Profile
+              </button>
+              <button
+                className={`nav-item ${activeSection === 'privacy' ? 'active' : ''}`}
+                onClick={() => setActiveSection('privacy')}
+              >
+                <span className="nav-icon">🔒</span>
+                Privacy
+              </button>
+              <button
+                className={`nav-item ${activeSection === 'notifications' ? 'active' : ''}`}
+                onClick={() => setActiveSection('notifications')}
+              >
+                <span className="nav-icon">🔔</span>
+                Notifications
+              </button>
+              <button
+                className={`nav-item ${activeSection === 'account' ? 'active' : ''}`}
+                onClick={() => setActiveSection('account')}
+              >
+                <span className="nav-icon">⚠️</span>
+                Account
+              </button>
+            </nav>
           </div>
 
-          <div className="settings-panel glass-card">
-            {activeTab === 'profile' && (
-              <form onSubmit={handleProfileSubmit} className="settings-form">
-                <h2>Edit Profile</h2>
+          {/* Main Content */}
+          <div className="settings-main">
+            {/* Success/Error Messages */}
+            {success && (
+              <div className="success-message">
+                <span>✓</span>
+                <span>{success}</span>
+              </div>
+            )}
 
-                <div className="avatar-section">
-                  <div className="current-avatar">
-                    {profileData.avatarUrl ? (
-                      <img src={profileData.avatarUrl} alt="Avatar" />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        <span>{profileData.name?.charAt(0) || '?'}</span>
-                      </div>
-                    )}
+            {error && (
+              <div className="error-message">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Profile Section */}
+            {activeSection === 'profile' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Profile Information</h2>
+                <form onSubmit={handleSaveProfile} className="settings-form">
+                  <div className="input-group">
+                    <label htmlFor="name">Full Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={profileData.name}
+                      onChange={handleProfileChange}
+                      placeholder="Enter your name"
+                      required
+                    />
                   </div>
-                  <div className="avatar-upload">
-                    <label htmlFor="avatar-upload" className="btn btn-secondary">
-                      Change Avatar
+
+                  <div className="input-group">
+                    <label htmlFor="handle">Username</label>
+                    <input
+                      type="text"
+                      id="handle"
+                      name="handle"
+                      value={profileData.handle}
+                      onChange={handleProfileChange}
+                      placeholder="@username"
+                      pattern="[a-zA-Z0-9_]+"
+                      required
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="bio">
+                      Bio
+                      <span className="char-count">
+                        {profileData.bio.length}/150
+                      </span>
                     </label>
-                    <input
-                      id="avatar-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                      style={{ display: 'none' }}
-                    />
-                    <p className="upload-hint">Max size: 5MB</p>
-                  </div>
-                </div>
-
-                <div className="input-group">
-                  <label htmlFor="name">Full Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={profileData.name}
-                    onChange={handleProfileChange}
-                    required
-                  />
-                </div>
-
-                <div className="input-group">
-                  <label htmlFor="handle">Username</label>
-                  <input
-                    type="text"
-                    id="handle"
-                    name="handle"
-                    value={profileData.handle}
-                    onChange={handleProfileChange}
-                    pattern="[a-zA-Z0-9_]+"
-                    required
-                  />
-                  <p className="input-hint">Letters, numbers, and underscores only</p>
-                </div>
-
-                <div className="input-group">
-                  <label htmlFor="bio">Bio</label>
-                  <textarea
-                    id="bio"
-                    name="bio"
-                    value={profileData.bio}
-                    onChange={handleProfileChange}
-                    rows="4"
-                    maxLength="240"
-                    placeholder="Tell everyone about yourself..."
-                  />
-                  <p className="char-count">{profileData.bio.length}/240</p>
-                </div>
-
-                <div className="social-links-section">
-                  <h3>Social Links</h3>
-                  
-                  <div className="input-group">
-                    <label htmlFor="instagram">Instagram</label>
-                    <input
-                      type="text"
-                      id="instagram"
-                      name="links.instagram"
-                      value={profileData.links.instagram}
+                    <textarea
+                      id="bio"
+                      name="bio"
+                      value={profileData.bio}
                       onChange={handleProfileChange}
-                      placeholder="username (without @)"
+                      placeholder="Tell us about yourself..."
+                      maxLength={150}
+                      rows={4}
                     />
                   </div>
 
                   <div className="input-group">
-                    <label htmlFor="tiktok">TikTok</label>
-                    <input
-                      type="text"
-                      id="tiktok"
-                      name="links.tiktok"
-                      value={profileData.links.tiktok}
-                      onChange={handleProfileChange}
-                      placeholder="username (without @)"
-                    />
-                  </div>
-
-                  <div className="input-group">
-                    <label htmlFor="website">Website</label>
+                    <label htmlFor="avatarUrl">Avatar URL</label>
                     <input
                       type="url"
-                      id="website"
-                      name="links.website"
-                      value={profileData.links.website}
+                      id="avatarUrl"
+                      name="avatarUrl"
+                      value={profileData.avatarUrl}
                       onChange={handleProfileChange}
-                      placeholder="https://example.com"
+                      placeholder="https://example.com/avatar.jpg"
                     />
+                    <p className="input-hint">
+                      Enter a URL to your profile picture
+                    </p>
                   </div>
-                </div>
 
-                {message && (
-                  <div className="success-message">
-                    <span>✅</span> {message}
-                  </div>
-                )}
-
-                {error && (
-                  <div className="error-message">
-                    <span>⚠️</span> {error}
-                  </div>
-                )}
-
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Saving...' : 'Save Changes'}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </form>
+              </div>
             )}
 
-            {activeTab === 'password' && (
-              <form onSubmit={handlePasswordSubmit} className="settings-form">
-                <h2>Change Password</h2>
-
-                <div className="input-group">
-                  <label htmlFor="currentPassword">Current Password</label>
-                  <input
-                    type="password"
-                    id="currentPassword"
-                    name="currentPassword"
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordChange}
-                    required
-                  />
-                </div>
-
-                <div className="input-group">
-                  <label htmlFor="newPassword">New Password</label>
-                  <input
-                    type="password"
-                    id="newPassword"
-                    name="newPassword"
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
-                    minLength="6"
-                    required
-                  />
-                  <p className="input-hint">Minimum 6 characters</p>
-                </div>
-
-                <div className="input-group">
-                  <label htmlFor="confirmPassword">Confirm New Password</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    minLength="6"
-                    required
-                  />
-                </div>
-
-                {message && (
-                  <div className="success-message">
-                    <span>✅</span> {message}
+            {/* Privacy Section */}
+            {activeSection === 'privacy' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Privacy Settings</h2>
+                <div className="settings-form">
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Profile Visibility</h3>
+                      <p>Control who can see your profile</p>
+                    </div>
+                    <select
+                      value={privacySettings.profileVisibility}
+                      onChange={(e) =>
+                        handlePrivacyChange('profileVisibility', e.target.value)
+                      }
+                      className="select-input"
+                    >
+                      <option value="public">Public</option>
+                      <option value="friends">Friends Only</option>
+                      <option value="private">Private</option>
+                    </select>
                   </div>
-                )}
 
-                {error && (
-                  <div className="error-message">
-                    <span>⚠️</span> {error}
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Allow Anonymous Vibes</h3>
+                      <p>Let people send you vibes anonymously</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={privacySettings.allowAnonymousVibes}
+                        onChange={(e) =>
+                          handlePrivacyChange(
+                            'allowAnonymousVibes',
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
                   </div>
-                )}
 
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Changing...' : 'Change Password'}
-                </button>
-              </form>
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Show Vibes on Profile</h3>
+                      <p>Display vibes you've received on your profile</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={privacySettings.showVibesOnProfile}
+                        onChange={(e) =>
+                          handlePrivacyChange(
+                            'showVibesOnProfile',
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Show Stats Publicly</h3>
+                      <p>Display your vibe statistics to everyone</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={privacySettings.showStatsPublicly}
+                        onChange={(e) =>
+                          handlePrivacyChange(
+                            'showStatsPublicly',
+                            e.target.checked
+                          )
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSavePrivacy}
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Privacy Settings'}
+                  </button>
+                </div>
+              </div>
             )}
 
-            {activeTab === 'privacy' && (
-              <div className="privacy-settings">
-                <h2>Privacy Settings</h2>
-                <p>Privacy options coming soon...</p>
+            {/* Notifications Section */}
+            {activeSection === 'notifications' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Notification Preferences</h2>
+                <div className="settings-form">
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Email Notifications</h3>
+                      <p>Receive notifications via email</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.emailNotifications}
+                        onChange={() =>
+                          handleNotificationChange('emailNotifications')
+                        }
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Vibe Received</h3>
+                      <p>Get notified when you receive a new vibe</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.vibeReceived}
+                        onChange={() => handleNotificationChange('vibeReceived')}
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Weekly Digest</h3>
+                      <p>Receive a weekly summary of your vibes</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.weeklyDigest}
+                        onChange={() => handleNotificationChange('weeklyDigest')}
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>New Followers</h3>
+                      <p>Get notified when someone follows you</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.newFollowers}
+                        onChange={() => handleNotificationChange('newFollowers')}
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div className="setting-item">
+                    <div className="setting-info">
+                      <h3>Vibe Milestones</h3>
+                      <p>Celebrate when you reach vibe milestones</p>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.vibeMilestones}
+                        onChange={() =>
+                          handleNotificationChange('vibeMilestones')
+                        }
+                        disabled={!notificationSettings.emailNotifications}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSaveNotifications}
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Notification Settings'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Account Section */}
+            {activeSection === 'account' && (
+              <div className="glass-card settings-section">
+                <h2 className="section-title">Account Management</h2>
+                <div className="settings-form">
+                  <div className="danger-zone">
+                    <h3>⚠️ Danger Zone</h3>
+                    <p>
+                      Once you delete your account, there is no going back.
+                      Please be certain.
+                    </p>
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleDeleteAccount}
+                      disabled={loading}
+                    >
+                      Delete Account
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

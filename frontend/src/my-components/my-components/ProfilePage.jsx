@@ -21,10 +21,11 @@ const ProfilePage = ({ currentUser }) => {
           if (isOwnProfile && currentUser) {
             setProfile(currentUser);
           } else {
+            // Generate mock profile for demo
             setProfile({
-              name: handle ? handle.charAt(0).toUpperCase() + handle.slice(1) : 'User',
+              name: handle ? `${handle.charAt(0).toUpperCase()}${handle.slice(1)} User` : 'User',
               handle: handle || 'user',
-              bio: 'Living my best life ✨',
+              bio: 'Living my best life! 💕',
               avatarUrl: null,
               stats: {
                 vibesReceived: Math.floor(Math.random() * 100) + 10,
@@ -48,6 +49,15 @@ const ProfilePage = ({ currentUser }) => {
 
     loadProfile();
   }, [handle, isOwnProfile, currentUser]);
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
 
   if (loading) {
     return (
@@ -77,12 +87,13 @@ const ProfilePage = ({ currentUser }) => {
   return (
     <div className="profile-page">
       <div className="profile-card">
+        {/* Profile Header */}
         <div className="profile-header">
           <div className="profile-avatar">
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt={profile.name} />
             ) : (
-              <span>{profile.name?.charAt(0).toUpperCase()}</span>
+              <span>{getInitials(profile.name)}</span>
             )}
           </div>
           <div className="profile-info">
@@ -92,6 +103,7 @@ const ProfilePage = ({ currentUser }) => {
           </div>
         </div>
 
+        {/* Profile Stats */}
         <div className="profile-stats">
           <div className="stat-item">
             <span className="stat-label">Vibes received</span>
@@ -107,11 +119,12 @@ const ProfilePage = ({ currentUser }) => {
           </div>
         </div>
 
+        {/* Profile Socials */}
         {profile.socials && (
           <div className="profile-socials">
             {profile.socials.instagram && (
               <a href={profile.socials.instagram} target="_blank" rel="noreferrer">
-                📸 Instagram
+                📷 Instagram
               </a>
             )}
             {profile.socials.tiktok && (

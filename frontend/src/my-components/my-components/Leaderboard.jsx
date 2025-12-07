@@ -40,13 +40,25 @@ const Leaderboard = () => {
     }
   };
 
+  const getInitials = (name) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
+
+  const currentLeaderboard = activeTab === 'vibes' ? leaderboard : warLeaders;
+  const top3 = currentLeaderboard.slice(0, 3);
+  const rest = currentLeaderboard.slice(3);
+
   if (loading) {
     return (
-      <div className="page-container">
+      <div className="leaderboard-page">
         <div className="container">
           <div className="loading-state">
             <div className="slay-loader">
-              <span>🏆</span>
+              <span>👑</span>
               <p>Loading leaderboard...</p>
             </div>
           </div>
@@ -56,43 +68,37 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className="leaderboard-page page-container">
+    <div className="leaderboard-page">
       <div className="container">
+        {/* Header */}
         <div className="leaderboard-header">
-          <h1 className="page-title">UFAZ Slay Leaderboard 🏆</h1>
-          <p className="page-subtitle">
-            See who's slaying the hardest at UFAZ!
-          </p>
+          <h1 className="page-title">Leaderboard 👑</h1>
+          <p className="page-subtitle">See who's slaying the hardest at UFAZ!</p>
         </div>
 
-        <div className="leaderboard-controls glass-card">
+        {/* Controls */}
+        <div className="glass-card leaderboard-controls">
           <div className="tab-switcher">
             <button
               className={`tab-btn ${activeTab === 'vibes' ? 'active' : ''}`}
               onClick={() => setActiveTab('vibes')}
             >
-              Vibe Leaders
+              💌 Vibes Received
             </button>
             <button
               className={`tab-btn ${activeTab === 'wars' ? 'active' : ''}`}
               onClick={() => setActiveTab('wars')}
             >
-              War Champions
+              ⚔️ War Champions
             </button>
           </div>
 
           <div className="timeframe-selector">
             <button
-              className={`timeframe-btn ${timeframe === 'day' ? 'active' : ''}`}
-              onClick={() => setTimeframe('day')}
+              className={`timeframe-btn ${timeframe === 'all' ? 'active' : ''}`}
+              onClick={() => setTimeframe('all')}
             >
-              Today
-            </button>
-            <button
-              className={`timeframe-btn ${timeframe === 'week' ? 'active' : ''}`}
-              onClick={() => setTimeframe('week')}
-            >
-              This Week
+              All Time
             </button>
             <button
               className={`timeframe-btn ${timeframe === 'month' ? 'active' : ''}`}
@@ -101,226 +107,203 @@ const Leaderboard = () => {
               This Month
             </button>
             <button
-              className={`timeframe-btn ${timeframe === 'all' ? 'active' : ''}`}
-              onClick={() => setTimeframe('all')}
+              className={`timeframe-btn ${timeframe === 'week' ? 'active' : ''}`}
+              onClick={() => setTimeframe('week')}
             >
-              All Time
+              This Week
             </button>
           </div>
         </div>
 
-        {activeTab === 'vibes' ? (
-          <div className="leaderboard-content">
-            {leaderboard.length > 0 ? (
-              <>
-                {/* Top 3 Podium */}
-                {leaderboard.length >= 3 && (
-                  <div className="podium-section glass-card">
-                    <h2>✨ Top Slayers ✨</h2>
-                    <div className="podium">
-                      <div className="podium-spot second">
-                        <Link to={`/profile/${leaderboard[1]?.handle}`}>
-                          <div className="podium-avatar">
-                            {leaderboard[1]?.avatarUrl ? (
-                              <img src={leaderboard[1].avatarUrl} alt="" />
-                            ) : (
-                              <span>{leaderboard[1]?.name?.charAt(0) || '?'}</span>
-                            )}
-                          </div>
-                          <h3>{leaderboard[1]?.name}</h3>
-                          <p>@{leaderboard[1]?.handle}</p>
-                          <div className="podium-stats">
-                            <span className="medal">🥈</span>
-                            <span className="score">{leaderboard[1]?.vibeCount || 0} vibes</span>
-                          </div>
-                          <div className="podium-bar" style={{ height: '150px' }}>2</div>
-                        </Link>
-                      </div>
-
-                      <div className="podium-spot first">
-                        <Link to={`/profile/${leaderboard[0]?.handle}`}>
-                          <div className="crown">👑</div>
-                          <div className="podium-avatar">
-                            {leaderboard[0]?.avatarUrl ? (
-                              <img src={leaderboard[0].avatarUrl} alt="" />
-                            ) : (
-                              <span>{leaderboard[0]?.name?.charAt(0) || '?'}</span>
-                            )}
-                          </div>
-                          <h3>{leaderboard[0]?.name}</h3>
-                          <p>@{leaderboard[0]?.handle}</p>
-                          <div className="podium-stats">
-                            <span className="medal">🥇</span>
-                            <span className="score">{leaderboard[0]?.vibeCount || 0} vibes</span>
-                          </div>
-                          <div className="podium-bar" style={{ height: '200px' }}>1</div>
-                        </Link>
-                      </div>
-
-                      <div className="podium-spot third">
-                        <Link to={`/profile/${leaderboard[2]?.handle}`}>
-                          <div className="podium-avatar">
-                            {leaderboard[2]?.avatarUrl ? (
-                              <img src={leaderboard[2].avatarUrl} alt="" />
-                            ) : (
-                              <span>{leaderboard[2]?.name?.charAt(0) || '?'}</span>
-                            )}
-                          </div>
-                          <h3>{leaderboard[2]?.name}</h3>
-                          <p>@{leaderboard[2]?.handle}</p>
-                          <div className="podium-stats">
-                            <span className="medal">🥉</span>
-                            <span className="score">{leaderboard[2]?.vibeCount || 0} vibes</span>
-                          </div>
-                          <div className="podium-bar" style={{ height: '100px' }}>3</div>
-                        </Link>
-                      </div>
-                    </div>
+        {/* Podium (Top 3) */}
+        {top3.length >= 3 && (
+          <div className="glass-card podium-section">
+            <h2>🏆 Top Slayers</h2>
+            <div className="podium">
+              {/* Second Place */}
+              <div className="podium-spot second">
+                <Link to={`/profile/${top3[1].handle}`}>
+                  <div className="crown">👑</div>
+                  <div className="podium-avatar">
+                    {top3[1].avatarUrl ? (
+                      <img src={top3[1].avatarUrl} alt={top3[1].name} />
+                    ) : (
+                      getInitials(top3[1].name)
+                    )}
                   </div>
-                )}
-
-                {/* Full Leaderboard */}
-                <div className="leaderboard-list glass-card">
-                  <h2>Complete Rankings 📊</h2>
-                  {leaderboard.map((user, index) => (
-                    <Link 
-                      to={`/profile/${user.handle}`}
-                      key={user._id || index}
-                      className="leaderboard-item"
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      <div className="rank-section">
-                        <span className="rank">#{index + 1}</span>
-                        <span className="medal">{getMedalEmoji(index + 1)}</span>
-                      </div>
-
-                      <div className="user-section">
-                        <div className="user-avatar">
-                          {user.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="" />
-                          ) : (
-                            <span>{user.name?.charAt(0) || '?'}</span>
-                          )}
-                        </div>
-                        <div className="user-info">
-                          <h4>{user.name}</h4>
-                          <p>@{user.handle}</p>
-                        </div>
-                      </div>
-
-                      <div className="stats-section">
-                        <div className="stat">
-                          <span className="stat-value">{user.vibeCount || 0}</span>
-                          <span className="stat-label">Vibes</span>
-                        </div>
-                        <div className="stat">
-                          <span className="stat-value">{user.slayScore || 0}</span>
-                          <span className="stat-label">Slay Score</span>
-                        </div>
-                      </div>
-
-                      <div className="title-badge">
-                        {getSlayTitle(index + 1)}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="empty-leaderboard glass-card">
-                <span className="empty-emoji">📊</span>
-                <h3>No data yet</h3>
-                <p>Be the first to climb the leaderboard!</p>
-                <Link to="/send-vibe" className="btn btn-primary">
-                  Start Slaying 💖
+                  <h3>{top3[1].name}</h3>
+                  <p>@{top3[1].handle}</p>
+                  <div className="podium-stats">
+                    <span className="medal">{getMedalEmoji(2)}</span>
+                    <span className="score">
+                      {activeTab === 'vibes' ? top3[1].slayScore : top3[1].warsWon}
+                    </span>
+                  </div>
+                  <div className="podium-bar" style={{ height: '120px' }}>
+                    #2
+                  </div>
                 </Link>
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="leaderboard-content">
-            {warLeaders.length > 0 ? (
-              <div className="leaderboard-list glass-card">
-                <h2>⚔️ Vibe War Champions ⚔️</h2>
-                {warLeaders.map((user, index) => (
-                  <Link 
-                    to={`/profile/${user.handle}`}
-                    key={user._id || index}
-                    className="leaderboard-item war-item"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    <div className="rank-section">
-                      <span className="rank">#{index + 1}</span>
-                      <span className="medal">{getMedalEmoji(index + 1)}</span>
-                    </div>
 
-                    <div className="user-section">
-                      <div className="user-avatar">
-                        {user.avatarUrl ? (
-                          <img src={user.avatarUrl} alt="" />
-                        ) : (
-                          <span>{user.name?.charAt(0) || '?'}</span>
-                        )}
-                      </div>
-                      <div className="user-info">
-                        <h4>{user.name}</h4>
-                        <p>@{user.handle}</p>
-                      </div>
-                    </div>
-
-                    <div className="stats-section">
-                      <div className="stat">
-                        <span className="stat-value">{user.warsWon || 0}</span>
-                        <span className="stat-label">Wars Won</span>
-                      </div>
-                      <div className="stat">
-                        <span className="stat-value">{user.winRate || 0}%</span>
-                        <span className="stat-label">Win Rate</span>
-                      </div>
-                    </div>
-
-                    <div className="title-badge war-badge">
-                      ⚔️ War {index === 0 ? 'Legend' : 'Hero'}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-leaderboard glass-card">
-                <span className="empty-emoji">⚔️</span>
-                <h3>No war champions yet</h3>
-                <p>Participate in Vibe Wars to become a champion!</p>
-                <Link to="/vibe-wars" className="btn btn-primary">
-                  Join War 💪
+              {/* First Place */}
+              <div className="podium-spot first">
+                <Link to={`/profile/${top3[0].handle}`}>
+                  <div className="crown">👑</div>
+                  <div className="podium-avatar">
+                    {top3[0].avatarUrl ? (
+                      <img src={top3[0].avatarUrl} alt={top3[0].name} />
+                    ) : (
+                      getInitials(top3[0].name)
+                    )}
+                  </div>
+                  <h3>{top3[0].name}</h3>
+                  <p>@{top3[0].handle}</p>
+                  <div className="podium-stats">
+                    <span className="medal">{getMedalEmoji(1)}</span>
+                    <span className="score">
+                      {activeTab === 'vibes' ? top3[0].slayScore : top3[0].warsWon}
+                    </span>
+                  </div>
+                  <div className="podium-bar" style={{ height: '160px' }}>
+                    #1
+                  </div>
                 </Link>
               </div>
-            )}
+
+              {/* Third Place */}
+              <div className="podium-spot third">
+                <Link to={`/profile/${top3[2].handle}`}>
+                  <div className="crown">👑</div>
+                  <div className="podium-avatar">
+                    {top3[2].avatarUrl ? (
+                      <img src={top3[2].avatarUrl} alt={top3[2].name} />
+                    ) : (
+                      getInitials(top3[2].name)
+                    )}
+                  </div>
+                  <h3>{top3[2].name}</h3>
+                  <p>@{top3[2].handle}</p>
+                  <div className="podium-stats">
+                    <span className="medal">{getMedalEmoji(3)}</span>
+                    <span className="score">
+                      {activeTab === 'vibes' ? top3[2].slayScore : top3[2].warsWon}
+                    </span>
+                  </div>
+                  <div className="podium-bar" style={{ height: '100px' }}>
+                    #3
+                  </div>
+                </Link>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Achievement Section */}
-        <div className="achievements-preview glass-card">
-          <h2>Achievements & Badges 🏅</h2>
+        {/* Rest of Leaderboard */}
+        <div className="glass-card leaderboard-list">
+          <h2>📊 Full Rankings</h2>
+          {rest.length > 0 ? (
+            rest.map((user, index) => {
+              const rank = index + 4;
+              return (
+                <Link
+                  key={user._id}
+                  to={`/profile/${user.handle}`}
+                  className="leaderboard-item"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <div className="rank-section">
+                    <span className="rank">#{rank}</span>
+                    <span className="medal">{getMedalEmoji(rank)}</span>
+                  </div>
+
+                  <div className="user-section">
+                    <div className="user-avatar">
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt={user.name} />
+                      ) : (
+                        getInitials(user.name)
+                      )}
+                    </div>
+                    <div className="user-info">
+                      <h4>{user.name}</h4>
+                      <p>@{user.handle}</p>
+                    </div>
+                  </div>
+
+                  <div className="stats-section">
+                    {activeTab === 'vibes' ? (
+                      <>
+                        <div className="stat">
+                          <span className="stat-value">{user.vibeCount}</span>
+                          <span className="stat-label">Vibes</span>
+                        </div>
+                        <div className="stat">
+                          <span className="stat-value">{user.slayScore}</span>
+                          <span className="stat-label">Score</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="stat">
+                          <span className="stat-value">{user.warsWon}</span>
+                          <span className="stat-label">Wins</span>
+                        </div>
+                        <div className="stat">
+                          <span className="stat-value">{user.winRate}%</span>
+                          <span className="stat-label">Win Rate</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <span className={`title-badge ${activeTab === 'wars' ? 'war-badge' : ''}`}>
+                    {getSlayTitle(rank)}
+                  </span>
+                </Link>
+              );
+            })
+          ) : (
+            <div className="empty-leaderboard">
+              <span className="empty-emoji">📊</span>
+              <h3>No rankings yet!</h3>
+              <p>
+                {activeTab === 'vibes'
+                  ? 'Be the first to climb the leaderboard!'
+                  : 'Participate in Vibe Wars to become a champion!'}
+              </p>
+              <Link
+                to={activeTab === 'vibes' ? '/send' : '/wars'}
+                className="btn btn-primary"
+              >
+                {activeTab === 'vibes' ? 'Start Slaying 💖' : 'Join War 💪'}
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Achievements Preview */}
+        <div className="glass-card achievements-preview">
+          <h2>🎖️ Top Achievements</h2>
           <div className="badges-grid">
             <div className="badge-item">
-              <span className="badge-icon">🔥</span>
-              <span className="badge-name">Hot Streak</span>
-              <span className="badge-desc">10 vibes in a row</span>
-            </div>
-            <div className="badge-item">
-              <span className="badge-icon">💎</span>
-              <span className="badge-name">Diamond Slayer</span>
-              <span className="badge-desc">100+ vibes received</span>
-            </div>
-            <div className="badge-item">
-              <span className="badge-icon">⚡</span>
-              <span className="badge-name">War Master</span>
-              <span className="badge-desc">Won 5 vibe wars</span>
-            </div>
-            <div className="badge-item">
               <span className="badge-icon">👑</span>
-              <span className="badge-name">Slay Royalty</span>
-              <span className="badge-desc">#1 on leaderboard</span>
+              <p className="badge-name">Slay Royalty</p>
+              <p className="badge-desc">Reach #1 on leaderboard</p>
+            </div>
+            <div className="badge-item">
+              <span className="badge-icon">💯</span>
+              <p className="badge-name">Century Club</p>
+              <p className="badge-desc">Receive 100 vibes</p>
+            </div>
+            <div className="badge-item">
+              <span className="badge-icon">⚔️</span>
+              <p className="badge-name">War Legend</p>
+              <p className="badge-desc">Win 20 Vibe Wars</p>
+            </div>
+            <div className="badge-item">
+              <span className="badge-icon">✨</span>
+              <p className="badge-name">Vibe Master</p>
+              <p className="badge-desc">Send 50 vibes</p>
             </div>
           </div>
         </div>

@@ -318,7 +318,7 @@
 
 /* Tab Section */
 .tab-section {
-  padding: 20px;
+  padding: 0 0 20px;
 }
 
 .tab-nav {
@@ -363,7 +363,7 @@
 
 /* Vibes Section */
 .vibes-section {
-  margin-bottom: 28px;
+  margin-bottom: 0;
 }
 
 .vibes-grid {
@@ -382,6 +382,7 @@
   text-align: center;
   padding: 70px 50px;
   background: linear-gradient(135deg, hsla(0, 0%, 100%, 0.98) 0%, hsla(330, 50%, 98%, 0.95) 100%);
+  border-radius: 20px;
 }
 
 .empty-emoji {
@@ -537,7 +538,7 @@
   .page-title {
     font-size: 40px;
   }
-  
+
   .trending-tags-grid {
     grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   }
@@ -547,50 +548,50 @@
   .explore-page {
     padding: 80px 0 50px;
   }
-  
+
   .glass-card {
     padding: 28px;
     border-radius: 24px;
   }
-  
+
   .page-title {
     font-size: 34px;
   }
-  
+
   .page-subtitle {
     font-size: 16px;
   }
-  
+
   .trending-tags-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 14px;
   }
-  
+
   .top-user-card {
     padding: 14px 18px;
   }
-  
+
   .rank-badge {
     width: 40px;
     height: 40px;
     font-size: 14px;
   }
-  
+
   .user-avatar {
     width: 48px;
     height: 48px;
     font-size: 19px;
   }
-  
+
   .tab-nav {
     flex-direction: column;
   }
-  
+
   .tab-btn {
     width: 100%;
     min-width: 0;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -600,65 +601,65 @@
   .container {
     padding: 0 18px;
   }
-  
+
   .glass-card {
     padding: 24px;
     border-radius: 20px;
   }
-  
+
   .explore-header {
     padding: 28px 22px;
   }
-  
+
   .page-title {
     font-size: 30px;
   }
-  
+
   .page-subtitle {
     font-size: 15px;
   }
-  
+
   .trending-tags-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .trending-tag-card {
     padding: 20px;
   }
-  
+
   .top-user-card {
     gap: 14px;
   }
-  
+
   .rank-badge {
     width: 36px;
     height: 36px;
     font-size: 13px;
   }
-  
+
   .user-avatar {
     width: 44px;
     height: 44px;
     font-size: 17px;
   }
-  
+
   .user-info h3 {
     font-size: 15px;
   }
-  
+
   .user-info p {
     font-size: 13px;
   }
-  
+
   .user-vibes {
     font-size: 12px;
     padding: 6px 12px;
   }
-  
+
   .stat-number {
     font-size: 32px;
   }
-  
+
   .stat-label {
     font-size: 11px;
   }

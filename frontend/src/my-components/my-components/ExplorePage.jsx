@@ -31,113 +31,127 @@ const ExplorePage = () => {
     setActiveTab(tab);
   };
 
+  const getInitials = (name) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <div className="explore-page">
-      <div className="container">
+      <div className="page-container">
+        <div className="container">
+          {/* Header */}
+          <div className="glass-card explore-header">
+            <h1 className="page-title">
+              <span className="shimmer-text">Explore the Vibe 🌟</span>
+            </h1>
+            <p className="page-subtitle">
+              See what's trending and who's slaying today!
+            </p>
+          </div>
 
-        {/* Header */}
-        <section className="explore-header glass-card">
-          <h1 className="page-title shimmer-text">UFAZ Explore Zone ✨</h1>
-          <p className="page-subtitle">See what's trending and who's slaying today!</p>
-        </section>
+          {/* Stats Preview */}
+          <div className="glass-card stats-preview">
+            <div className="stats-grid">
+              <div className="stat-card">
+                <span className="stat-number">{totalUsers}</span>
+                <span className="stat-label">Slayers</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{totalVibes}</span>
+                <span className="stat-label">Vibes Sent</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{trendingTags.length}</span>
+                <span className="stat-label">Trending Tags</span>
+              </div>
+            </div>
+          </div>
 
-        {/* Trending Tags */}
-        {trendingTags.length > 0 && (
-          <section className="trending-section glass-card">
+          {/* Trending Tags */}
+          <div className="glass-card trending-section">
             <h2>🔥 Trending Tags</h2>
             <div className="trending-tags-grid">
               {trendingTags.map((item, index) => (
-                <div className="trending-tag-card" key={index}>
+                <div key={index} className="trending-tag-card">
                   <span className="tag-name">#{item.tag}</span>
                   <div className="tag-bar">
-                    <div
-                      className="tag-bar-fill"
-                      style={{
-                        width: `${Math.min(100, (item.count / Math.max(...trendingTags.map(t => t.count))) * 100)}%`
-                      }}
+                    <div 
+                      className="tag-bar-fill" 
+                      style={{ width: `${(item.count / trendingTags[0].count) * 100}%` }}
                     ></div>
                   </div>
                   <p className="tag-count">{item.count} vibes</p>
                 </div>
               ))}
             </div>
-          </section>
-        )}
+          </div>
 
-        {/* Top Users */}
-        {topUsers.length > 0 && (
-          <section className="top-users-section glass-card">
-            <h2>👑 Slay Queens & Kings</h2>
+          {/* Top Users */}
+          <div className="glass-card top-users-section">
+            <h2>👑 Top Slayers</h2>
             <div className="top-users-list">
               {topUsers.map((user, index) => (
-                <Link to={`/profile/${user.handle}`} key={index} className="top-user-card">
+                <Link 
+                  key={index} 
+                  to={`/profile/${user.handle}`} 
+                  className="top-user-card"
+                >
                   <div className="rank-badge">#{index + 1}</div>
                   <div className="user-avatar">
                     {user.avatarUrl ? (
                       <img src={user.avatarUrl} alt={user.name} />
                     ) : (
-                      <span>{user.name?.charAt(0)}</span>
+                      getInitials(user.name)
                     )}
                   </div>
                   <div className="user-info">
                     <h3>{user.name}</h3>
                     <p>@{user.handle}</p>
                   </div>
-                  <span className="user-vibes">{user.vibeCount} vibes</span>
+                  <div className="user-vibes">
+                    {user.vibeCount} vibes
+                  </div>
                 </Link>
               ))}
             </div>
-          </section>
-        )}
-
-        {/* Tabs */}
-        <section className="tab-section glass-card">
-          <div className="tab-nav">
-            {['recent', 'popular', 'wednesday'].map(tab => (
-              <button
-                key={tab}
-                className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => handleTabChange(tab)}
-              >
-                {tab === 'recent' && '💌 Recent'}
-                {tab === 'popular' && '🔥 Popular'}
-                {tab === 'wednesday' && '🎀 Wednesday'}
-              </button>
-            ))}
           </div>
-        </section>
 
-        {/* Vibes */}
-        <section className="vibes-section">
-          <div className="empty-state glass-card">
-            <span className="empty-emoji">💭</span>
-            <h3>Discover Amazing Vibes!</h3>
-            <p>Be the first to send one and start the positivity chain.</p>
-            <Link to="/send-vibe" className="btn btn-primary">Send Vibe 💕</Link>
-          </div>
-        </section>
+          {/* Recent Vibes Section */}
+          <div className="glass-card vibes-section">
+            <div className="tab-section">
+              <div className="tab-nav">
+                <button
+                  className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('recent')}
+                >
+                  ⏰ Recent
+                </button>
+                <button
+                  className={`tab-btn ${activeTab === 'popular' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('popular')}
+                >
+                  🔥 Popular
+                </button>
+              </div>
+            </div>
 
-        {/* Stats */}
-        <section className="stats-preview glass-card">
-          <div className="stats-grid">
-            <div className="stat-card">
-              <span className="stat-number">{totalUsers}</span>
-              <span className="stat-label">Active Slayers</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{totalVibes}</span>
-              <span className="stat-label">Vibes Sent</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">100%</span>
-              <span className="stat-label">Slay Level</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">∞</span>
-              <span className="stat-label">Good Energy</span>
+            <div className="vibes-grid">
+              {/* Empty state for now - can be populated with actual vibes */}
+              <div className="empty-state">
+                <span className="empty-emoji">✨</span>
+                <h3>No vibes yet!</h3>
+                <p>Be the first to send one and start the positivity chain.</p>
+                <Link to="/send" className="btn btn-primary">
+                  Send Vibe 💕
+                </Link>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

@@ -384,25 +384,25 @@
   .modal-overlay {
     padding: 12px;
   }
-  
+
   .modal-content {
     max-width: 100%;
     border-radius: 24px;
   }
-  
+
   .auth-header {
     padding: 36px 24px 28px;
     border-radius: 24px 24px 0 0;
   }
-  
+
   .auth-title {
     font-size: 26px;
   }
-  
+
   .auth-subtitle {
     font-size: 14px;
   }
-  
+
   .auth-form,
   .auth-footer,
   .auth-divider,
@@ -411,7 +411,7 @@
     padding-left: 24px;
     padding-right: 24px;
   }
-  
+
   .modal-close {
     top: 16px;
     right: 16px;

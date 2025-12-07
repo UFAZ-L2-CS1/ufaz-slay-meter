@@ -13,10 +13,7 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
 
@@ -50,7 +47,6 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
     try {
       setLoading(true);
       setError('');
-      
       if (onGoogleLogin) {
         await onGoogleLogin();
         onClose();
@@ -67,58 +63,60 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setError('');
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      handle: ''
-    });
+    setFormData({ name: '', email: '', password: '', handle: '' });
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content auth-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>✕</button>
-        
+        <button className="modal-close" onClick={onClose} aria-label="Close modal">
+          ✕
+        </button>
+
         <div className="auth-header">
           <h2 className="auth-title">
-            {isLogin ? 'Welcome Back! 💖' : 'Join the Slay Squad ✨'}
+            {isLogin ? 'Welcome Back! 💕' : 'Join the Squad! ✨'}
           </h2>
           <p className="auth-subtitle">
-            {isLogin 
-              ? 'Sign in to check your slay level' 
-              : 'Create an account to start slaying'}
+            {isLogin ? 'Sign in to check your slay level' : 'Create an account to start slaying'}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit}>
+          {error && (
+            <div className="error-message">
+              <span>⚠️</span>
+              {error}
+            </div>
+          )}
+
           {!isLogin && (
             <>
               <div className="input-group">
                 <label htmlFor="name">Full Name</label>
                 <input
-                  type="text"
                   id="name"
+                  type="text"
                   name="name"
+                  placeholder="Your fabulous name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="Enter your name"
                   required={!isLogin}
+                  disabled={loading}
                 />
               </div>
 
               <div className="input-group">
                 <label htmlFor="handle">Username</label>
                 <input
-                  type="text"
                   id="handle"
+                  type="text"
                   name="handle"
+                  placeholder="@yourhandle"
                   value={formData.handle}
                   onChange={handleChange}
-                  placeholder="Choose a username"
-                  pattern="[a-zA-Z0-9_]+"
-                  title="Username can only contain letters, numbers, and underscores"
                   required={!isLogin}
+                  disabled={loading}
                 />
               </div>
             </>
@@ -127,75 +125,69 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
           <div className="input-group">
             <label htmlFor="email">Email</label>
             <input
-              type="email"
               id="email"
+              type="email"
               name="email"
+              placeholder="your@email.com"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email"
               required
+              disabled={loading}
             />
           </div>
 
           <div className="input-group">
             <label htmlFor="password">Password</label>
             <input
-              type="password"
               id="password"
+              type="password"
               name="password"
+              placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
-              placeholder={isLogin ? "Enter your password" : "Min. 6 characters"}
-              minLength={isLogin ? undefined : 6}
               required
+              disabled={loading}
             />
           </div>
 
-          {error && (
-            <div className="error-message">
-              <span>⚠️</span> {error}
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            className="btn btn-primary auth-submit"
-            disabled={loading}
-          >
+          <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
             {loading ? (
-              <span className="loading-text">Loading...</span>
+              <span className="loading-text">
+                <span>⏳</span> Loading...
+              </span>
+            ) : isLogin ? (
+              'Sign In'
             ) : (
-              isLogin ? 'Sign In 💫' : 'Create Account ✨'
+              'Create Account'
             )}
           </button>
         </form>
 
-        <div className="auth-footer">
-          <p>
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
-          </p>
-          <button 
-            type="button" 
-            className="auth-toggle"
-            onClick={toggleMode}
-            disabled={loading}
-          >
-            {isLogin ? 'Join Now' : 'Sign In'}
-          </button>
-        </div>
-
         <div className="auth-divider">
-          <span>or continue with</span>
+          <span>OR</span>
         </div>
 
         <div className="social-auth">
-          <button 
-            className="social-btn google"
+          <button
+            type="button"
+            className="social-btn"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
             <span className="google-icon">G</span>
-            Google
+            Continue with Google
+          </button>
+        </div>
+
+        <div className="auth-footer">
+          <p>{isLogin ? "Don't have an account?" : "Already have an account?"}</p>
+          <button
+            type="button"
+            className="auth-toggle"
+            onClick={toggleMode}
+            disabled={loading}
+          >
+            {isLogin ? 'Sign Up' : 'Sign In'}
           </button>
         </div>
 

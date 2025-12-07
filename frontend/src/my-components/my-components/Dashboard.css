@@ -54,9 +54,14 @@
 
 .burn-book-loader p {
   font-size: 20px;
-  color: white;
+  color: hsl(330, 30%, 25%);
   font-weight: 700;
-  text-shadow: 0 2px 8px hsla(330, 90%, 30%, 0.3);
+}
+
+.burn-book-loader .quote {
+  font-style: italic;
+  color: hsl(330, 90%, 50%);
+  margin-top: 10px;
 }
 
 @keyframes pulse {
@@ -332,6 +337,60 @@
   gap: 24px;
 }
 
+.vibe-item {
+  background: hsla(0, 0%, 100%, 0.98);
+}
+
+.vibe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.vibe-sender {
+  font-size: 15px;
+  color: hsl(330, 30%, 25%);
+}
+
+.vibe-sender strong {
+  color: hsl(330, 90%, 50%);
+  font-weight: 700;
+}
+
+.vibe-sender .anonymous {
+  color: hsl(270, 60%, 55%);
+  font-style: italic;
+}
+
+.vibe-time {
+  font-size: 13px;
+  color: hsl(330, 20%, 55%);
+}
+
+.vibe-message {
+  font-size: 16px;
+  line-height: 1.6;
+  color: hsl(330, 30%, 20%);
+  margin: 0 0 14px;
+}
+
+.vibe-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-badge {
+  background: linear-gradient(135deg, hsla(330, 90%, 55%, 0.15) 0%, hsla(270, 60%, 55%, 0.15) 100%);
+  color: hsl(330, 90%, 50%);
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid hsla(330, 90%, 55%, 0.3);
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;
@@ -457,11 +516,11 @@
   .welcome-section {
     grid-template-columns: 1fr;
   }
-  
+
   .welcome-stats {
     justify-content: center;
   }
-  
+
   .welcome-title {
     font-size: 32px;
   }
@@ -471,60 +530,60 @@
   .dashboard {
     padding: 80px 0 50px;
   }
-  
+
   .glass-card {
     padding: 28px;
     border-radius: 24px;
   }
-  
+
   .welcome-title {
     font-size: 28px;
   }
-  
+
   .welcome-subtitle {
     font-size: 16px;
   }
-  
+
   .welcome-stats {
     flex-direction: row;
     flex-wrap: wrap;
     width: 100%;
   }
-  
+
   .stat-bubble {
     flex: 1;
-    min-width: calc(33.333% - 12px);
+    min-width: calc(50% - 9px);
   }
-  
+
   .stat-value {
     font-size: 26px;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .section-header h2 {
     font-size: 26px;
   }
-  
+
   .tab-switcher {
     width: 100%;
   }
-  
+
   .tab-btn {
     flex: 1;
   }
-  
+
   .empty-state {
     padding: 50px 24px;
   }
-  
+
   .empty-emoji {
     font-size: 56px;
   }
-  
+
   .pagination {
     flex-wrap: wrap;
   }
@@ -534,33 +593,33 @@
   .container {
     padding: 0 18px;
   }
-  
+
   .glass-card {
     padding: 24px;
     border-radius: 20px;
   }
-  
+
   .welcome-title {
     font-size: 24px;
   }
-  
+
   .quick-actions {
     width: 100%;
   }
-  
+
   .btn {
     flex: 1;
     min-width: 0;
   }
-  
+
   .stat-bubble {
     min-width: calc(50% - 10px);
   }
-  
+
   .tags-cloud {
     gap: 10px;
   }
-  
+
   .tag-bubble {
     font-size: 0.85rem !important;
     padding: 10px 16px;

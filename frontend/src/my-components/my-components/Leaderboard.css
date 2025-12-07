@@ -665,3 +665,57 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .leaderboard-page {
+    padding-top: 80px;
+  }
+
+  .container {
+    padding: 0 18px;
+  }
+
+  .page-title {
+    font-size: 30px;
+  }
+
+  .page-subtitle {
+    font-size: 16px;
+  }
+
+  .leaderboard-controls {
+    padding: 20px;
+  }
+
+  .tab-btn {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+
+  .podium-section {
+    padding: 24px;
+  }
+
+  .leaderboard-list {
+    padding: 24px;
+  }
+
+  .rank-section {
+    min-width: 70px;
+  }
+
+  .rank {
+    font-size: 18px;
+  }
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  .stats-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

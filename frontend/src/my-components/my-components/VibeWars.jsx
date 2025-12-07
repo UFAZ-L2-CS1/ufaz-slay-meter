@@ -1,127 +1,128 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './VibeWars.css';
 
-const VibeWars = ({ user }) => {
+const VibeWars = () => {
+  const [loading, setLoading] = useState(false);
   const [currentWar, setCurrentWar] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [voted, setVoted] = useState(false);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [votedFor, setVotedFor] = useState(null);
   const [warHistory, setWarHistory] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState('24:00:00');
 
+  // Demo data for current war
   useEffect(() => {
-    fetchCurrentWar();
-    fetchWarHistory();
+    // Simulate loading current war
+    const demoWar = {
+      id: 1,
+      contestant1: {
+        id: 1,
+        name: 'Sarah Chen',
+        handle: '@sarahc',
+        avatarUrl: null,
+        vibe: {
+          text: 'You absolutely slayed that presentation! Your confidence was off the charts! 🔥',
+          tags: ['confident', 'inspiring', 'queen'],
+        },
+        votes: 42,
+      },
+      contestant2: {
+        id: 2,
+        name: 'Alex Kim',
+        handle: '@alexk',
+        avatarUrl: null,
+        vibe: {
+          text: 'Your style today was immaculate! Serving major looks and vibes! 💅✨',
+          tags: ['stylish', 'iconic', 'slay'],
+        },
+        votes: 38,
+      },
+      totalVotes: 80,
+      endsAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+    };
+
+    setCurrentWar(demoWar);
+
+    // Demo war history
+    setWarHistory([
+      {
+        id: 1,
+        winner: { name: 'Jordan Miller', handle: '@jordanm', avatarUrl: null },
+        rank: 1,
+        votes: 156,
+        totalVotes: 289,
+        date: 'Yesterday',
+      },
+      {
+        id: 2,
+        winner: { name: 'Taylor Swift', handle: '@taylors', avatarUrl: null },
+        rank: 2,
+        votes: 142,
+        totalVotes: 267,
+        date: '2 days ago',
+      },
+      {
+        id: 3,
+        winner: { name: 'Chris Park', handle: '@chrisp', avatarUrl: null },
+        rank: 3,
+        votes: 128,
+        totalVotes: 245,
+        date: '3 days ago',
+      },
+    ]);
   }, []);
 
+  // Timer countdown
   useEffect(() => {
-    if (currentWar && currentWar.endsAt) {
-      const timer = setInterval(() => {
-        const now = new Date().getTime();
-        const endTime = new Date(currentWar.endsAt).getTime();
-        const distance = endTime - now;
+    if (!currentWar) return;
 
-        if (distance < 0) {
-          clearInterval(timer);
-          setTimeLeft('War Ended');
-          fetchCurrentWar();
-        } else {
-          const hours = Math.floor(distance / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-          setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-        }
-      }, 1000);
+    const interval = setInterval(() => {
+      const now = new Date();
+      const end = new Date(currentWar.endsAt);
+      const diff = end - now;
 
-      return () => clearInterval(timer);
-    }
+      if (diff <= 0) {
+        setTimeRemaining('00:00:00');
+        clearInterval(interval);
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeRemaining(
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [currentWar]);
 
-  const fetchCurrentWar = async () => {
-    setLoading(true);
-    try {
-      // Mock war data for demo
-      setTimeout(() => {
-        setCurrentWar({
-          _id: 'demo',
-          contestant1: {
-            user: { name: 'Aydan', handle: 'aydan', _id: '1' },
-            vibe: {
-              text: 'You have an amazing energy that lights up every room! ✨',
-              tags: ['inspiring', 'energetic'],
-              votes: 24
-            }
-          },
-          contestant2: {
-            user: { name: 'Leyla', handle: 'leyla', _id: '2' },
-            vibe: {
-              text: 'Your creativity and talent are absolutely incredible! 💖',
-              tags: ['creative', 'talented'],
-              votes: 31
-            }
-          },
-          endsAt: new Date(Date.now() + 3600000).toISOString(),
-          votes: []
-        });
-        setLoading(false);
-      }, 800);
-    } catch (error) {
-      console.error('Error fetching current war:', error);
-      setLoading(false);
-    }
-  };
+  const handleVote = (contestantId) => {
+    if (hasVoted) return;
 
-  const fetchWarHistory = async () => {
-    try {
-      // Mock history data
-      setWarHistory([
-        { _id: '1', winner: { name: 'Sarah', handle: 'sarah' }, totalVotes: 156, winPercentage: 67 },
-        { _id: '2', winner: { name: 'Elvin', handle: 'elvin' }, totalVotes: 203, winPercentage: 54 },
-        { _id: '3', winner: { name: 'Nargiz', handle: 'nargiz' }, totalVotes: 89, winPercentage: 72 }
-      ]);
-    } catch (error) {
-      console.error('Error fetching war history:', error);
-    }
-  };
+    setHasVoted(true);
+    setVotedFor(contestantId);
 
-  const handleVote = async (contestantNumber) => {
-    if (!user) {
-      alert('Please sign in to vote!');
-      return;
-    }
-
-    if (voted) {
-      alert('You have already voted in this war!');
-      return;
-    }
-
-    setVoted(true);
-    
-    setCurrentWar(prev => ({
+    // Update vote counts
+    setCurrentWar((prev) => ({
       ...prev,
-      [`contestant${contestantNumber}`]: {
-        ...prev[`contestant${contestantNumber}`],
-        vibe: {
-          ...prev[`contestant${contestantNumber}`].vibe,
-          votes: prev[`contestant${contestantNumber}`].vibe.votes + 1
-        }
-      }
+      contestant1: {
+        ...prev.contestant1,
+        votes: prev.contestant1.id === contestantId ? prev.contestant1.votes + 1 : prev.contestant1.votes,
+      },
+      contestant2: {
+        ...prev.contestant2,
+        votes: prev.contestant2.id === contestantId ? prev.contestant2.votes + 1 : prev.contestant2.votes,
+      },
+      totalVotes: prev.totalVotes + 1,
     }));
   };
 
-  const calculatePercentage = (contestant) => {
-    if (!currentWar) return 50;
-    
-    const votes1 = currentWar.contestant1?.vibe?.votes || 0;
-    const votes2 = currentWar.contestant2?.vibe?.votes || 0;
-    const total = votes1 + votes2;
-    
-    if (total === 0) return 50;
-    
-    if (contestant === 1) {
-      return Math.round((votes1 / total) * 100);
-    } else {
-      return Math.round((votes2 / total) * 100);
-    }
+  const getVotePercentage = (votes, total) => {
+    if (total === 0) return 0;
+    return ((votes / total) * 100).toFixed(1);
   };
 
   if (loading) {
@@ -139,155 +140,228 @@ const VibeWars = ({ user }) => {
     );
   }
 
+  if (!currentWar) {
+    return (
+      <div className="vibe-wars-page">
+        <div className="container">
+          <div className="vibe-wars-header">
+            <h1 className="page-title">
+              <span className="shimmer-text">⚔️ VIBE WARS ⚔️</span>
+            </h1>
+            <p className="page-subtitle">Battle of the Best Vibes</p>
+          </div>
+
+          <div className="glass-card no-war">
+            <span className="empty-emoji">😴</span>
+            <h2>No Active War Right Now</h2>
+            <p>Check back soon for the next epic vibe battle!</p>
+          </div>
+
+          {/* War History */}
+          {warHistory.length > 0 && (
+            <div className="glass-card war-history">
+              <h2>🏆 Past Champions</h2>
+              <div className="history-list">
+                {warHistory.map((war) => (
+                  <Link to={`/profile/${war.winner.handle}`} key={war.id} className="history-item">
+                    <div className="winner-info">
+                      <div className="winner-rank">#{war.rank}</div>
+                      <div className="winner-avatar">
+                        {war.winner.avatarUrl ? (
+                          <img src={war.winner.avatarUrl} alt={war.winner.name} />
+                        ) : (
+                          <span>{war.winner.name?.charAt(0)?.toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div>
+                        <h4>{war.winner.name}</h4>
+                        <p>{war.winner.handle}</p>
+                      </div>
+                    </div>
+                    <div className="war-stats">
+                      <span>{war.date}</span>
+                      <span className="win-percentage">
+                        {getVotePercentage(war.votes, war.totalVotes)}% votes
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="vibe-wars-page">
       <div className="container">
+        {/* Header */}
         <div className="vibe-wars-header">
-          <h1 className="page-title shimmer-text">Vibe Wars ⚔️</h1>
-          <p className="page-subtitle">
-            Vote for the strongest vibe and help crown the slay champion!
-          </p>
+          <h1 className="page-title">
+            <span className="shimmer-text">⚔️ VIBE WARS ⚔️</span>
+          </h1>
+          <p className="page-subtitle">Vote for the most iconic vibe!</p>
         </div>
 
-        {currentWar ? (
-          <div className="current-war glass-card">
-            <div className="war-timer">
-              <span className="timer-label">Time Remaining:</span>
-              <span className="timer-value">{timeLeft || 'Loading...'}</span>
-            </div>
+        {/* Timer */}
+        <div className="glass-card">
+          <div className="war-timer">
+            <span className="timer-label">⏰ Time Remaining</span>
+            <span className="timer-value">{timeRemaining}</span>
+          </div>
 
-            <div className="war-arena">
-              <div className="contestant contestant-1">
-                <div className="contestant-header">
-                  <div className="contestant-avatar">
-                    {currentWar.contestant1?.user?.avatarUrl ? (
-                      <img src={currentWar.contestant1.user.avatarUrl} alt="" />
-                    ) : (
-                      <span>{currentWar.contestant1?.user?.name?.charAt(0) || '?'}</span>
-                    )}
-                  </div>
-                  <h3>{currentWar.contestant1?.user?.name || 'Anonymous'}</h3>
-                  <p>@{currentWar.contestant1?.user?.handle || 'anonymous'}</p>
+          {/* War Arena */}
+          <div className="war-arena">
+            {/* Contestant 1 */}
+            <div className="contestant contestant-1">
+              <div className="contestant-header">
+                <div className="contestant-avatar">
+                  {currentWar.contestant1.avatarUrl ? (
+                    <img src={currentWar.contestant1.avatarUrl} alt={currentWar.contestant1.name} />
+                  ) : (
+                    <span>{currentWar.contestant1.name?.charAt(0)?.toUpperCase()}</span>
+                  )}
                 </div>
-
-                <div className="vibe-content">
-                  <p className="vibe-text">{currentWar.contestant1?.vibe?.text}</p>
-                  <div className="vibe-tags">
-                    {currentWar.contestant1?.vibe?.tags?.map((tag, i) => (
-                      <span key={i} className="vibe-tag">#{tag}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="vote-section">
-                  <button
-                    className={`btn btn-vote ${voted ? 'disabled' : ''}`}
-                    onClick={() => handleVote(1)}
-                    disabled={voted}
-                  >
-                    {voted ? 'Voted' : 'Vote for this Vibe 💖'}
-                  </button>
-                  <div className="vote-stats">
-                    <div className="vote-bar">
-                      <div 
-                        className="vote-fill"
-                        style={{ width: `${calculatePercentage(1)}%` }}
-                      ></div>
-                    </div>
-                    <span className="vote-count">
-                      {currentWar.contestant1?.vibe?.votes || 0} votes ({calculatePercentage(1)}%)
-                    </span>
-                  </div>
-                </div>
+                <h3>{currentWar.contestant1.name}</h3>
+                <p>{currentWar.contestant1.handle}</p>
               </div>
 
-              <div className="vs-divider">
-                <span>VS</span>
-              </div>
-
-              <div className="contestant contestant-2">
-                <div className="contestant-header">
-                  <div className="contestant-avatar">
-                    {currentWar.contestant2?.user?.avatarUrl ? (
-                      <img src={currentWar.contestant2.user.avatarUrl} alt="" />
-                    ) : (
-                      <span>{currentWar.contestant2?.user?.name?.charAt(0) || '?'}</span>
-                    )}
-                  </div>
-                  <h3>{currentWar.contestant2?.user?.name || 'Anonymous'}</h3>
-                  <p>@{currentWar.contestant2?.user?.handle || 'anonymous'}</p>
-                </div>
-
-                <div className="vibe-content">
-                  <p className="vibe-text">{currentWar.contestant2?.vibe?.text}</p>
+              <div className="vibe-content">
+                <p className="vibe-text">{currentWar.contestant1.vibe.text}</p>
+                {currentWar.contestant1.vibe.tags.length > 0 && (
                   <div className="vibe-tags">
-                    {currentWar.contestant2?.vibe?.tags?.map((tag, i) => (
-                      <span key={i} className="vibe-tag">#{tag}</span>
+                    {currentWar.contestant1.vibe.tags.map((tag, idx) => (
+                      <span key={idx} className="vibe-tag">
+                        #{tag}
+                      </span>
                     ))}
                   </div>
-                </div>
+                )}
+              </div>
 
-                <div className="vote-section">
-                  <button
-                    className={`btn btn-vote ${voted ? 'disabled' : ''}`}
-                    onClick={() => handleVote(2)}
-                    disabled={voted}
-                  >
-                    {voted ? 'Voted' : 'Vote for this Vibe 💖'}
-                  </button>
-                  <div className="vote-stats">
-                    <div className="vote-bar">
-                      <div 
-                        className="vote-fill"
-                        style={{ width: `${calculatePercentage(2)}%` }}
-                      ></div>
-                    </div>
-                    <span className="vote-count">
-                      {currentWar.contestant2?.vibe?.votes || 0} votes ({calculatePercentage(2)}%)
-                    </span>
+              <div className="vote-section">
+                <button
+                  className={`btn-vote ${hasVoted ? 'disabled' : ''}`}
+                  onClick={() => handleVote(currentWar.contestant1.id)}
+                  disabled={hasVoted}
+                >
+                  {hasVoted && votedFor === currentWar.contestant1.id ? '✅ Voted!' : '👑 Vote'}
+                </button>
+
+                <div className="vote-stats">
+                  <div className="vote-bar">
+                    <div
+                      className="vote-fill"
+                      style={{
+                        width: `${getVotePercentage(currentWar.contestant1.votes, currentWar.totalVotes)}%`,
+                      }}
+                    ></div>
                   </div>
+                  <span className="vote-count">
+                    {currentWar.contestant1.votes} votes (
+                    {getVotePercentage(currentWar.contestant1.votes, currentWar.totalVotes)}%)
+                  </span>
                 </div>
               </div>
             </div>
 
-            {voted && (
-              <div className="voted-message">
-                <p>Thanks for voting! Check back when the war ends to see the winner. 💖</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="no-war glass-card">
-            <h2>No Active War</h2>
-            <p>A new vibe war will start soon! Check back later.</p>
-          </div>
-        )}
+            {/* VS Divider */}
+            <div className="vs-divider">
+              <span>VS</span>
+            </div>
 
+            {/* Contestant 2 */}
+            <div className="contestant contestant-2">
+              <div className="contestant-header">
+                <div className="contestant-avatar">
+                  {currentWar.contestant2.avatarUrl ? (
+                    <img src={currentWar.contestant2.avatarUrl} alt={currentWar.contestant2.name} />
+                  ) : (
+                    <span>{currentWar.contestant2.name?.charAt(0)?.toUpperCase()}</span>
+                  )}
+                </div>
+                <h3>{currentWar.contestant2.name}</h3>
+                <p>{currentWar.contestant2.handle}</p>
+              </div>
+
+              <div className="vibe-content">
+                <p className="vibe-text">{currentWar.contestant2.vibe.text}</p>
+                {currentWar.contestant2.vibe.tags.length > 0 && (
+                  <div className="vibe-tags">
+                    {currentWar.contestant2.vibe.tags.map((tag, idx) => (
+                      <span key={idx} className="vibe-tag">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="vote-section">
+                <button
+                  className={`btn-vote ${hasVoted ? 'disabled' : ''}`}
+                  onClick={() => handleVote(currentWar.contestant2.id)}
+                  disabled={hasVoted}
+                >
+                  {hasVoted && votedFor === currentWar.contestant2.id ? '✅ Voted!' : '👑 Vote'}
+                </button>
+
+                <div className="vote-stats">
+                  <div className="vote-bar">
+                    <div
+                      className="vote-fill"
+                      style={{
+                        width: `${getVotePercentage(currentWar.contestant2.votes, currentWar.totalVotes)}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <span className="vote-count">
+                    {currentWar.contestant2.votes} votes (
+                    {getVotePercentage(currentWar.contestant2.votes, currentWar.totalVotes)}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Voted Message */}
+          {hasVoted && (
+            <div className="voted-message">
+              <p>✨ Your vote has been counted! Check back to see who wins! ✨</p>
+            </div>
+          )}
+        </div>
+
+        {/* War History */}
         {warHistory.length > 0 && (
-          <div className="war-history glass-card">
-            <h2>Recent War Winners 🏆</h2>
+          <div className="glass-card war-history">
+            <h2>🏆 Recent War Champions</h2>
             <div className="history-list">
-              {warHistory.map((war, index) => (
-                <div key={war._id || index} className="history-item">
+              {warHistory.map((war) => (
+                <Link to={`/profile/${war.winner.handle}`} key={war.id} className="history-item">
                   <div className="winner-info">
-                    <span className="winner-rank">#{index + 1}</span>
+                    <div className="winner-rank">#{war.rank}</div>
                     <div className="winner-avatar">
-                      {war.winner?.avatarUrl ? (
-                        <img src={war.winner.avatarUrl} alt="" />
+                      {war.winner.avatarUrl ? (
+                        <img src={war.winner.avatarUrl} alt={war.winner.name} />
                       ) : (
-                        <span>{war.winner?.name?.charAt(0) || '?'}</span>
+                        <span>{war.winner.name?.charAt(0)?.toUpperCase()}</span>
                       )}
                     </div>
                     <div>
-                      <h4>{war.winner?.name || 'Unknown'}</h4>
-                      <p>@{war.winner?.handle || 'unknown'}</p>
+                      <h4>{war.winner.name}</h4>
+                      <p>{war.winner.handle}</p>
                     </div>
                   </div>
                   <div className="war-stats">
-                    <span>{war.totalVotes || 0} total votes</span>
-                    <span className="win-percentage">{war.winPercentage || 50}% victory</span>
+                    <span>{war.date}</span>
+                    <span className="win-percentage">
+                      {getVotePercentage(war.votes, war.totalVotes)}% votes
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

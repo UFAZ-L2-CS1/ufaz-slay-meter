@@ -2,7 +2,7 @@
 .profile-page {
   min-height: 100vh;
   padding: 6rem 1rem 2rem;
-  background: linear-gradient(135deg, hsl(var(--pink-100)), hsl(var(--pink-200)), hsl(var(--pink-300)));
+  background: linear-gradient(135deg, hsl(330, 100%, 95%), hsl(330, 100%, 90%), hsl(270, 60%, 90%));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,15 +39,16 @@
 }
 
 .profile-card.error h2 {
-  color: hsl(var(--destructive));
+  color: hsl(0, 70%, 50%);
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
 }
 
 .profile-card.error p {
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 50%);
 }
 
+/* Profile Header */
 .profile-header {
   display: flex;
   gap: 1.5rem;
@@ -60,7 +61,7 @@
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,7 +117,7 @@
 .profile-info h1 {
   font-size: 2rem;
   margin: 0 0 0.25rem 0;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -124,19 +125,20 @@
 }
 
 .profile-handle {
-  color: hsl(var(--pink-500));
+  color: hsl(330, 90%, 50%);
   font-size: 1rem;
   margin: 0 0 0.75rem 0;
   font-weight: 600;
 }
 
 .profile-bio {
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 50%);
   line-height: 1.6;
   margin: 0;
   font-size: 0.95rem;
 }
 
+/* Profile Stats */
 .profile-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -165,7 +167,7 @@
 
 .stat-label {
   font-size: 0.85rem;
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 50%);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
@@ -174,12 +176,13 @@
 .stat-value {
   font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+/* Profile Socials */
 .profile-socials {
   display: flex;
   gap: 1rem;
@@ -189,7 +192,7 @@
 
 .profile-socials a {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   color: white;
   text-decoration: none;
   border-radius: 50px;
@@ -219,6 +222,72 @@
 
 .profile-socials a:hover::before {
   left: 100%;
+}
+
+/* Loading Animation */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.bg-pink-200 {
+  background-color: hsl(330, 100%, 90%);
+}
+
+.bg-pink-100 {
+  background-color: hsl(330, 100%, 95%);
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.rounded {
+  border-radius: 0.5rem;
+}
+
+.w-24 {
+  width: 6rem;
+}
+
+.h-24 {
+  height: 6rem;
+}
+
+.w-32 {
+  width: 8rem;
+}
+
+.h-6 {
+  height: 1.5rem;
+}
+
+.h-4 {
+  height: 1rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 
 /* Responsive */

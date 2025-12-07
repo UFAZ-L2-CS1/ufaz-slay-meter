@@ -1,7 +1,8 @@
 /* SendVibe.css - Pink Theme */
+
 .send-vibe-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, hsl(var(--pink-100)), hsl(var(--pink-300)), hsl(var(--pink-400)));
+  background: linear-gradient(135deg, hsl(330, 100%, 95%), hsl(330, 80%, 85%), hsl(330, 90%, 55%));
   padding: 6rem 1rem 3rem;
 }
 
@@ -37,7 +38,7 @@
 }
 
 .shimmer-text {
-  background: linear-gradient(90deg, #fff 0%, hsl(var(--pink-200)) 50%, #fff 100%);
+  background: linear-gradient(90deg, #fff 0%, hsl(330, 100%, 85%) 50%, #fff 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -101,7 +102,7 @@
 
 .input-group label {
   font-weight: 600;
-  color: hsl(var(--foreground));
+  color: hsl(330, 20%, 30%);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -109,13 +110,13 @@
 }
 
 .required {
-  color: hsl(var(--pink-500));
+  color: hsl(330, 90%, 50%);
 }
 
 .char-count {
   margin-left: auto;
   font-size: 0.85rem;
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 55%);
   font-weight: 500;
 }
 
@@ -133,7 +134,7 @@
 .input-group input[type="text"]:focus,
 .input-group textarea:focus {
   outline: none;
-  border-color: hsl(var(--pink-400));
+  border-color: hsl(330, 90%, 55%);
   box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
 }
 
@@ -143,26 +144,6 @@
 }
 
 /* Anonymous Toggle */
-.anonymous-notice {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
-  border-radius: 12px;
-  border: 2px solid rgba(236, 72, 153, 0.2);
-}
-
-.anonymous-notice span {
-  font-size: 1.5rem;
-}
-
-.anonymous-notice p {
-  margin: 0;
-  color: hsl(var(--muted-foreground));
-  font-weight: 500;
-}
-
 .anonymous-toggle {
   padding: 1rem;
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
@@ -205,7 +186,7 @@
 }
 
 .toggle-label input[type="checkbox"]:checked + .toggle-slider {
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
 }
 
 .toggle-label input[type="checkbox"]:checked + .toggle-slider::before {
@@ -214,13 +195,13 @@
 
 .toggle-text {
   font-weight: 600;
-  color: hsl(var(--foreground));
+  color: hsl(330, 20%, 30%);
 }
 
 .toggle-hint {
   margin: 0.5rem 0 0 0;
   font-size: 0.85rem;
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 55%);
 }
 
 /* Templates */
@@ -230,7 +211,7 @@
 
 .templates-label {
   font-size: 0.85rem;
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 55%);
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
@@ -247,24 +228,20 @@
   border: 2px solid rgba(236, 72, 153, 0.3);
   border-radius: 20px;
   font-size: 0.8rem;
-  color: hsl(var(--pink-500));
+  color: hsl(330, 90%, 50%);
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .template-chip:hover {
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
 }
 
 /* Tags */
-.tag-input-wrapper input {
-  width: 100%;
-}
-
 .popular-tags {
   display: flex;
   flex-wrap: wrap;
@@ -278,14 +255,14 @@
   border: 2px solid rgba(236, 72, 153, 0.2);
   border-radius: 20px;
   font-size: 0.85rem;
-  color: hsl(var(--pink-500));
+  color: hsl(330, 90%, 50%);
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
 }
 
 .tag-suggestion:hover:not(:disabled) {
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   color: white;
   border-color: transparent;
   transform: translateY(-2px);
@@ -293,7 +270,7 @@
 
 .tag-suggestion.selected,
 .tag-suggestion:disabled {
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   color: white;
   border-color: transparent;
   cursor: not-allowed;
@@ -315,7 +292,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.875rem;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   color: white;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -372,20 +349,20 @@
 
 .emoji-option:hover {
   transform: scale(1.1);
-  border-color: hsl(var(--pink-400));
+  border-color: hsl(330, 90%, 55%);
   box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
 }
 
 .emoji-option.selected {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(244, 114, 182, 0.2));
-  border-color: hsl(var(--pink-400));
+  border-color: hsl(330, 90%, 55%);
   transform: scale(1.05);
 }
 
 /* Submit Button */
 .submit-vibe {
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   color: white;
   border: none;
   border-radius: 50px;
@@ -395,6 +372,7 @@
   transition: all 0.3s ease;
   box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
   margin-top: 1rem;
+  font-family: inherit;
 }
 
 .submit-vibe:hover:not(:disabled) {
@@ -416,7 +394,7 @@
   background: rgba(239, 68, 68, 0.1);
   border: 2px solid rgba(239, 68, 68, 0.3);
   border-radius: 12px;
-  color: hsl(var(--destructive));
+  color: hsl(0, 70%, 50%);
   font-weight: 500;
 }
 
@@ -439,13 +417,13 @@
 }
 
 .success-state h2 {
-  color: hsl(var(--pink-500));
+  color: hsl(330, 90%, 50%);
   margin-bottom: 0.5rem;
   font-size: 2rem;
 }
 
 .success-state p {
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 55%);
   font-size: 1.1rem;
 }
 
@@ -456,13 +434,6 @@
   gap: 1.5rem;
   position: sticky;
   top: 6rem;
-}
-
-.vibe-preview-section h3 {
-  color: white;
-  font-size: 1.5rem;
-  margin: 0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .preview-header {
@@ -485,16 +456,16 @@
 
 .preview-sender {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 114, 182, 0.15));
-  color: hsl(var(--pink-500));
+  color: hsl(330, 90%, 50%);
 }
 
 .preview-recipient {
   background: linear-gradient(135deg, rgba(244, 114, 182, 0.15), rgba(251, 113, 133, 0.15));
-  color: hsl(var(--pink-600));
+  color: hsl(330, 90%, 55%);
 }
 
 .preview-text {
-  color: hsl(var(--foreground));
+  color: hsl(330, 20%, 30%);
   line-height: 1.6;
   margin-bottom: 1rem;
   min-height: 60px;
@@ -510,7 +481,7 @@
 
 .preview-tag {
   padding: 0.375rem 0.75rem;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   color: white;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -525,7 +496,7 @@
 
 /* Vibe Tips */
 .vibe-tips h4 {
-  color: hsl(var(--pink-500));
+  color: hsl(330, 90%, 50%);
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.1rem;
@@ -539,7 +510,7 @@
 
 .vibe-tips li {
   padding: 0.5rem 0;
-  color: hsl(var(--muted-foreground));
+  color: hsl(330, 20%, 55%);
   font-size: 0.9rem;
   position: relative;
   padding-left: 1.5rem;
@@ -579,15 +550,6 @@
   .page-title {
     font-size: 2rem;
   }
-
-  .template-chips {
-    flex-direction: column;
-  }
-
-  .template-chip {
-    width: 100%;
-    text-align: left;
-  }
 }
 
 @media (max-width: 480px) {
@@ -603,5 +565,14 @@
 
   .submit-vibe {
     font-size: 1rem;
+  }
+
+  .template-chips {
+    flex-direction: column;
+  }
+
+  .template-chip {
+    width: 100%;
+    text-align: left;
   }
 }

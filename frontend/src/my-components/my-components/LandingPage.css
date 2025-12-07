@@ -98,11 +98,11 @@
 }
 
 @keyframes sparkle {
-  0%, 100% { 
+  0%, 100% {
     transform: scale(1) rotate(0deg);
     opacity: 1;
   }
-  50% { 
+  50% {
     transform: scale(1.25) rotate(180deg);
     opacity: 0.85;
   }
@@ -206,7 +206,7 @@
   background: linear-gradient(135deg, white 0%, hsl(330, 30%, 98%) 100%);
   border-radius: 24px;
   padding: 48px;
-  box-shadow: 
+  box-shadow:
     0 25px 70px hsla(330, 90%, 30%, 0.35),
     inset 0 2px 6px hsla(0, 0%, 100%, 0.5);
   border: 4px solid white;
@@ -221,10 +221,10 @@
 }
 
 @keyframes book-float {
-  0%, 100% { 
+  0%, 100% {
     transform: rotateY(-6deg) translateY(0);
   }
-  50% { 
+  50% {
     transform: rotateY(6deg) translateY(-24px);
   }
 }
@@ -595,7 +595,7 @@
   .hero {
     padding: 120px 60px 80px;
   }
-  
+
   .title-main {
     font-size: 64px;
   }
@@ -607,31 +607,31 @@
     text-align: center;
     padding: 120px 48px 80px;
   }
-  
+
   .hero-content {
     max-width: 100%;
   }
-  
+
   .hero-title {
     justify-content: center;
   }
-  
+
   .title-main {
     font-size: 56px;
   }
-  
+
   .hero-subtitle {
     font-size: 26px;
   }
-  
+
   .hero-buttons {
     justify-content: center;
   }
-  
+
   .hero-visual {
     margin-top: 70px;
   }
-  
+
   .section-title {
     font-size: 44px;
   }
@@ -641,77 +641,77 @@
   .hero {
     padding: 100px 32px 50px;
   }
-  
+
   .title-main {
     font-size: 46px;
   }
-  
+
   .hero-subtitle {
     font-size: 22px;
   }
-  
+
   .hero-description p {
     font-size: 19px;
   }
-  
+
   .book-cover {
     width: 300px;
     height: 420px;
     padding: 36px;
   }
-  
+
   .book-cover h2 {
     font-size: 44px;
   }
-  
+
   .book-cover p {
     font-size: 22px;
   }
-  
+
   .features,
   .rules-section,
   .stats-preview,
   .cta-section {
     padding: 80px 0;
   }
-  
+
   .container {
     padding: 0 32px;
   }
-  
+
   .section-title {
     font-size: 36px;
     margin-bottom: 48px;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
     gap: 28px;
   }
-  
+
   .rules-book {
     padding: 48px 32px;
   }
-  
+
   .rules-title {
     font-size: 36px;
   }
-  
+
   .rule-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
   }
-  
+
   .cta-title {
     font-size: 40px;
   }
-  
+
   .cta-subtitle {
     font-size: 20px;
   }
@@ -721,101 +721,101 @@
   .hero {
     padding: 80px 20px 40px;
   }
-  
+
   .title-main {
     font-size: 38px;
   }
-  
+
   .title-sparkle {
     font-size: 36px;
   }
-  
+
   .hero-subtitle {
     font-size: 20px;
   }
-  
+
   .hero-description p {
     font-size: 17px;
   }
-  
+
   .hero-buttons {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .btn {
     width: 100%;
     padding: 16px 28px;
   }
-  
+
   .book-cover {
     width: 260px;
     height: 360px;
     padding: 28px;
   }
-  
+
   .book-cover h2 {
     font-size: 36px;
   }
-  
+
   .book-cover p {
     font-size: 20px;
   }
-  
+
   .sparkle {
     font-size: 22px;
   }
-  
+
   .container {
     padding: 0 20px;
   }
-  
+
   .section-title {
     font-size: 30px;
     margin-bottom: 36px;
   }
-  
+
   .feature-card {
     padding: 36px 28px;
   }
-  
+
   .feature-icon {
     font-size: 54px;
   }
-  
+
   .rules-book {
     padding: 36px 24px;
     border-radius: 28px;
   }
-  
+
   .rule-number {
     font-size: 28px;
   }
-  
+
   .rule-item p {
     font-size: 17px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .stat-number {
     font-size: 48px;
   }
-  
+
   .cta-title {
     font-size: 32px;
   }
-  
+
   .cta-subtitle {
     font-size: 18px;
   }
-  
+
   .cta-buttons {
     flex-direction: column;
   }
-  
+
   .btn-fetch {
     width: 100%;
   }
