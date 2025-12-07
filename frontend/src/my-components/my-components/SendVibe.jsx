@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 import './SendVibe.css';
 
-const SendVibe = () => {
-  const { user } = useAuth();
+const SendVibe = ({ user }) => {
   const navigate = useNavigate();
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,6 +22,14 @@ const SendVibe = () => {
   ];
 
   const emojiOptions = ['💖', '✨', '🌟', '💕', '🔥', '👑', '💎', '🌈'];
+
+  const vibeTemplates = [
+    "You're absolutely amazing and don't let anyone tell you otherwise! 💖",
+    "Your energy lights up every room you enter ✨",
+    "You inspire me to be a better person every day 🌟",
+    "The world is a better place because you're in it 🌈",
+    "Your creativity knows no bounds! Keep shining 💎"
+  ];
 
   const handleChange = (e) => {
     setFormData({
@@ -75,35 +80,27 @@ const SendVibe = () => {
     setError('');
 
     try {
-      const endpoint = isAnonymous || !user ? '/vibes/anon' : '/vibes';
-      await api.post(endpoint, formData);
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setSuccess(true);
       setTimeout(() => {
         navigate(`/profile/${formData.recipientHandle}`);
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send vibe. Try again!');
+      setError('Failed to send vibe. Try again!');
     } finally {
       setLoading(false);
     }
   };
 
-  const vibeTemplates = [
-    "You're absolutely amazing and don't let anyone tell you otherwise! 💖",
-    "Your energy lights up every room you enter ✨",
-    "You inspire me to be a better person every day 🌟",
-    "The world is a better place because you're in it 🌈",
-    "Your creativity knows no bounds! Keep shining 💎"
-  ];
-
   return (
-    <div className="send-vibe-page page-container">
+    <div className="send-vibe-page">
       <div className="container">
         <div className="send-vibe-header">
-          <h1 className="page-title shimmer-text">Send a Vibe</h1>
+          <h1 className="page-title shimmer-text">Send a Vibe 💕</h1>
           <p className="page-subtitle">
-            Spread love, positivity, and make someone's day fetch! 💕
+            Spread love, positivity, and make someone's day slay!
           </p>
         </div>
 
@@ -113,11 +110,10 @@ const SendVibe = () => {
               <div className="success-state">
                 <span className="success-emoji">🎉</span>
                 <h2>Vibe Sent Successfully!</h2>
-                <p>You just made someone's day so fetch!</p>
+                <p>You just made someone's day so slay!</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="vibe-form">
-                {/* Anonymous Toggle */}
                 {!user && (
                   <div className="anonymous-notice">
                     <span>💫</span>
@@ -142,7 +138,6 @@ const SendVibe = () => {
                   </div>
                 )}
 
-                {/* Recipient */}
                 <div className="input-group">
                   <label htmlFor="recipientHandle">
                     Who's getting this vibe? 
@@ -159,7 +154,6 @@ const SendVibe = () => {
                   />
                 </div>
 
-                {/* Message */}
                 <div className="input-group">
                   <label htmlFor="text">
                     Your Vibe Message 
@@ -177,7 +171,6 @@ const SendVibe = () => {
                     required
                   />
                   
-                  {/* Templates */}
                   <div className="templates">
                     <p className="templates-label">Need inspiration? Try these:</p>
                     <div className="template-chips">
@@ -195,7 +188,6 @@ const SendVibe = () => {
                   </div>
                 </div>
 
-                {/* Tags */}
                 <div className="input-group">
                   <label>Add Tags (Max 8)</label>
                   <div className="tag-input-wrapper">
@@ -240,7 +232,6 @@ const SendVibe = () => {
                   )}
                 </div>
 
-                {/* Emojis */}
                 <div className="input-group">
                   <label>Add Emojis (Optional)</label>
                   <div className="emoji-selector">
@@ -274,7 +265,6 @@ const SendVibe = () => {
             )}
           </div>
 
-          {/* Preview Card */}
           <div className="vibe-preview-section">
             <h3>Preview</h3>
             <div className="vibe-preview glass-card">
@@ -312,7 +302,7 @@ const SendVibe = () => {
                 <li>Focus on positivity</li>
                 <li>Use tags to highlight qualities</li>
                 <li>Add emojis for extra sparkle</li>
-                <li>Remember: kindness is always fetch!</li>
+                <li>Remember: kindness is always slay!</li>
               </ul>
             </div>
           </div>

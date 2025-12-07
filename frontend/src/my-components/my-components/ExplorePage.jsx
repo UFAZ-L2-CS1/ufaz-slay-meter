@@ -1,77 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
-import VibeCard from './VibeCard';
 import './ExplorePage.css';
 
 const ExplorePage = () => {
-  const [recentVibes, setRecentVibes] = useState([]);
-  const [trendingTags, setTrendingTags] = useState([]);
-  const [topUsers, setTopUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('recent');
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [totalVibes, setTotalVibes] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchExploreData();
-  }, [activeTab, page]);
+  // Demo data
+  const trendingTags = [
+    { tag: 'Slay Queen', count: 342 },
+    { tag: 'Kind Soul', count: 289 },
+    { tag: 'Smart Cookie', count: 256 },
+    { tag: 'Iconic', count: 198 },
+    { tag: 'Main Character', count: 167 },
+    { tag: 'Wholesome', count: 145 }
+  ];
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
+  const topUsers = [
+    { name: 'Sarah Chen', handle: 'sarahc', vibeCount: 89, avatarUrl: null },
+    { name: 'Alex Kim', handle: 'alexk', vibeCount: 76, avatarUrl: null },
+    { name: 'Jordan Miller', handle: 'jordanm', vibeCount: 64, avatarUrl: null },
+    { name: 'Taylor Swift', handle: 'taylors', vibeCount: 52, avatarUrl: null },
+    { name: 'Chris Park', handle: 'chrisp', vibeCount: 41, avatarUrl: null }
+  ];
 
-  const fetchStats = async () => {
-    try {
-      const statsRes = await api.get('/stats/global');
-      setTotalUsers(statsRes.data.totalUsers || 0);
-      setTotalVibes(statsRes.data.totalVibes || 0);
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
-
-  const fetchExploreData = async () => {
-    setLoading(true);
-    try {
-      const [vibesRes, tagsRes, usersRes] = await Promise.all([
-        api.get(`/vibes/public?page=${page}&limit=10&type=${activeTab}`),
-        api.get('/tags/trending'),
-        api.get('/users/top?limit=5')
-      ]);
-
-      if (page === 1) {
-        setRecentVibes(vibesRes.data.items || []);
-      } else {
-        setRecentVibes(prev => [...prev, ...(vibesRes.data.items || [])]);
-      }
-
-      setHasMore(vibesRes.data.items?.length === 10);
-      setTrendingTags(tagsRes.data.tags || []);
-      setTopUsers(usersRes.data.users || []);
-    } catch (error) {
-      console.error('Error fetching explore data:', error);
-      if (page === 1) {
-        setRecentVibes([]);
-        setTrendingTags([]);
-        setTopUsers([]);
-      }
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadMoreVibes = () => {
-    if (hasMore && !loading) setPage(prev => prev + 1);
-  };
+  const totalUsers = 1234;
+  const totalVibes = 5678;
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setPage(1);
-    setRecentVibes([]);
   };
 
   return (
@@ -81,7 +38,7 @@ const ExplorePage = () => {
         {/* Header */}
         <section className="explore-header glass-card">
           <h1 className="page-title shimmer-text">UFAZ Explore Zone ✨</h1>
-          <p className="page-subtitle">See what’s trending and who’s slaying today!</p>
+          <p className="page-subtitle">See what's trending and who's slaying today!</p>
         </section>
 
         {/* Trending Tags */}
@@ -152,31 +109,12 @@ const ExplorePage = () => {
 
         {/* Vibes */}
         <section className="vibes-section">
-          {recentVibes.length > 0 ? (
-            <div className="vibes-grid">
-              {recentVibes.map(vibe => (
-                <VibeCard key={vibe._id} vibe={vibe} currentUser={null} />
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state glass-card">
-              <span className="empty-emoji">💭</span>
-              <h3>No vibes yet!</h3>
-              <p>Be the first to send one.</p>
-              <Link to="/send-vibe" className="btn btn-primary">Send Vibe</Link>
-            </div>
-          )}
-          {hasMore && recentVibes.length > 0 && (
-            <div className="load-more">
-              <button
-                className="btn btn-secondary"
-                onClick={loadMoreVibes}
-                disabled={loading}
-              >
-                {loading ? 'Loading...' : 'Load More'}
-              </button>
-            </div>
-          )}
+          <div className="empty-state glass-card">
+            <span className="empty-emoji">💭</span>
+            <h3>Discover Amazing Vibes!</h3>
+            <p>Be the first to send one and start the positivity chain.</p>
+            <Link to="/send-vibe" className="btn btn-primary">Send Vibe 💕</Link>
+          </div>
         </section>
 
         {/* Stats */}

@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 import './VibeWars.css';
 
-const VibeWars = () => {
-  const { user } = useAuth();
+const VibeWars = ({ user }) => {
   const [currentWar, setCurrentWar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [voted, setVoted] = useState(false);
@@ -17,7 +14,6 @@ const VibeWars = () => {
   }, []);
 
   useEffect(() => {
-    // Countdown timer
     if (currentWar && currentWar.endsAt) {
       const timer = setInterval(() => {
         const now = new Date().getTime();
@@ -27,7 +23,7 @@ const VibeWars = () => {
         if (distance < 0) {
           clearInterval(timer);
           setTimeLeft('War Ended');
-          fetchCurrentWar(); // Fetch new war
+          fetchCurrentWar();
         } else {
           const hours = Math.floor(distance / (1000 * 60 * 60));
           const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -43,49 +39,45 @@ const VibeWars = () => {
   const fetchCurrentWar = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/vibe-wars/current');
-      setCurrentWar(response.data.war);
-      
-      // Check if user has already voted
-      if (user && response.data.war) {
-        const hasVoted = response.data.war.votes?.some(
-          vote => vote.userId === user._id
-        );
-        setVoted(hasVoted);
-      }
+      // Mock war data for demo
+      setTimeout(() => {
+        setCurrentWar({
+          _id: 'demo',
+          contestant1: {
+            user: { name: 'Aydan', handle: 'aydan', _id: '1' },
+            vibe: {
+              text: 'You have an amazing energy that lights up every room! ✨',
+              tags: ['inspiring', 'energetic'],
+              votes: 24
+            }
+          },
+          contestant2: {
+            user: { name: 'Leyla', handle: 'leyla', _id: '2' },
+            vibe: {
+              text: 'Your creativity and talent are absolutely incredible! 💖',
+              tags: ['creative', 'talented'],
+              votes: 31
+            }
+          },
+          endsAt: new Date(Date.now() + 3600000).toISOString(),
+          votes: []
+        });
+        setLoading(false);
+      }, 800);
     } catch (error) {
       console.error('Error fetching current war:', error);
-      // Create a mock war for demo
-      setCurrentWar({
-        _id: 'demo',
-        contestant1: {
-          user: { name: 'User 1', handle: 'user1', _id: '1' },
-          vibe: {
-            text: 'You have an amazing energy that lights up every room!',
-            tags: ['inspiring', 'energetic'],
-            votes: 0
-          }
-        },
-        contestant2: {
-          user: { name: 'User 2', handle: 'user2', _id: '2' },
-          vibe: {
-            text: 'Your creativity and talent are absolutely incredible!',
-            tags: ['creative', 'talented'],
-            votes: 0
-          }
-        },
-        endsAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-        votes: []
-      });
-    } finally {
       setLoading(false);
     }
   };
 
   const fetchWarHistory = async () => {
     try {
-      const response = await api.get('/vibe-wars/history?limit=5');
-      setWarHistory(response.data.wars || []);
+      // Mock history data
+      setWarHistory([
+        { _id: '1', winner: { name: 'Sarah', handle: 'sarah' }, totalVotes: 156, winPercentage: 67 },
+        { _id: '2', winner: { name: 'Elvin', handle: 'elvin' }, totalVotes: 203, winPercentage: 54 },
+        { _id: '3', winner: { name: 'Nargiz', handle: 'nargiz' }, totalVotes: 89, winPercentage: 72 }
+      ]);
     } catch (error) {
       console.error('Error fetching war history:', error);
     }
@@ -102,28 +94,18 @@ const VibeWars = () => {
       return;
     }
 
-    try {
-      await api.post(`/vibe-wars/${currentWar._id}/vote`, {
-        contestant: contestantNumber
-      });
-
-      setVoted(true);
-      
-      // Update local state to reflect the vote
-      setCurrentWar(prev => ({
-        ...prev,
-        [`contestant${contestantNumber}`]: {
-          ...prev[`contestant${contestantNumber}`],
-          vibe: {
-            ...prev[`contestant${contestantNumber}`].vibe,
-            votes: prev[`contestant${contestantNumber}`].vibe.votes + 1
-          }
+    setVoted(true);
+    
+    setCurrentWar(prev => ({
+      ...prev,
+      [`contestant${contestantNumber}`]: {
+        ...prev[`contestant${contestantNumber}`],
+        vibe: {
+          ...prev[`contestant${contestantNumber}`].vibe,
+          votes: prev[`contestant${contestantNumber}`].vibe.votes + 1
         }
-      }));
-    } catch (error) {
-      console.error('Error voting:', error);
-      alert('Failed to submit vote. Please try again.');
-    }
+      }
+    }));
   };
 
   const calculatePercentage = (contestant) => {
@@ -144,7 +126,7 @@ const VibeWars = () => {
 
   if (loading) {
     return (
-      <div className="page-container">
+      <div className="vibe-wars-page">
         <div className="container">
           <div className="loading-state">
             <div className="slay-loader">
@@ -158,7 +140,7 @@ const VibeWars = () => {
   }
 
   return (
-    <div className="vibe-wars-page page-container">
+    <div className="vibe-wars-page">
       <div className="container">
         <div className="vibe-wars-header">
           <h1 className="page-title shimmer-text">Vibe Wars ⚔️</h1>
@@ -270,7 +252,7 @@ const VibeWars = () => {
 
             {voted && (
               <div className="voted-message">
-                <p>Thanks for voting! Check back when the war ends to see the winner.</p>
+                <p>Thanks for voting! Check back when the war ends to see the winner. 💖</p>
               </div>
             )}
           </div>

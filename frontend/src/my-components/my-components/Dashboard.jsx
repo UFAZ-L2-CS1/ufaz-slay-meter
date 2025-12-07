@@ -1,57 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import VibeCard from './VibeCard';
 import './Dashboard.css';
 
-const Dashboard = () => {
-  const { user } = useAuth();
-  const [vibes, setVibes] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null }) => {
+  const [vibes, setVibes] = useState(initialVibes);
+  const [stats, setStats] = useState(initialStats);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('received');
   const [page, setPage] = useState(1);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [user, page]);
-
-  const fetchDashboardData = async () => {
-    if (!user?.handle) return;
-    
-    setLoading(true);
-    try {
-      const [vibesRes, statsRes] = await Promise.all([
-        api.get(`/vibes/user/${user.handle}?page=${page}&limit=10`),
-        api.get(`/vibes/user/${user.handle}/stats`)
-      ]);
-      
-      setVibes(vibesRes.data.items);
-      setStats(statsRes.data);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReaction = async (vibeId, reactionType) => {
-    try {
-      const response = await api.post(`/vibes/${vibeId}/react`, {
-        type: reactionType
-      });
-      
-      // Update local state with new reactions
-      setVibes(vibes.map(vibe => 
-        vibe._id === vibeId 
-          ? { ...vibe, reactions: response.data.reactions }
-          : vibe
-      ));
-    } catch (error) {
-      console.error('Error adding reaction:', error);
-    }
-  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -69,6 +25,21 @@ const Dashboard = () => {
   ];
 
   const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+
+  // Demo stats for display
+  const demoStats = stats || {
+    totalTags: 42,
+    top3: [{ tag: 'Slay' }],
+    stats: [
+      { tag: 'Slay', pct: 35 },
+      { tag: 'Kind', pct: 25 },
+      { tag: 'Smart', pct: 20 },
+      { tag: 'Funny', pct: 12 },
+      { tag: 'Creative', pct: 8 }
+    ]
+  };
+
+  const demoUser = user || { name: 'Slayer', handle: 'slayer123' };
 
   if (loading) {
     return (
@@ -92,7 +63,7 @@ const Dashboard = () => {
         <section className="welcome-section glass-card">
           <div className="welcome-content">
             <h1 className="welcome-title">
-              {getGreeting()}, {user?.name}! 
+              {getGreeting()}, {demoUser?.name}! 
             </h1>
             <p className="welcome-subtitle">{randomQuote}</p>
             <div className="quick-actions">
@@ -105,33 +76,29 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="welcome-stats">
-            {stats && (
-              <>
-                <div className="stat-bubble">
-                  <span className="stat-value">{stats.totalTags || 0}</span>
-                  <span className="stat-name">Total Tags</span>
-                </div>
-                <div className="stat-bubble">
-                  <span className="stat-value">{vibes.length}</span>
-                  <span className="stat-name">Vibes</span>
-                </div>
-                <div className="stat-bubble">
-                  <span className="stat-value">
-                    {stats.top3?.[0]?.tag || 'N/A'}
-                  </span>
-                  <span className="stat-name">Top Tag</span>
-                </div>
-              </>
-            )}
+            <div className="stat-bubble">
+              <span className="stat-value">{demoStats.totalTags || 0}</span>
+              <span className="stat-name">Total Tags</span>
+            </div>
+            <div className="stat-bubble">
+              <span className="stat-value">{vibes.length || 24}</span>
+              <span className="stat-name">Vibes</span>
+            </div>
+            <div className="stat-bubble">
+              <span className="stat-value">
+                {demoStats.top3?.[0]?.tag || 'Slay'}
+              </span>
+              <span className="stat-name">Top Tag</span>
+            </div>
           </div>
         </section>
 
         {/* Tag Cloud */}
-        {stats?.stats && stats.stats.length > 0 && (
+        {demoStats?.stats && demoStats.stats.length > 0 && (
           <section className="tag-cloud-section glass-card">
             <h2>Your Vibe Cloud ☁️</h2>
             <div className="tags-cloud">
-              {stats.stats.map((tag, index) => (
+              {demoStats.stats.map((tag, index) => (
                 <span 
                   key={index}
                   className={`tag-bubble ${index < 3 ? 'popular' : ''}`}
@@ -166,13 +133,10 @@ const Dashboard = () => {
 
           <div className="vibes-list">
             {vibes.length > 0 ? (
-              vibes.map((vibe) => (
-                <VibeCard
-                  key={vibe._id}
-                  vibe={vibe}
-                  onReaction={handleReaction}
-                  currentUser={user}
-                />
+              vibes.map((vibe, index) => (
+                <div key={vibe._id || index} className="glass-card">
+                  <p>{vibe.message || "You're amazing! Keep slaying! 💕"}</p>
+                </div>
               ))
             ) : (
               <div className="empty-state glass-card">
@@ -184,7 +148,7 @@ const Dashboard = () => {
                     : "Send your first vibe to spread the love!"}
                 </p>
                 <Link 
-                  to={activeTab === 'received' ? `/profile/${user.handle}` : '/send-vibe'} 
+                  to={activeTab === 'received' ? `/profile/${demoUser?.handle}` : '/send-vibe'} 
                   className="btn btn-primary"
                 >
                   {activeTab === 'received' ? 'View Profile' : 'Send Vibe'}

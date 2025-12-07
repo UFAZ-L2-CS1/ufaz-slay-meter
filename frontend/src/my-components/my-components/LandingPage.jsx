@@ -1,22 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 import './LandingPage.css';
 
-const LandingPage = ({ onAuthClick }) => {
-  const { user } = useAuth();
+const LandingPage = ({ onAuthClick, user }) => {
   const [currentQuote, setCurrentQuote] = useState(0);
   const [stats, setStats] = useState({
-    users: 0,
-    vibes: 0
+    users: 1234,
+    vibes: 5678
   });
 
   const quotes = [
-    "Your slay level is unmeasurable!",
-    "UFAZ vibes only!",
-    "Spread the slay, spread the love!",
-    "Everyone deserves to know they're amazing!"
+    "Your slay level is unmeasurable! 💖",
+    "UFAZ vibes only! ✨",
+    "Spread the slay, spread the love! 💕",
+    "Everyone deserves to know they're amazing! 🌟"
   ];
 
   useEffect(() => {
@@ -24,23 +21,7 @@ const LandingPage = ({ onAuthClick }) => {
       setCurrentQuote((prev) => (prev + 1) % quotes.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      const response = await api.get('/stats/global');
-      setStats({
-        users: response.data.totalUsers || 0,
-        vibes: response.data.totalVibes || 0
-      });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
+  }, [quotes.length]);
 
   return (
     <div className="landing-page">
@@ -104,7 +85,7 @@ const LandingPage = ({ onAuthClick }) => {
       {/* Features Section */}
       <section className="features">
         <div className="container">
-          <h2 className="section-title">Why UFAZ Slay Meter?</h2>
+          <h2 className="section-title">Why UFAZ Slay Meter? 💖</h2>
           
           <div className="features-grid">
             <div className="feature-card">
@@ -150,7 +131,7 @@ const LandingPage = ({ onAuthClick }) => {
       <section className="rules-section">
         <div className="container">
           <div className="rules-book">
-            <h2 className="rules-title">The UFAZ Slay Rules</h2>
+            <h2 className="rules-title">The UFAZ Slay Rules 💅</h2>
             <div className="rules-list">
               <div className="rule-item">
                 <span className="rule-number">01</span>
@@ -176,7 +157,7 @@ const LandingPage = ({ onAuthClick }) => {
       {/* Stats Preview */}
       <section className="stats-preview">
         <div className="container">
-          <h2 className="section-title">UFAZ Slay Stats</h2>
+          <h2 className="section-title">UFAZ Slay Stats 📊</h2>
           <div className="stats-grid">
             <div className="stat-card">
               <span className="stat-number">{stats.users || '0'}</span>
@@ -201,16 +182,16 @@ const LandingPage = ({ onAuthClick }) => {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container">
-          <h2 className="cta-title shimmer-text">Ready to Check Your Slay Level?</h2>
+          <h2 className="cta-title shimmer-text">Ready to Check Your Slay Level? ✨</h2>
           <p className="cta-subtitle">Join UFAZ Slay Meter today and start spreading amazing vibes!</p>
           <div className="cta-buttons">
             {user ? (
               <Link to="/dashboard" className="btn btn-fetch">
-                Visit Dashboard
+                Visit Dashboard 💖
               </Link>
             ) : (
               <button onClick={onAuthClick} className="btn btn-fetch">
-                Get Started Now
+                Get Started Now 💖
               </button>
             )}
           </div>

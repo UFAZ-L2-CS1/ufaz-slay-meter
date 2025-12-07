@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 import './ProfilePage.css';
 
-const ProfilePage = () => {
+const ProfilePage = ({ currentUser }) => {
   const { handle } = useParams();
-  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const isOwnProfile = !handle || (user && user.handle === handle);
+  const isOwnProfile = !handle || (currentUser && currentUser.handle === handle);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -19,31 +16,48 @@ const ProfilePage = () => {
         setLoading(true);
         setError(null);
 
-        if (isOwnProfile) {
-          // current logged-in user
-          const res = await api.get('/profile/me');
-          setProfile(res.data.user || res.data);
-        } else {
-          // public profile by handle
-          const res = await api.get(`/users/${handle}`);
-          setProfile(res.data.user || res.data);
-        }
+        // Mock profile data for demo
+        setTimeout(() => {
+          if (isOwnProfile && currentUser) {
+            setProfile(currentUser);
+          } else {
+            setProfile({
+              name: handle ? handle.charAt(0).toUpperCase() + handle.slice(1) : 'User',
+              handle: handle || 'user',
+              bio: 'Living my best life ✨',
+              avatarUrl: null,
+              stats: {
+                vibesReceived: Math.floor(Math.random() * 100) + 10,
+                vibesSent: Math.floor(Math.random() * 50) + 5,
+                slayScore: Math.floor(Math.random() * 500) + 100
+              },
+              socials: {
+                instagram: 'https://instagram.com',
+                tiktok: 'https://tiktok.com'
+              }
+            });
+          }
+          setLoading(false);
+        }, 500);
       } catch (err) {
         console.error('Error loading profile:', err);
         setError('Could not load profile.');
-      } finally {
         setLoading(false);
       }
     };
 
     loadProfile();
-  }, [handle, isOwnProfile]);
+  }, [handle, isOwnProfile, currentUser]);
 
   if (loading) {
     return (
       <div className="profile-page">
         <div className="profile-card loading">
-          <p>Loading profile...</p>
+          <div className="animate-pulse flex flex-col items-center gap-4">
+            <div className="w-24 h-24 rounded-full bg-pink-200"></div>
+            <div className="h-6 w-32 bg-pink-200 rounded"></div>
+            <div className="h-4 w-24 bg-pink-100 rounded"></div>
+          </div>
         </div>
       </div>
     );
@@ -97,12 +111,12 @@ const ProfilePage = () => {
           <div className="profile-socials">
             {profile.socials.instagram && (
               <a href={profile.socials.instagram} target="_blank" rel="noreferrer">
-                Instagram
+                📸 Instagram
               </a>
             )}
             {profile.socials.tiktok && (
               <a href={profile.socials.tiktok} target="_blank" rel="noreferrer">
-                TikTok
+                🎵 TikTok
               </a>
             )}
           </div>

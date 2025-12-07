@@ -1,9 +1,8 @@
-/* VibeWars.css - Epic battle styling for vibe wars */
-
+/* VibeWars.css - Pink Theme */
 .vibe-wars-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-  padding: 3rem 1rem;
+  background: linear-gradient(135deg, hsl(var(--pink-200)), hsl(var(--pink-400)), hsl(var(--pink-500)));
+  padding: 6rem 1rem 3rem;
 }
 
 .vibe-wars-page .container {
@@ -29,7 +28,7 @@
   }
 }
 
-.page-title {
+.vibe-wars-page .page-title {
   font-size: 3.5rem;
   font-weight: 900;
   margin-bottom: 1rem;
@@ -37,8 +36,8 @@
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.shimmer-text {
-  background: linear-gradient(90deg, #fff 0%, #f093fb 50%, #fff 100%);
+.vibe-wars-page .shimmer-text {
+  background: linear-gradient(90deg, #fff 0%, hsl(var(--pink-200)) 50%, #fff 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -47,27 +46,23 @@
 }
 
 @keyframes shimmerMove {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.page-subtitle {
+.vibe-wars-page .page-subtitle {
   font-size: 1.25rem;
   color: rgba(255, 255, 255, 0.95);
   font-weight: 500;
 }
 
 /* Glass Card */
-.glass-card {
+.vibe-wars-page .glass-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 2.5rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(236, 72, 153, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   animation: slideUp 0.5s ease-out;
   margin-bottom: 2rem;
@@ -105,23 +100,13 @@
 }
 
 @keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
 }
 
 .slay-loader p {
@@ -134,26 +119,22 @@
 .war-timer {
   text-align: center;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(240, 147, 251, 0.15));
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 114, 182, 0.15));
   border-radius: 16px;
   margin-bottom: 2.5rem;
-  border: 2px solid rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(236, 72, 153, 0.3);
   animation: timerPulse 2s ease-in-out infinite;
 }
 
 @keyframes timerPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(236, 72, 153, 0); }
 }
 
 .timer-label {
   display: block;
   font-size: 0.9rem;
-  color: #666;
+  color: hsl(var(--muted-foreground));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -164,7 +145,7 @@
   display: block;
   font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea, #f093fb);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -189,7 +170,7 @@
 .vs-divider span {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   color: white;
   font-size: 1.75rem;
   font-weight: 900;
@@ -197,18 +178,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5);
   animation: vsRotate 3s ease-in-out infinite;
   border: 4px solid white;
 }
 
 @keyframes vsRotate {
-  0%, 100% {
-    transform: rotate(-5deg) scale(1);
-  }
-  50% {
-    transform: rotate(5deg) scale(1.1);
-  }
+  0%, 100% { transform: rotate(-5deg) scale(1); }
+  50% { transform: rotate(5deg) scale(1.1); }
 }
 
 /* Contestant Cards */
@@ -216,7 +193,7 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
   border-radius: 20px;
   padding: 2rem;
-  border: 2px solid rgba(102, 126, 234, 0.2);
+  border: 2px solid rgba(236, 72, 153, 0.2);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -229,21 +206,21 @@
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+  background: linear-gradient(90deg, hsl(var(--pink-400)), hsl(var(--pink-500)), hsl(var(--pink-600)));
 }
 
 .contestant-1::before {
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, hsl(var(--pink-300)), hsl(var(--pink-500)));
 }
 
 .contestant-2::before {
-  background: linear-gradient(90deg, #764ba2, #f093fb);
+  background: linear-gradient(90deg, hsl(var(--pink-500)), hsl(var(--pink-700)));
 }
 
 .contestant:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
-  border-color: #8b5cf6;
+  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.3);
+  border-color: hsl(var(--pink-400));
 }
 
 /* Contestant Header */
@@ -251,7 +228,7 @@
   text-align: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+  border-bottom: 2px solid rgba(236, 72, 153, 0.1);
 }
 
 .contestant-avatar {
@@ -259,11 +236,11 @@
   height: 80px;
   border-radius: 50%;
   margin: 0 auto 1rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
   overflow: hidden;
   border: 4px solid white;
 }
@@ -283,44 +260,44 @@
 
 .contestant-header h3 {
   font-size: 1.5rem;
-  color: #333;
+  color: hsl(var(--foreground));
   margin: 0 0 0.25rem 0;
   font-weight: 700;
 }
 
 .contestant-header p {
-  color: #8b5cf6;
+  color: hsl(var(--pink-500));
   font-size: 0.95rem;
   font-weight: 600;
   margin: 0;
 }
 
 /* Vibe Content */
-.vibe-content {
+.vibe-wars-page .vibe-content {
   margin-bottom: 1.5rem;
 }
 
-.vibe-text {
-  color: #333;
+.vibe-wars-page .vibe-text {
+  color: hsl(var(--foreground));
   line-height: 1.7;
   font-size: 1rem;
   margin-bottom: 1rem;
 }
 
-.vibe-tags {
+.vibe-wars-page .vibe-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.vibe-tag {
+.vibe-wars-page .vibe-tag {
   padding: 0.4rem 0.875rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   color: white;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
 }
 
 /* Vote Section */
@@ -333,7 +310,7 @@
 .btn-vote {
   width: 100%;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   color: white;
   border: none;
   border-radius: 50px;
@@ -341,7 +318,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
   position: relative;
   overflow: hidden;
 }
@@ -366,7 +343,7 @@
 
 .btn-vote:hover:not(.disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.6);
 }
 
 .btn-vote:active:not(.disabled) {
@@ -374,7 +351,7 @@
 }
 
 .btn-vote.disabled {
-  background: linear-gradient(135deg, #95a5f3, #a58cc8);
+  background: linear-gradient(135deg, hsl(var(--pink-200)), hsl(var(--pink-300)));
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -388,7 +365,7 @@
 
 .vote-bar {
   height: 12px;
-  background: rgba(102, 126, 234, 0.15);
+  background: rgba(236, 72, 153, 0.15);
   border-radius: 10px;
   overflow: hidden;
   position: relative;
@@ -396,7 +373,7 @@
 
 .vote-fill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   border-radius: 10px;
   transition: width 0.5s ease;
   position: relative;
@@ -415,17 +392,13 @@
 }
 
 @keyframes barShine {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .vote-count {
   font-size: 0.9rem;
-  color: #666;
+  color: hsl(var(--muted-foreground));
   font-weight: 600;
   text-align: center;
 }
@@ -434,14 +407,14 @@
 .voted-message {
   text-align: center;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(46, 213, 115, 0.15), rgba(39, 174, 96, 0.15));
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.15));
   border-radius: 16px;
-  border: 2px solid rgba(46, 213, 115, 0.3);
+  border: 2px solid rgba(34, 197, 94, 0.3);
   margin-top: 2rem;
 }
 
 .voted-message p {
-  color: #27ae60;
+  color: hsl(142, 76%, 36%);
   font-weight: 600;
   margin: 0;
   font-size: 1.05rem;
@@ -455,24 +428,20 @@
 
 .no-war h2 {
   font-size: 2rem;
-  color: #667eea;
+  color: hsl(var(--pink-500));
   margin-bottom: 1rem;
   font-weight: 700;
 }
 
 .no-war p {
-  color: #666;
+  color: hsl(var(--muted-foreground));
   font-size: 1.1rem;
 }
 
 /* War History */
-.war-history {
-  animation-delay: 0.2s;
-}
-
 .war-history h2 {
   font-size: 1.75rem;
-  color: #333;
+  color: hsl(var(--foreground));
   margin: 0 0 1.5rem 0;
   font-weight: 700;
   text-align: center;
@@ -489,9 +458,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
   border-radius: 16px;
-  border: 2px solid rgba(102, 126, 234, 0.2);
+  border: 2px solid rgba(236, 72, 153, 0.2);
   transition: all 0.3s ease;
   gap: 1rem;
   flex-wrap: wrap;
@@ -499,8 +468,8 @@
 
 .history-item:hover {
   transform: translateX(4px);
-  border-color: #8b5cf6;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+  border-color: hsl(var(--pink-400));
+  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.2);
 }
 
 .winner-info {
@@ -514,7 +483,7 @@
 .winner-rank {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   color: white;
   border-radius: 50%;
   display: flex;
@@ -529,13 +498,13 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border: 3px solid white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
   flex-shrink: 0;
 }
 
@@ -554,14 +523,14 @@
 
 .winner-info h4 {
   margin: 0;
-  color: #333;
+  color: hsl(var(--foreground));
   font-weight: 700;
   font-size: 1rem;
 }
 
 .winner-info p {
   margin: 0;
-  color: #8b5cf6;
+  color: hsl(var(--pink-500));
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -576,17 +545,17 @@
 
 .war-stats span {
   font-size: 0.85rem;
-  color: #666;
+  color: hsl(var(--muted-foreground));
   font-weight: 600;
 }
 
 .win-percentage {
-  color: #667eea !important;
+  color: hsl(var(--pink-500)) !important;
   font-size: 1rem !important;
   font-weight: 700 !important;
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 1024px) {
   .war-arena {
     grid-template-columns: 1fr;
@@ -604,25 +573,20 @@
     font-size: 1.5rem;
   }
 
-  .contestant-1 {
-    order: 1;
-  }
-
-  .contestant-2 {
-    order: 3;
-  }
+  .contestant-1 { order: 1; }
+  .contestant-2 { order: 3; }
 }
 
 @media (max-width: 768px) {
   .vibe-wars-page {
-    padding: 2rem 1rem;
+    padding: 5rem 1rem 2rem;
   }
 
-  .glass-card {
+  .vibe-wars-page .glass-card {
     padding: 1.5rem;
   }
 
-  .page-title {
+  .vibe-wars-page .page-title {
     font-size: 2.5rem;
   }
 
@@ -646,11 +610,11 @@
 }
 
 @media (max-width: 480px) {
-  .page-title {
+  .vibe-wars-page .page-title {
     font-size: 2rem;
   }
 
-  .page-subtitle {
+  .vibe-wars-page .page-subtitle {
     font-size: 1rem;
   }
 

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from 'react';
 import './AuthModal.css';
 
-const AuthModal = ({ onClose }) => {
+const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -12,7 +11,6 @@ const AuthModal = ({ onClose }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login, register, googleLogin } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -29,13 +27,16 @@ const AuthModal = ({ onClose }) => {
 
     try {
       if (isLogin) {
-        await login(formData.email, formData.password);
+        if (onLogin) {
+          await onLogin(formData.email, formData.password);
+        }
       } else {
-        // Validate password length for registration
         if (formData.password.length < 6) {
           throw new Error('Password must be at least 6 characters');
         }
-        await register(formData);
+        if (onRegister) {
+          await onRegister(formData);
+        }
       }
       onClose();
     } catch (err) {
@@ -50,23 +51,10 @@ const AuthModal = ({ onClose }) => {
       setLoading(true);
       setError('');
       
-      // Check if Google auth is available
-      if (window.google && window.google.accounts) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID',
-          callback: async (response) => {
-            try {
-              await googleLogin(response.credential);
-              onClose();
-            } catch (err) {
-              setError('Google login failed. Please try again.');
-            }
-          }
-        });
-        
-        window.google.accounts.id.prompt();
+      if (onGoogleLogin) {
+        await onGoogleLogin();
+        onClose();
       } else {
-        // Fallback for development
         setError('Google login is not configured. Please use email/password.');
       }
     } catch (err) {
@@ -94,7 +82,7 @@ const AuthModal = ({ onClose }) => {
         
         <div className="auth-header">
           <h2 className="auth-title">
-            {isLogin ? 'Welcome Back to UFAZ!' : 'Join UFAZ Slay Meter'}
+            {isLogin ? 'Welcome Back! 💖' : 'Join the Slay Squad ✨'}
           </h2>
           <p className="auth-subtitle">
             {isLogin 
@@ -158,7 +146,7 @@ const AuthModal = ({ onClose }) => {
               value={formData.password}
               onChange={handleChange}
               placeholder={isLogin ? "Enter your password" : "Min. 6 characters"}
-              minLength={isLogin ? undefined : "6"}
+              minLength={isLogin ? undefined : 6}
               required
             />
           </div>
@@ -177,7 +165,7 @@ const AuthModal = ({ onClose }) => {
             {loading ? (
               <span className="loading-text">Loading...</span>
             ) : (
-              isLogin ? 'Sign In' : 'Create Account'
+              isLogin ? 'Sign In 💫' : 'Create Account ✨'
             )}
           </button>
         </form>
@@ -212,7 +200,7 @@ const AuthModal = ({ onClose }) => {
         </div>
 
         <div className="auth-quote">
-          <p>"Your slay level is off the charts!" - UFAZ Community</p>
+          <p>"Your slay level is off the charts!" 💕</p>
         </div>
       </div>
     </div>

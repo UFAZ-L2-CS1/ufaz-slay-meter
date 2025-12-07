@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import './Navigation.css';
 
-const Navigation = ({ onAuthClick }) => {
-  const { user, logout } = useAuth();
+const Navigation = ({ user, onAuthClick, onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = () => {
-    logout();
+    if (onLogout) onLogout();
     navigate('/');
     setShowUserMenu(false);
     setShowMobileMenu(false);
@@ -135,7 +133,7 @@ const Navigation = ({ onAuthClick }) => {
           ) : (
             <>
               <button 
-                onClick={() => { onAuthClick(); setShowMobileMenu(false); }}
+                onClick={() => { onAuthClick?.(); setShowMobileMenu(false); }}
                 className="btn btn-primary nav-auth-btn"
               >
                 Sign In

@@ -1,41 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
 import './Leaderboard.css';
 
 const Leaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [warLeaders, setWarLeaders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('vibes');
   const [timeframe, setTimeframe] = useState('all');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchLeaderboardData();
-  }, [activeTab, timeframe]);
+  // Demo data
+  const leaderboard = [
+    { _id: '1', name: 'Sarah Chen', handle: 'sarahc', vibeCount: 156, slayScore: 892, avatarUrl: null },
+    { _id: '2', name: 'Alex Kim', handle: 'alexk', vibeCount: 134, slayScore: 756, avatarUrl: null },
+    { _id: '3', name: 'Jordan Miller', handle: 'jordanm', vibeCount: 98, slayScore: 623, avatarUrl: null },
+    { _id: '4', name: 'Taylor Swift', handle: 'taylors', vibeCount: 87, slayScore: 512, avatarUrl: null },
+    { _id: '5', name: 'Chris Park', handle: 'chrisp', vibeCount: 76, slayScore: 445, avatarUrl: null }
+  ];
 
-  const fetchLeaderboardData = async () => {
-    setLoading(true);
-    try {
-      if (activeTab === 'vibes') {
-        const response = await api.get(`/leaderboard/vibes?timeframe=${timeframe}`);
-        setLeaderboard(response.data.leaders || []);
-      } else {
-        const response = await api.get(`/leaderboard/wars?timeframe=${timeframe}`);
-        setWarLeaders(response.data.leaders || []);
-      }
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      // Set demo data if API fails
-      if (activeTab === 'vibes') {
-        setLeaderboard([]);
-      } else {
-        setWarLeaders([]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  const warLeaders = [
+    { _id: '1', name: 'Sarah Chen', handle: 'sarahc', warsWon: 23, winRate: 87, avatarUrl: null },
+    { _id: '2', name: 'Alex Kim', handle: 'alexk', warsWon: 19, winRate: 82, avatarUrl: null },
+    { _id: '3', name: 'Jordan Miller', handle: 'jordanm', warsWon: 15, winRate: 75, avatarUrl: null }
+  ];
 
   const getMedalEmoji = (rank) => {
     switch (rank) {
@@ -74,7 +59,7 @@ const Leaderboard = () => {
     <div className="leaderboard-page page-container">
       <div className="container">
         <div className="leaderboard-header">
-          <h1 className="page-title shimmer-text">UFAZ Slay Leaderboard 🏆</h1>
+          <h1 className="page-title">UFAZ Slay Leaderboard 🏆</h1>
           <p className="page-subtitle">
             See who's slaying the hardest at UFAZ!
           </p>
@@ -131,7 +116,7 @@ const Leaderboard = () => {
                 {/* Top 3 Podium */}
                 {leaderboard.length >= 3 && (
                   <div className="podium-section glass-card">
-                    <h2>Top Slayers</h2>
+                    <h2>✨ Top Slayers ✨</h2>
                     <div className="podium">
                       <div className="podium-spot second">
                         <Link to={`/profile/${leaderboard[1]?.handle}`}>
@@ -196,7 +181,7 @@ const Leaderboard = () => {
 
                 {/* Full Leaderboard */}
                 <div className="leaderboard-list glass-card">
-                  <h2>Complete Rankings</h2>
+                  <h2>Complete Rankings 📊</h2>
                   {leaderboard.map((user, index) => (
                     <Link 
                       to={`/profile/${user.handle}`}
@@ -247,7 +232,7 @@ const Leaderboard = () => {
                 <h3>No data yet</h3>
                 <p>Be the first to climb the leaderboard!</p>
                 <Link to="/send-vibe" className="btn btn-primary">
-                  Start Slaying
+                  Start Slaying 💖
                 </Link>
               </div>
             )}
@@ -256,7 +241,7 @@ const Leaderboard = () => {
           <div className="leaderboard-content">
             {warLeaders.length > 0 ? (
               <div className="leaderboard-list glass-card">
-                <h2>Vibe War Champions</h2>
+                <h2>⚔️ Vibe War Champions ⚔️</h2>
                 {warLeaders.map((user, index) => (
                   <Link 
                     to={`/profile/${user.handle}`}
@@ -306,7 +291,7 @@ const Leaderboard = () => {
                 <h3>No war champions yet</h3>
                 <p>Participate in Vibe Wars to become a champion!</p>
                 <Link to="/vibe-wars" className="btn btn-primary">
-                  Join War
+                  Join War 💪
                 </Link>
               </div>
             )}

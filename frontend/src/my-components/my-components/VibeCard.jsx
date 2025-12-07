@@ -24,7 +24,7 @@ const VibeCard = ({ vibe, onReaction, currentUser }) => {
   };
 
   return (
-    <div className="vibe-card glass-card">
+    <div className="vibe-card">
       <div className="vibe-header">
         <div className="vibe-sender">
           {vibe.isAnonymous ? (

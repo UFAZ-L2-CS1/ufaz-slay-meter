@@ -1,9 +1,8 @@
-/* ProfilePage.css - Modern vibrant styling for slay meter profiles */
-
+/* ProfilePage.css - Pink Theme */
 .profile-page {
   min-height: 100vh;
-  padding: 2rem 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  padding: 6rem 1rem 2rem;
+  background: linear-gradient(135deg, hsl(var(--pink-100)), hsl(var(--pink-200)), hsl(var(--pink-300)));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,8 +15,9 @@
   padding: 2.5rem;
   max-width: 600px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(236, 72, 153, 0.2);
   animation: slideUp 0.5s ease-out;
+  border: 2px solid rgba(236, 72, 153, 0.1);
 }
 
 @keyframes slideUp {
@@ -39,13 +39,13 @@
 }
 
 .profile-card.error h2 {
-  color: #e74c3c;
+  color: hsl(var(--destructive));
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
 }
 
 .profile-card.error p {
-  color: #666;
+  color: hsl(var(--muted-foreground));
 }
 
 .profile-header {
@@ -53,19 +53,19 @@
   gap: 1.5rem;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid rgba(236, 72, 153, 0.1);
 }
 
 .profile-avatar {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
   position: relative;
   overflow: hidden;
 }
@@ -116,7 +116,7 @@
 .profile-info h1 {
   font-size: 2rem;
   margin: 0 0 0.25rem 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -124,14 +124,14 @@
 }
 
 .profile-handle {
-  color: #8b5cf6;
+  color: hsl(var(--pink-500));
   font-size: 1rem;
   margin: 0 0 0.75rem 0;
   font-weight: 600;
 }
 
 .profile-bio {
-  color: #555;
+  color: hsl(var(--muted-foreground));
   line-height: 1.6;
   margin: 0;
   font-size: 0.95rem;
@@ -143,7 +143,7 @@
   gap: 1.5rem;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(240, 147, 251, 0.1));
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
   border-radius: 16px;
 }
 
@@ -160,12 +160,12 @@
 
 .stat-item:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 8px 20px rgba(236, 72, 153, 0.2);
 }
 
 .stat-label {
   font-size: 0.85rem;
-  color: #888;
+  color: hsl(var(--muted-foreground));
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
@@ -174,7 +174,7 @@
 .stat-value {
   font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea, #f093fb);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -189,14 +189,14 @@
 
 .profile-socials a {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
   color: white;
   text-decoration: none;
   border-radius: 50px;
   font-weight: 600;
   font-size: 0.9rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -214,17 +214,17 @@
 
 .profile-socials a:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 6px 25px rgba(236, 72, 153, 0.5);
 }
 
 .profile-socials a:hover::before {
   left: 100%;
 }
 
-/* Responsive design */
+/* Responsive */
 @media (max-width: 768px) {
   .profile-page {
-    padding: 1rem;
+    padding: 5rem 1rem 1rem;
   }
 
   .profile-card {
@@ -244,10 +244,6 @@
   .profile-stats {
     grid-template-columns: 1fr;
     gap: 1rem;
-  }
-
-  .stat-value {
-    font-size: 1.75rem;
   }
 }
 
