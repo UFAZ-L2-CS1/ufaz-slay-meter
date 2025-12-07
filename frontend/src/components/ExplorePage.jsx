@@ -1,155 +1,311 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import './ExplorePage.css';
 
 const ExplorePage = () => {
-  const [activeTab, setActiveTab] = useState('recent');
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('users');
+  const [users, setUsers] = useState([]);
+  const [vibes, setVibes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Demo data
-  const trendingTags = [
-    { tag: 'Slay Queen', count: 342 },
-    { tag: 'Kind Soul', count: 289 },
-    { tag: 'Smart Cookie', count: 256 },
-    { tag: 'Iconic', count: 198 },
-    { tag: 'Main Character', count: 167 },
-    { tag: 'Wholesome', count: 145 }
-  ];
+  useEffect(() => {
+    fetchExploreData();
+  }, []);
 
-  const topUsers = [
-    { name: 'Sarah Chen', handle: 'sarahc', vibeCount: 89, avatarUrl: null },
-    { name: 'Alex Kim', handle: 'alexk', vibeCount: 76, avatarUrl: null },
-    { name: 'Jordan Miller', handle: 'jordanm', vibeCount: 64, avatarUrl: null },
-    { name: 'Taylor Swift', handle: 'taylors', vibeCount: 52, avatarUrl: null },
-    { name: 'Chris Park', handle: 'chrisp', vibeCount: 41, avatarUrl: null }
-  ];
-
-  const totalUsers = 1234;
-  const totalVibes = 5678;
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
+  const fetchExploreData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // ✅ Real API call to backend
+      const response = await api.get('/explore');
+      setUsers(response.data.users || []);
+      setVibes(response.data.recentVibes || []);
+    } catch (err) {
+      console.error('Error fetching explore data:', err);
+      setError('Could not load explore page');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase();
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      fetchExploreData();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // ✅ Real search API call
+      const response = await api.get(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setUsers(response.data.users || []);
+      setVibes(response.data.vibes || []);
+    } catch (err) {
+      console.error('Error searching:', err);
+      setError('Search failed');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleSendVibe = (handle) => {
+    window.location.href = `/send-vibe?to=${handle}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="explore-page">
+        <div className="container">
+          <div className="loading-state">
+            <div className="slay-loader">
+              <span>✨</span>
+              <p>Loading explore...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredUsers = users.filter(u => 
+    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.handle.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="explore-page">
-      <div className="page-container">
-        <div className="container">
-          {/* Header */}
-          <div className="glass-card explore-header">
-            <h1 className="page-title">
-              <span className="shimmer-text">Explore the Vibe 🌟</span>
-            </h1>
-            <p className="page-subtitle">
-              See what's trending and who's slaying today!
-            </p>
-          </div>
+      <div className="container">
+        <div className="explore-header">
+          <h1 className="page-title shimmer-text">✨ Explore UFAZ</h1>
+          <p className="page-subtitle">
+            Discover amazing people and spread the vibes! 💖
+          </p>
+        </div>
 
-          {/* Stats Preview */}
-          <div className="glass-card stats-preview">
-            <div className="stats-grid">
-              <div className="stat-card">
-                <span className="stat-number">{totalUsers}</span>
-                <span className="stat-label">Slayers</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-number">{totalVibes}</span>
-                <span className="stat-label">Vibes Sent</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-number">{trendingTags.length}</span>
-                <span className="stat-label">Trending Tags</span>
-              </div>
+        {/* Search Bar */}
+        <div className="search-section glass-card">
+          <form onSubmit={handleSearch} className="search-form">
+            <div className="search-input-wrapper">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search for users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="clear-search"
+                  onClick={() => {
+                    setSearchQuery('');
+                    fetchExploreData();
+                  }}
+                >
+                  ×
+                </button>
+              )}
             </div>
-          </div>
+            <button type="submit" className="btn btn-primary search-btn">
+              Search
+            </button>
+          </form>
+        </div>
 
-          {/* Trending Tags */}
-          <div className="glass-card trending-section">
-            <h2>🔥 Trending Tags</h2>
-            <div className="trending-tags-grid">
-              {trendingTags.map((item, index) => (
-                <div key={index} className="trending-tag-card">
-                  <span className="tag-name">#{item.tag}</span>
-                  <div className="tag-bar">
-                    <div 
-                      className="tag-bar-fill" 
-                      style={{ width: `${(item.count / trendingTags[0].count) * 100}%` }}
-                    ></div>
+        {error && (
+          <div className="error-message glass-card">
+            <span>⚠️</span> {error}
+            <button onClick={fetchExploreData} className="btn btn-secondary">
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Tab Switcher */}
+        <div className="tab-switcher glass-card">
+          <button
+            className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            👥 People
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'vibes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('vibes')}
+          >
+            💌 Recent Vibes
+          </button>
+        </div>
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div className="users-grid">
+            {filteredUsers.length === 0 ? (
+              <div className="empty-state glass-card">
+                <span className="empty-emoji">😔</span>
+                <h3>No users found</h3>
+                <p>Try a different search term</p>
+              </div>
+            ) : (
+              filteredUsers.map(u => (
+                <div key={u.id} className="user-card glass-card">
+                  <div className="user-card-header">
+                    <Link to={`/profile/${u.handle}`} className="user-avatar-link">
+                      <div className="user-avatar">
+                        {u.avatarUrl ? (
+                          <img src={u.avatarUrl} alt={u.name} />
+                        ) : (
+                          <span>{u.name?.charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
+                    </Link>
+                    <div className="user-info">
+                      <Link to={`/profile/${u.handle}`}>
+                        <h3>{u.name}</h3>
+                      </Link>
+                      <p className="user-handle">@{u.handle}</p>
+                    </div>
                   </div>
-                  <p className="tag-count">{item.count} vibes</p>
+
+                  {u.bio && (
+                    <p className="user-bio">{u.bio}</p>
+                  )}
+
+                  <div className="user-stats">
+                    <div className="stat">
+                      <span className="stat-value">{u.stats?.vibesReceived || 0}</span>
+                      <span className="stat-label">Vibes</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-value">{u.stats?.slayScore || 0}</span>
+                      <span className="stat-label">Slay Score</span>
+                    </div>
+                  </div>
+
+                  <div className="user-actions">
+                    <Link
+                      to={`/profile/${u.handle}`}
+                      className="btn btn-secondary"
+                    >
+                      👤 View Profile
+                    </Link>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleSendVibe(u.handle)}
+                      disabled={user && user.handle === u.handle}
+                    >
+                      💌 Send Vibe
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
+        )}
 
-          {/* Top Users */}
-          <div className="glass-card top-users-section">
-            <h2>👑 Top Slayers</h2>
-            <div className="top-users-list">
-              {topUsers.map((user, index) => (
-                <Link 
-                  key={index} 
-                  to={`/profile/${user.handle}`} 
-                  className="top-user-card"
-                >
-                  <div className="rank-badge">#{index + 1}</div>
-                  <div className="user-avatar">
-                    {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={user.name} />
-                    ) : (
-                      getInitials(user.name)
-                    )}
-                  </div>
-                  <div className="user-info">
-                    <h3>{user.name}</h3>
-                    <p>@{user.handle}</p>
-                  </div>
-                  <div className="user-vibes">
-                    {user.vibeCount} vibes
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Vibes Section */}
-          <div className="glass-card vibes-section">
-            <div className="tab-section">
-              <div className="tab-nav">
-                <button
-                  className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('recent')}
-                >
-                  ⏰ Recent
-                </button>
-                <button
-                  className={`tab-btn ${activeTab === 'popular' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('popular')}
-                >
-                  🔥 Popular
-                </button>
-              </div>
-            </div>
-
-            <div className="vibes-grid">
-              {/* Empty state for now - can be populated with actual vibes */}
-              <div className="empty-state">
-                <span className="empty-emoji">✨</span>
-                <h3>No vibes yet!</h3>
-                <p>Be the first to send one and start the positivity chain.</p>
-                <Link to="/send" className="btn btn-primary">
-                  Send Vibe 💕
+        {/* Vibes Tab */}
+        {activeTab === 'vibes' && (
+          <div className="vibes-feed">
+            {vibes.length === 0 ? (
+              <div className="empty-state glass-card">
+                <span className="empty-emoji">💭</span>
+                <h3>No recent vibes</h3>
+                <p>Be the first to send a vibe!</p>
+                <Link to="/send-vibe" className="btn btn-primary">
+                  Send Vibe ✨
                 </Link>
               </div>
-            </div>
+            ) : (
+              vibes.map(vibe => (
+                <div key={vibe.id} className="vibe-card glass-card">
+                  <div className="vibe-header">
+                    <div className="vibe-sender">
+                      {vibe.isAnonymous ? (
+                        <div className="anonymous-avatar">
+                          <span>💭</span>
+                        </div>
+                      ) : (
+                        <Link to={`/profile/${vibe.sender?.handle}`}>
+                          <div className="vibe-avatar">
+                            {vibe.sender?.avatarUrl ? (
+                              <img src={vibe.sender.avatarUrl} alt={vibe.sender.name} />
+                            ) : (
+                              <span>{vibe.sender?.name?.charAt(0).toUpperCase()}</span>
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      <div className="vibe-sender-info">
+                        {vibe.isAnonymous ? (
+                          <span className="anonymous-label">Anonymous</span>
+                        ) : (
+                          <Link to={`/profile/${vibe.sender?.handle}`}>
+                            <strong>{vibe.sender?.name}</strong>
+                          </Link>
+                        )}
+                        <span className="vibe-arrow">→</span>
+                        <Link to={`/profile/${vibe.recipient?.handle}`}>
+                          <strong>{vibe.recipient?.name}</strong>
+                        </Link>
+                      </div>
+                    </div>
+                    <span className="vibe-time">
+                      {new Date(vibe.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <p className="vibe-text">{vibe.text}</p>
+
+                  {vibe.tags && vibe.tags.length > 0 && (
+                    <div className="vibe-tags">
+                      {vibe.tags.map((tag, i) => (
+                        <span key={i} className="vibe-tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {vibe.emojis && vibe.emojis.length > 0 && (
+                    <div className="vibe-emojis">
+                      {vibe.emojis.map((emoji, i) => (
+                        <span key={i}>{emoji}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="vibe-actions">
+                    <button className="vibe-action-btn">
+                      ❤️ {vibe.likes || 0}
+                    </button>
+                    <button className="vibe-action-btn">
+                      💬 {vibe.comments || 0}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Trending Section */}
+        <div className="trending-section glass-card">
+          <h2>🔥 Trending Now</h2>
+          <div className="trending-tags">
+            <span className="trending-tag">#kind</span>
+            <span className="trending-tag">#amazing</span>
+            <span className="trending-tag">#inspiring</span>
+            <span className="trending-tag">#talented</span>
+            <span className="trending-tag">#funny</span>
+            <span className="trending-tag">#creative</span>
           </div>
         </div>
       </div>

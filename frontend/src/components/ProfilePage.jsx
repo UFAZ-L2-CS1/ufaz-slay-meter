@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import './ProfilePage.css';
 
-const ProfilePage = ({ currentUser }) => {
+const ProfilePage = () => {
+  const { user: currentUser } = useAuth();
   const { handle } = useParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,48 +19,24 @@ const ProfilePage = ({ currentUser }) => {
         setLoading(true);
         setError(null);
 
-        // Mock profile data for demo
-        setTimeout(() => {
-          if (isOwnProfile && currentUser) {
-            setProfile(currentUser);
-          } else {
-            // Generate mock profile for demo
-            setProfile({
-              name: handle ? `${handle.charAt(0).toUpperCase()}${handle.slice(1)} User` : 'User',
-              handle: handle || 'user',
-              bio: 'Living my best life! 💕',
-              avatarUrl: null,
-              stats: {
-                vibesReceived: Math.floor(Math.random() * 100) + 10,
-                vibesSent: Math.floor(Math.random() * 50) + 5,
-                slayScore: Math.floor(Math.random() * 500) + 100
-              },
-              socials: {
-                instagram: 'https://instagram.com',
-                tiktok: 'https://tiktok.com'
-              }
-            });
-          }
-          setLoading(false);
-        }, 500);
+        if (isOwnProfile && currentUser) {
+          // Load own profile
+          setProfile(currentUser);
+        } else {
+          // Load other user's profile
+          const response = await api.get(`/users/${handle}`);
+          setProfile(response.data.user);
+        }
       } catch (err) {
         console.error('Error loading profile:', err);
         setError('Could not load profile.');
+      } finally {
         setLoading(false);
       }
     };
 
     loadProfile();
   }, [handle, isOwnProfile, currentUser]);
-
-  const getInitials = (name) => {
-    if (!name) return '?';
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase();
-  };
 
   if (loading) {
     return (
@@ -87,13 +66,12 @@ const ProfilePage = ({ currentUser }) => {
   return (
     <div className="profile-page">
       <div className="profile-card">
-        {/* Profile Header */}
         <div className="profile-header">
           <div className="profile-avatar">
             {profile.avatarUrl ? (
               <img src={profile.avatarUrl} alt={profile.name} />
             ) : (
-              <span>{getInitials(profile.name)}</span>
+              <span>{profile.name?.charAt(0).toUpperCase()}</span>
             )}
           </div>
           <div className="profile-info">
@@ -103,7 +81,6 @@ const ProfilePage = ({ currentUser }) => {
           </div>
         </div>
 
-        {/* Profile Stats */}
         <div className="profile-stats">
           <div className="stat-item">
             <span className="stat-label">Vibes received</span>
@@ -119,17 +96,16 @@ const ProfilePage = ({ currentUser }) => {
           </div>
         </div>
 
-        {/* Profile Socials */}
         {profile.socials && (
           <div className="profile-socials">
             {profile.socials.instagram && (
               <a href={profile.socials.instagram} target="_blank" rel="noreferrer">
-                📷 Instagram
+                Instagram
               </a>
             )}
             {profile.socials.tiktok && (
               <a href={profile.socials.tiktok} target="_blank" rel="noreferrer">
-                🎵 TikTok
+                TikTok
               </a>
             )}
           </div>
