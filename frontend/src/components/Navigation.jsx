@@ -52,8 +52,8 @@ const Navigation = ({ user, onAuthClick, onLogout }) => {
               ✨ Explore
             </Link>
             <Link
-              to="/wars"
-              className={`nav-link ${isActive('/wars') ? 'active' : ''}`}
+              to="/vibe-wars"  // ✅ FIXED
+              className={`nav-link ${isActive('/vibe-wars') ? 'active' : ''}`}  // ✅ FIXED
               onClick={() => setShowMobileMenu(false)}
             >
               ⚔️ Vibe Wars
@@ -76,8 +76,8 @@ const Navigation = ({ user, onAuthClick, onLogout }) => {
                   📊 Dashboard
                 </Link>
                 <Link
-                  to="/send"
-                  className={`nav-link ${isActive('/send') ? 'active' : ''}`}
+                  to="/send-vibe"  // ✅ FIXED
+                  className={`nav-link ${isActive('/send-vibe') ? 'active' : ''}`}  // ✅ FIXED
                   onClick={() => setShowMobileMenu(false)}
                 >
                   💌 Send Vibe
@@ -93,7 +93,7 @@ const Navigation = ({ user, onAuthClick, onLogout }) => {
                       {user.avatarUrl ? (
                         <img src={user.avatarUrl} alt={user.name} />
                       ) : (
-                        user.name?.charAt(0).toUpperCase()
+                        <span>{user.name?.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
                     <span className="user-name">{user.name}</span>
@@ -129,17 +129,15 @@ const Navigation = ({ user, onAuthClick, onLogout }) => {
                 </div>
               </>
             ) : (
-              <>
-                <button
-                  onClick={() => {
-                    onAuthClick?.();
-                    setShowMobileMenu(false);
-                  }}
-                  className="btn btn-primary nav-auth-btn"
-                >
-                  Sign In
-                </button>
-              </>
+              <button
+                onClick={() => {
+                  onAuthClick?.();
+                  setShowMobileMenu(false);
+                }}
+                className="btn btn-primary nav-auth-btn"
+              >
+                Sign In
+              </button>
             )}
           </div>
         </div>
