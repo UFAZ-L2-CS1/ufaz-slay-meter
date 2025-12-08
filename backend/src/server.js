@@ -45,16 +45,25 @@ app.use(cookieParser());
 // --- Global (soft) rate limiter for all routes ---
 app.use(apiLimiter);
 
-// --- Healthcheck ---
-app.get("/health", (_req, res) => {
-  res.json({ ok: true, db: !!mongoose?.connection?.readyState });
+// ❌ REMOVED - These routes conflict with nginx
+// DO NOT add app.get("/", ...) or app.get("/test", ...)
+// Nginx will handle root "/" and serve the frontend
+
+// --- Backend health check (accessed via /api/health) ---
+app.get("/api/health", (_req, res) => {
+  res.json({ 
+    ok: true, 
+    db: !!mongoose?.connection?.readyState,
+    message: "Backend is healthy"
+  });
 });
 
-// --- Test route ---
-app.get("/test", (req, res) => {
+// --- Test route (accessed via /api/test) ---
+app.get("/api/test", (req, res) => {
   res.json({
     message: "Hello from backend!",
     instance: process.env.PORT || "unknown",
+    timestamp: new Date().toISOString()
   });
 });
 
