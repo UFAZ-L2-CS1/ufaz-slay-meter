@@ -45,17 +45,17 @@ app.use(cookieParser());
 // --- Global (soft) rate limiter for all routes ---
 app.use(apiLimiter);
 
-// ✅ Root test route (fixes "Cannot GET /")
-app.get("/", (_req, res) => {
-  res.send("✅ Backend is running correctly!");
-});
+// ❌ SILINMƏLI - Bu route nginx ilə conflict edir
+// app.get("/", (_req, res) => {
+//   res.send("✅ Backend is running correctly!");
+// });
 
 // --- Healthcheck ---
 app.get("/health", (_req, res) => {
   res.json({ ok: true, db: !!mongoose?.connection?.readyState });
 });
 
-// --- Test route for load-balancing ---
+// --- Test route ---
 app.get("/test", (req, res) => {
   res.json({
     message: "Hello from backend!",
