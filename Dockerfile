@@ -23,7 +23,7 @@ RUN cd backend && npm install --omit=dev
 RUN apk add --no-cache nginx
 
 # Nginx config və frontend build output kopyala
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY --from=build /app/build /usr/share/nginx/html
 
 # Port aç
