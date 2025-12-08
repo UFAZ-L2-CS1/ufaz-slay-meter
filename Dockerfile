@@ -1,12 +1,8 @@
 # ---------- Stage 1: Build Frontend ----------
 FROM node:18-alpine AS build
 WORKDIR /app
-
-# Copy və install frontend dependencies
 COPY frontend/package*.json ./ 
 RUN npm install
-
-# Copy qalan frontend kodu və build et
 COPY frontend ./ 
 RUN chmod +x node_modules/.bin/* || true
 RUN npm run build
@@ -15,19 +11,29 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /app
 
-# Backend fayllarını kopyala və dependency quraşdır
 COPY backend ./backend
 RUN cd backend && npm install --omit=dev
 
-# Nginx quraşdır
-RUN apk add --no-cache nginx
+RUN apk add --no-cache nginx gettext
 
-# Nginx config və frontend build output kopyala
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
+# Create nginx directories
+RUN mkdir -p /var/log/nginx /run/nginx /etc/nginx/conf.d
+
+# Copy nginx config as template
+COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Port aç
-EXPOSE 808
+# Don't use EXPOSE - Render uses $PORT
+# EXPOSE removed
 
-# Həm backend, həm Nginx-i eyni anda başlat
-CMD node backend/src/server.js & sleep 5 && nginx -g 'daemon off;'
+# Startup script
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'export PORT=${PORT:-10000}' >> /start.sh && \
+    echo 'echo "Starting on port $PORT"' >> /start.sh && \
+    echo 'envsubst '\''$PORT'\'' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf' >> /start.sh && \
+    echo 'cd /app/backend && node src/server.js &' >> /start.sh && \
+    echo 'sleep 3' >> /start.sh && \
+    echo 'nginx -g "daemon off;"' >> /start.sh && \
+    chmod +x /start.sh
+
+CMD ["/start.sh"]
