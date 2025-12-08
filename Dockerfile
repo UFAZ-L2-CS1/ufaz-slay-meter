@@ -1,39 +1,29 @@
-# ---------- Stage 1: Build Frontend ----------
-FROM node:18 AS build
+# ========== Stage 1: Build Frontend ==========
+FROM node:18 AS frontend-build
 
-WORKDIR /app
+WORKDIR /frontend
 
-# Copy package files and install
+# Install dependencies
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci --legacy-peer-deps || npm install
 
-# Copy source
+# Copy source and build
 COPY frontend ./
-
-# Fix permissions
-RUN chmod -R 755 node_modules/.bin
-
-# Build
+RUN chmod -R 755 node_modules/.bin || true
 RUN npm run build
 
-# DEBUG - Verify build output
-RUN echo "=== BUILD OUTPUT CHECK ===" && \
+# Verify build succeeded
+RUN echo "=== Checking build output ===" && \
     ls -la && \
-    echo "=== CHECKING FOR BUILD FOLDER ===" && \
     if [ -d "build" ]; then \
-        echo "✅ build/ folder exists"; \
-        ls -la build/; \
+        echo "✅ build/ exists"; \
+        ls -la build/ | head -20; \
+        test -f build/index.html && echo "✅ index.html found" || (echo "❌ NO index.html!" && exit 1); \
     else \
-        echo "❌ build/ folder NOT found"; \
-    fi && \
-    if [ -d "dist" ]; then \
-        echo "✅ dist/ folder exists"; \
-        ls -la dist/; \
-    else \
-        echo "❌ dist/ folder NOT found"; \
+        echo "❌ NO build/ folder!" && exit 1; \
     fi
 
-# ---------- Stage 2: Production ----------
+# ========== Stage 2: Production ==========
 FROM node:18-slim
 
 WORKDIR /app
@@ -42,41 +32,51 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y nginx gettext-base && \
     rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /run/nginx /var/log/nginx
+    mkdir -p /run/nginx /var/log/nginx /usr/share/nginx/html
 
-# Install backend
-COPY backend ./backend
+# Setup backend
+COPY backend/package*.json ./backend/
 RUN cd backend && npm install --omit=dev
+COPY backend ./backend
 
 # Copy nginx config
 COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
 
-# Copy frontend build (try both build and dist)
-COPY --from=build /app/build /usr/share/nginx/html
+# Copy frontend build from previous stage
+COPY --from=frontend-build /frontend/build /usr/share/nginx/html
 
-# Verify frontend was copied
-RUN echo "=== FRONTEND FILES CHECK ===" && \
-    ls -la /usr/share/nginx/html/ && \
-    if [ -f "/usr/share/nginx/html/index.html" ]; then \
-        echo "✅ index.html found"; \
-    else \
-        echo "❌ index.html NOT found - FRONTEND MISSING!"; \
-        exit 1; \
-    fi
+# Verify frontend was copied successfully
+RUN echo "=== Verifying frontend in production ===" && \
+    ls -la /usr/share/nginx/html && \
+    test -f /usr/share/nginx/html/index.html && echo "✅ Frontend copied successfully" || \
+    (echo "❌ Frontend copy FAILED!" && exit 1)
 
 # Create startup script
-RUN echo '#!/bin/bash\n\
+RUN printf '#!/bin/bash\n\
 set -e\n\
+\n\
 export PORT=${PORT:-10000}\n\
-echo "==> Services starting (nginx: $PORT, backend: 5000)"\n\
-echo "==> Frontend files:"\n\
-ls -la /usr/share/nginx/html/ | head -10\n\
+echo "==> Configuration: nginx on $PORT, backend on 5000"\n\
+\n\
+# Generate nginx config\n\
 envsubst '"'"'$PORT'"'"' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf\n\
-echo "==> Starting backend..."\n\
+echo "==> Nginx config generated"\n\
+\n\
+# Verify frontend files\n\
+echo "==> Frontend files:"\n\
+ls -la /usr/share/nginx/html | head -10\n\
+\n\
+# Start backend\n\
+echo "==> Starting backend on port 5000..."\n\
 cd /app/backend && PORT=5000 node src/server.js &\n\
+BACKEND_PID=$!\n\
+echo "    Backend PID: $BACKEND_PID"\n\
+\n\
+# Wait for backend\n\
 sleep 3\n\
-echo "==> Starting nginx..."\n\
-exec nginx -g "daemon off;"\n' > /start.sh && \
-chmod +x /start.sh
+\n\
+# Start nginx\n\
+echo "==> Starting nginx on port $PORT..."\n\
+nginx -g "daemon off;"\n' > /start.sh && chmod +x /start.sh
 
 CMD ["/start.sh"]
