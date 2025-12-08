@@ -7,8 +7,13 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm install
 
-# Copy source and build
+# Copy source
 COPY frontend ./
+
+# FIX PERMISSIONS before building!
+RUN chmod -R 755 node_modules/.bin
+
+# Now build
 RUN npm run build
 
 # ---------- Stage 2: Production ----------
