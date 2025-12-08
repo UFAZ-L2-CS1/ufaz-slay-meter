@@ -1,23 +1,19 @@
+version: "3.8"
+
 services:
-  nginx:
-    image: nginx:latest
+  app:
+    build: .
     ports:
-      - "8080:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - "8080:10000"   # xarici port 8080 → daxili $PORT=10000
+    environment:
+      - PORT=10000
     depends_on:
-      - frontend
       - backend1
       - backend2
       - backend3
     networks:
       - frontend_net
       - backend_net
-
-  frontend:
-    build: ./frontend
-    networks:
-      - frontend_net
 
   backend1:
     build: ./backend
@@ -43,4 +39,3 @@ services:
 networks:
   frontend_net:
   backend_net:
-    #internal: true
