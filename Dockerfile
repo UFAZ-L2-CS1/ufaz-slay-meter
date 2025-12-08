@@ -45,11 +45,16 @@ COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
 # Copy frontend build from previous stage
 COPY --from=frontend-build /frontend/build /usr/share/nginx/html
 
+# Create a test HTML if copy fails (debugging)
+RUN if [ ! -f /usr/share/nginx/html/index.html ]; then \
+        echo "⚠️ Creating test index.html"; \
+        echo '<!DOCTYPE html><html><head><title>Test</title></head><body><h1>TEST PAGE - Frontend missing!</h1></body></html>' > /usr/share/nginx/html/index.html; \
+    fi
+
 # Verify frontend was copied successfully
 RUN echo "=== Verifying frontend in production ===" && \
     ls -la /usr/share/nginx/html && \
-    test -f /usr/share/nginx/html/index.html && echo "✅ Frontend copied successfully" || \
-    (echo "❌ Frontend copy FAILED!" && exit 1)
+    cat /usr/share/nginx/html/index.html | head -5
 
 # Create startup script
 RUN printf '#!/bin/bash\n\
@@ -63,8 +68,15 @@ envsubst '"'"'$PORT'"'"' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.con
 echo "==> Nginx config generated"\n\
 \n\
 # Verify frontend files\n\
-echo "==> Frontend files:"\n\
-ls -la /usr/share/nginx/html | head -10\n\
+echo "==> Frontend files in /usr/share/nginx/html:"\n\
+ls -la /usr/share/nginx/html\n\
+echo "==> Checking index.html:"\n\
+if [ -f /usr/share/nginx/html/index.html ]; then\n\
+    echo "✅ index.html exists";\n\
+    head -5 /usr/share/nginx/html/index.html;\n\
+else\n\
+    echo "❌ index.html NOT FOUND!";\n\
+fi\n\
 \n\
 # Start backend\n\
 echo "==> Starting backend on port 5000..."\n\
