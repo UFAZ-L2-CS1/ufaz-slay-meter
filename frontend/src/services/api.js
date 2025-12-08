@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'https://ufaz-slay-meter.onrender.com/api';
+// Backend URL — Render environment-dən oxuyur, əgər yoxdursa nginx proxy (/api) istifadə edir
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,7 +10,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add token
+// Request interceptor (token əlavə edir)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -18,17 +19,15 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+// Response interceptor (auth error handle)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
+      // Token etibarsızsa → logout + redirect
       localStorage.removeItem('token');
       window.location.href = '/';
     }
