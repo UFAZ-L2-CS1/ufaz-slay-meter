@@ -1,29 +1,36 @@
-# ---------- Stage 1: Build React App ----------
-FROM node:18-bullseye AS build
+# ---------- Stage 1: Build Frontend ----------
+FROM node:18-alpine AS build
 WORKDIR /app
 
-# Paketləri kopyala və quraşdır
-COPY frontend/package*.json ./
-RUN npm install --legacy-peer-deps
+# Copy frontend dependencies
+COPY frontend/package*.json ./frontend/
+WORKDIR /app/frontend
+RUN npm install
 
-# Qalan frontend fayllarını kopyala
+# Copy və build
 COPY frontend/ ./
-
-# react-scripts üçün icazə düzəlt
-RUN chmod +x node_modules/.bin/* || true
-
-# Build əməliyyatı
 RUN npm run build
 
-# ---------- Stage 2: Serve with Nginx ----------
-FROM nginx:stable-alpine
-WORKDIR /usr/share/nginx/html
 
-# Build nəticələrini kopyala
-COPY --from=build /app/build .
+# ---------- Stage 2: Run Backend + Nginx ----------
+FROM node:18-alpine AS runtime
+WORKDIR /app
 
-# Öz Nginx konfiqurasiyanı əlavə et
+# Backend üçün lazımi faylları kopyala
+COPY backend ./backend
+RUN cd backend && npm install --omit=dev
+
+# Nginx quraşdır
+RUN apk add --no-cache nginx
+
+# Nginx config
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
+# Build edilmiş frontend fayllarını Nginx root-a kopyala
+COPY --from=build /app/frontend/build /usr/share/nginx/html
+
+# Portlar
 EXPOSE 808
-CMD ["nginx", "-g", "daemon off;"]
+
+# CMD ilə həm backend-i, həm Nginx-i eyni anda işə salmaq
+CMD sh -c "node backend/server.js & nginx -g 'daemon off;'"
