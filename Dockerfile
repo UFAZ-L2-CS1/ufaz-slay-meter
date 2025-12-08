@@ -2,58 +2,66 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
-# Copy və install frontend dependencies
+# Copy package files
 COPY frontend/package*.json ./
-RUN npm install
 
-# Copy frontend source və build et
+# Install dependencies (use npm ci for faster, reliable installs)
+RUN npm ci || npm install
+
+# Copy all frontend source files
 COPY frontend ./
+
+# Build the React app
 RUN npm run build
 
 # ---------- Stage 2: Run Backend + Nginx ----------
 FROM node:18-alpine
 WORKDIR /app
 
-# Backend fayllarını kopyala və dependency quraşdır
-COPY backend ./backend
+# Install backend dependencies
+COPY backend/package*.json ./backend/
 RUN cd backend && npm install --omit=dev
 
-# Nginx və gettext quraşdır
+# Copy backend source
+COPY backend ./backend
+
+# Install nginx and gettext
 RUN apk add --no-cache nginx gettext
 
-# Nginx üçün lazımi qovluqları yarat
+# Create nginx directories
 RUN mkdir -p /var/log/nginx /run/nginx /etc/nginx/conf.d
 
-# Nginx config template kopyala
+# Copy nginx config as template
 COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
 
-# Frontend build output kopyala (React default: /app/build)
+# Copy built frontend from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Startup script yarat
-RUN echo '#!/bin/sh' > /start.sh && \
-    echo 'set -e' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Render PORT-dan istifadə et (default: 10000)' >> /start.sh && \
-    echo 'export PORT=${PORT:-10000}' >> /start.sh && \
-    echo 'echo "==> Configuration: nginx on port $PORT, backend on port 5000"' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Nginx config-də $PORT-u əvəz et' >> /start.sh && \
-    echo 'envsubst '\''$PORT'\'' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf' >> /start.sh && \
-    echo 'echo "==> Nginx configuration generated"' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Backend-i başlat (port 5000)' >> /start.sh && \
-    echo 'echo "==> Starting backend on port 5000..."' >> /start.sh && \
-    echo 'cd /app/backend && PORT=5000 node src/server.js &' >> /start.sh && \
-    echo 'BACKEND_PID=$!' >> /start.sh && \
-    echo 'echo "==> Backend started with PID $BACKEND_PID"' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Backend başlasın deyə gözlə' >> /start.sh && \
-    echo 'sleep 3' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Nginx-i başlat' >> /start.sh && \
-    echo 'echo "==> Starting nginx on port $PORT..."' >> /start.sh && \
-    echo 'nginx -g "daemon off;"' >> /start.sh && \
-    chmod +x /start.sh
+# Verify frontend was copied
+RUN ls -la /usr/share/nginx/html && \
+    test -f /usr/share/nginx/html/index.html || (echo "❌ Frontend build failed!" && exit 1)
+
+# Create startup script
+RUN printf '#!/bin/sh\n\
+set -e\n\
+\n\
+export PORT=${PORT:-10000}\n\
+echo "==> Starting services..."\n\
+echo "    - Nginx will listen on port $PORT"\n\
+echo "    - Backend will run on port 5000"\n\
+\n\
+envsubst '"'"'$PORT'"'"' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf\n\
+echo "==> Nginx config generated"\n\
+\n\
+echo "==> Starting backend..."\n\
+cd /app/backend && PORT=5000 node src/server.js &\n\
+BACKEND_PID=$!\n\
+echo "    Backend PID: $BACKEND_PID"\n\
+\n\
+echo "==> Waiting for backend to initialize..."\n\
+sleep 3\n\
+\n\
+echo "==> Starting nginx..."\n\
+exec nginx -g "daemon off;"\n' > /start.sh && chmod +x /start.sh
 
 CMD ["/start.sh"]
