@@ -2,35 +2,32 @@
 FROM node:18-alpine AS build
 WORKDIR /app
 
-# Copy frontend dependencies
-COPY frontend/package*.json ./frontend/
-WORKDIR /app/frontend
+# Copy və install frontend dependencies
+COPY frontend/package*.json ./ 
 RUN npm install
 
-# Copy və build
-COPY frontend/ ./
+# Copy qalan frontend kodu və build et
+COPY frontend ./ 
+RUN chmod +x node_modules/.bin/* || true
 RUN npm run build
 
-
 # ---------- Stage 2: Run Backend + Nginx ----------
-FROM node:18-alpine AS runtime
+FROM node:18-alpine
 WORKDIR /app
 
-# Backend üçün lazımi faylları kopyala
+# Backend fayllarını kopyala və dependency quraşdır
 COPY backend ./backend
 RUN cd backend && npm install --omit=dev
 
 # Nginx quraşdır
 RUN apk add --no-cache nginx
 
-# Nginx config
+# Nginx config və frontend build output kopyala
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Build edilmiş frontend fayllarını Nginx root-a kopyala
-COPY --from=build /app/frontend/build /usr/share/nginx/html
-
-# Portlar
+# Port aç
 EXPOSE 808
 
-# CMD ilə həm backend-i, həm Nginx-i eyni anda işə salmaq
+# Həm backend, həm Nginx-i eyni anda başlat
 CMD sh -c "node backend/server.js & nginx -g 'daemon off;'"
