@@ -4,13 +4,11 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import vibeRoutes from "./routes/vibeRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
-
 import errorHandler from "./middleware/errorHandler.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
 
@@ -47,7 +45,7 @@ app.use(cookieParser());
 // --- Global (soft) rate limiter for all routes ---
 app.use(apiLimiter);
 
-// ✅ NEW — Root test route (fixes "Cannot GET /")
+// ✅ Root test route (fixes "Cannot GET /")
 app.get("/", (_req, res) => {
   res.send("✅ Backend is running correctly!");
 });
@@ -76,8 +74,9 @@ app.use(errorHandler);
 
 // --- Start server after DB ---
 const PORT = process.env.PORT || 5000;
+
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server listening on http://localhost:${PORT}`);
   });
 });
