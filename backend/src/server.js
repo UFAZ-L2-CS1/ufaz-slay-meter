@@ -45,11 +45,6 @@ app.use(cookieParser());
 // --- Global (soft) rate limiter for all routes ---
 app.use(apiLimiter);
 
-// ❌ SILINMƏLI - Bu route nginx ilə conflict edir
-// app.get("/", (_req, res) => {
-//   res.send("✅ Backend is running correctly!");
-// });
-
 // --- Healthcheck ---
 app.get("/health", (_req, res) => {
   res.json({ ok: true, db: !!mongoose?.connection?.readyState });
