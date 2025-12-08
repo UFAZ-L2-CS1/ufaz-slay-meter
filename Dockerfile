@@ -27,7 +27,7 @@ RUN mkdir -p /var/log/nginx /run/nginx /etc/nginx/conf.d
 
 # Copy nginx config as template and frontend build
 COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/frontend/build /usr/share/nginx/html
 
 # Create startup script
 RUN echo '#!/bin/sh' > /start.sh && \
