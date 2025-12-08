@@ -30,4 +30,4 @@ COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 808
 
 # Həm backend, həm Nginx-i eyni anda başlat
-CMD sh -c "node backend/server.js & nginx -g 'daemon off;'"
+CMD node backend/src/server.js & sleep 5 && nginx -g 'daemon off;'
