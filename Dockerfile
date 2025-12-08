@@ -1,18 +1,28 @@
-# ---------- Stage 1: Build React ----------
+# ---------- Stage 1: Build React App ----------
 FROM node:18-alpine AS build
 WORKDIR /app
+
+# Copy package.json və package-lock.json
 COPY frontend/package*.json ./
+
+# Install dependencies
 RUN npm install
+
+# Copy bütün frontend faylları
 COPY frontend ./
+
+# Fix icazə problemi (renderdə olur bəzən)
+RUN chmod +x node_modules/.bin/* || true
+
+# Build React app (çıxış qovluğu: build/)
 RUN npm run build
 
 # ---------- Stage 2: Serve with Nginx ----------
 FROM nginx:stable-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Build edilmiş React fayllarını Nginx-ə kopyala
-COPY --from=build /app/dist /usr/share/nginx/html   # əgər səndə Vite-dirsə dist
-# COPY --from=build /app/build /usr/share/nginx/html  # əgər create-react-app-dırsa build
+# React build fayllarını Nginx-ə kopyalayırıq
+COPY --from=build /app/build /usr/share/nginx/html
 
 EXPOSE 808
 CMD ["nginx", "-g", "daemon off;"]
