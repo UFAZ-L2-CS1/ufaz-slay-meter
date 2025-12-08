@@ -1,67 +1,46 @@
 # ---------- Stage 1: Build Frontend ----------
-FROM node:18-alpine AS build
+FROM node:18 AS build
+
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install
 COPY frontend/package*.json ./
+RUN npm install
 
-# Install dependencies (use npm ci for faster, reliable installs)
-RUN npm ci || npm install
-
-# Copy all frontend source files
+# Copy source and build
 COPY frontend ./
-
-# Build the React app
 RUN npm run build
 
-# ---------- Stage 2: Run Backend + Nginx ----------
-FROM node:18-alpine
+# ---------- Stage 2: Production ----------
+FROM node:18-slim
+
 WORKDIR /app
 
-# Install backend dependencies
-COPY backend/package*.json ./backend/
+# Install nginx and tools
+RUN apt-get update && \
+    apt-get install -y nginx gettext-base && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /run/nginx /var/log/nginx
+
+# Install backend
+COPY backend ./backend
 RUN cd backend && npm install --omit=dev
 
-# Copy backend source
-COPY backend ./backend
-
-# Install nginx and gettext
-RUN apk add --no-cache nginx gettext
-
-# Create nginx directories
-RUN mkdir -p /var/log/nginx /run/nginx /etc/nginx/conf.d
-
-# Copy nginx config as template
+# Copy nginx config and frontend build
 COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
-
-# Copy built frontend from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Verify frontend was copied
-RUN ls -la /usr/share/nginx/html && \
-    test -f /usr/share/nginx/html/index.html || (echo "❌ Frontend build failed!" && exit 1)
-
 # Create startup script
-RUN printf '#!/bin/sh\n\
+RUN echo '#!/bin/bash\n\
 set -e\n\
-\n\
 export PORT=${PORT:-10000}\n\
-echo "==> Starting services..."\n\
-echo "    - Nginx will listen on port $PORT"\n\
-echo "    - Backend will run on port 5000"\n\
-\n\
+echo "==> Configuring services (nginx: $PORT, backend: 5000)"\n\
 envsubst '"'"'$PORT'"'"' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf\n\
-echo "==> Nginx config generated"\n\
-\n\
-echo "==> Starting backend..."\n\
+echo "==> Starting backend on port 5000..."\n\
 cd /app/backend && PORT=5000 node src/server.js &\n\
-BACKEND_PID=$!\n\
-echo "    Backend PID: $BACKEND_PID"\n\
-\n\
-echo "==> Waiting for backend to initialize..."\n\
 sleep 3\n\
-\n\
-echo "==> Starting nginx..."\n\
-exec nginx -g "daemon off;"\n' > /start.sh && chmod +x /start.sh
+echo "==> Starting nginx on port $PORT..."\n\
+exec nginx -g "daemon off;"\n' > /start.sh && \
+chmod +x /start.sh
 
 CMD ["/start.sh"]
