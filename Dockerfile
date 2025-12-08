@@ -1,33 +1,65 @@
-# ---------- Stage 1: Build Frontend ----------
-FROM node:18-alpine AS build
-WORKDIR /app
+gzip on;
+gzip_vary on;
+gzip_min_length 512;
+gzip_proxied any;
+gzip_comp_level 5;
+gzip_types
+  text/plain
+  text/css
+  application/json
+  application/javascript
+  text/xml
+  application/xml
+  text/javascript
+  image/svg+xml;
 
-# Copy və install frontend dependencies
-COPY frontend/package*.json ./ 
-RUN npm install
+# ---------- Default Server ----------
+server {
+  listen 808;
+  server_name _;
 
-# Copy qalan frontend kodu və build et
-COPY frontend ./ 
-RUN chmod +x node_modules/.bin/* || true
-RUN npm run build
+  # ---------- Health Check ----------
+  location /health {
+      return 200 "Nginx is healthy ✅\n";
+      add_header Content-Type text/plain;
+  }
 
-# ---------- Stage 2: Run Backend + Nginx ----------
-FROM node:18-alpine
-WORKDIR /app
+  # ---------- API Proxy ----------
+  location /api/ {
+      proxy_pass http://localhost:5000/;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
 
-# Backend fayllarını kopyala və dependency quraşdır
-COPY backend ./backend
-RUN cd backend && npm install --omit=dev
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
 
-# Nginx quraşdır
-RUN apk add --no-cache nginx
+      proxy_read_timeout 60s;
+      proxy_connect_timeout 10s;
+      proxy_send_timeout 30s;
 
-# Nginx config və frontend build output kopyala
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/build /usr/share/nginx/html
+      proxy_cache_bypass $http_upgrade;
+  }
 
-# Port aç
-EXPOSE 808
+  # ---------- Frontend Static ----------
+  location / {
+      root /usr/share/nginx/html;
+      index index.html;
+      try_files $uri $uri/ /index.html;
+  }
 
-# Həm backend, həm Nginx-i eyni anda başlat
-CMD sh -c "node backend/server.js & nginx -g 'daemon off;'"
+  # ---------- Cache Static Assets ----------
+  location ~* \.(?:ico|css|js|gif|jpe?g|png|woff2?|ttf|svg|eot|webm|mp4)$ {
+      root /usr/share/nginx/html;
+      expires 30d;
+      add_header Cache-Control "public, immutable";
+      access_log off;
+  }
+
+  # ---------- Security Headers ----------
+  add_header X-Content-Type-Options nosniff;
+  add_header X-Frame-Options SAMEORIGIN;
+  add_header X-XSS-Protection "1; mode=block";
+}
