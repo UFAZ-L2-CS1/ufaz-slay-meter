@@ -1,41 +1,12 @@
-version: "3.8"
-
 services:
   app:
     build: .
     ports:
-      - "8080:10000"   # xarici port 8080 → daxili $PORT=10000
+      - "8080:10000"
     environment:
       - PORT=10000
-    depends_on:
-      - backend1
-      - backend2
-      - backend3
     networks:
-      - frontend_net
-      - backend_net
-
-  backend1:
-    build: ./backend
-    environment:
-      - PORT=3001
-    networks:
-      - backend_net
-
-  backend2:
-    build: ./backend
-    environment:
-      - PORT=3002
-    networks:
-      - backend_net
-
-  backend3:
-    build: ./backend
-    environment:
-      - PORT=3003
-    networks:
-      - backend_net
+      - app_net
 
 networks:
-  frontend_net:
-  backend_net:
+  app_net:
