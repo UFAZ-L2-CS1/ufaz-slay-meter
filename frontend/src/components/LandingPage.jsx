@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './LandingPage.css';
+import api from '../services/api';
 
 const LandingPage = ({ onAuthClick, user }) => {
   const [currentQuote, setCurrentQuote] = useState(0);
-  const [stats] = useState({
-    users: 1234,
-    vibes: 5678,
-    tags: 342,
-    slayers: 89
+  const [stats, setStats] = useState({
+    users: 0,
+    vibes: 0,
+    tags: 0,
+    slayers: 0
   });
+  const [loading, setLoading] = useState(true);
 
   const quotes = [
     "Your slay level is unmeasurable! 💖",
@@ -22,196 +24,207 @@ const LandingPage = ({ onAuthClick, user }) => {
     const interval = setInterval(() => {
       setCurrentQuote((prev) => (prev + 1) % quotes.length);
     }, 3000);
-
     return () => clearInterval(interval);
   }, [quotes.length]);
+
+  // ✅ Fetch real stats from backend
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [globalStats, trendingTags, topUsers] = await Promise.all([
+          api.get('/stats/global'),
+          api.get('/tags/trending'),
+          api.get('/users/top?limit=100')
+        ]);
+
+        setStats({
+          users: globalStats.data.totalUsers || 0,
+          vibes: globalStats.data.totalVibes || 0,
+          tags: trendingTags.data.tags?.length || 0,
+          slayers: topUsers.data.users?.filter(u => u.vibeCount > 5).length || 0
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // Keep zeros if fetch fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="landing-page">
       {/* Hero Section */}
-      <section className="hero">
+      <section className="hero-section">
         <div className="hero-content">
-          <div className="hero-title">
-            <h1 className="title-main">UFAZ Slay Meter</h1>
-            <span className="title-sparkle">✨</span>
-          </div>
-          <h2 className="hero-subtitle">
-            <span className="shimmer-text">Where your slay level gets recognized</span>
-          </h2>
-          <div className="hero-description">
-            <p>
+          <div className="hero-text">
+            <h1 className="hero-title">
+              <span className="gradient-text">UFAZ Slay Meter</span>
+            </h1>
+            <p className="hero-subtitle">
+              Where your slay level gets recognized
+            </p>
+            <p className="hero-description">
               Send anonymous vibes to your UFAZ friends and let them know how amazing they are!
             </p>
-          </div>
-          <div className="hero-buttons">
-            {user ? (
-              <>
-                <Link to="/dashboard" className="btn btn-fetch">
-                  Go to Dashboard 🚀
-                </Link>
-                <Link to="/send" className="btn btn-secondary">
-                  Send a Vibe 💕
-                </Link>
-              </>
-            ) : (
-              <>
-                <button onClick={onAuthClick} className="btn btn-fetch">
-                  Get Started 🚀
-                </button>
-                <button onClick={onAuthClick} className="btn btn-secondary">
-                  Sign In
-                </button>
-              </>
-            )}
-          </div>
-          <div className="quotes-carousel">
-            <p className="quote-text" key={currentQuote}>
-              {quotes[currentQuote]}
-            </p>
-          </div>
-        </div>
 
-        <div className="hero-visual">
-          <div className="slay-book-preview">
-            <div className="book-cover">
-              <h2>Slay Meter</h2>
-              <p>UFAZ Edition</p>
-              <div className="book-sparkles">
-                <span className="sparkle">✨</span>
-                <span className="sparkle">💕</span>
-                <span className="sparkle">👑</span>
-                <span className="sparkle">💖</span>
-                <span className="sparkle">⭐</span>
-              </div>
+            <div className="cta-buttons">
+              <button className="btn btn-primary" onClick={onAuthClick}>
+                GET STARTED <span className="sparkle">✨</span>
+              </button>
+              {!user && (
+                <button className="btn btn-secondary" onClick={onAuthClick}>
+                  SIGN IN
+                </button>
+              )}
+            </div>
+
+            <div className="quote-carousel">
+              <p className="quote">{quotes[currentQuote]}</p>
+            </div>
+          </div>
+
+          <div className="hero-visual">
+            <div className="slay-card">
+              <h3 className="slay-title">
+                Slay
+                <br />
+                Meter
+              </h3>
+              <p className="slay-edition">UFAZ Edition</p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="stats-section">
+        <div className="stats-container">
+          <div className="stat-card">
+            <div className="stat-icon">👥</div>
+            <div className="stat-number">
+              {loading ? '...' : stats.users.toLocaleString()}
+            </div>
+            <div className="stat-label">Active Users</div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">💕</div>
+            <div className="stat-number">
+              {loading ? '...' : stats.vibes.toLocaleString()}
+            </div>
+            <div className="stat-label">Vibes Sent</div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">🏷️</div>
+            <div className="stat-number">
+              {loading ? '...' : stats.tags}
+            </div>
+            <div className="stat-label">Trending Tags</div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">👑</div>
+            <div className="stat-number">
+              {loading ? '...' : stats.slayers}
+            </div>
+            <div className="stat-label">Top Slayers</div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="features">
-        <div className="container">
-          <h2 className="section-title">Why You'll Love It 💕</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <span className="feature-icon">🎭</span>
-              <h3>Anonymous Vibes</h3>
-              <p>
-                Send vibes without revealing your identity. Let people know they're appreciated!
-              </p>
-            </div>
-            <div className="feature-card">
-              <span className="feature-icon">🏆</span>
-              <h3>Leaderboard</h3>
-              <p>
-                Receive vibes and climb the UFAZ leaderboard. Show everyone your slay level!
-              </p>
-            </div>
-            <div className="feature-card">
-              <span className="feature-icon">🔥</span>
-              <h3>Trending Tags</h3>
-              <p>
-                See what qualities are trending at UFAZ. Join the conversation with popular tags!
-              </p>
-            </div>
-            <div className="feature-card">
-              <span className="feature-icon">⚔️</span>
-              <h3>Vibe Wars</h3>
-              <p>
-                Vote for the strongest vibes and help crown the ultimate slay champion!
-              </p>
-            </div>
-            <div className="feature-card">
-              <span className="feature-icon">💖</span>
-              <h3>Community Love</h3>
-              <p>
-                Create a culture of appreciation and support within the UFAZ community!
-              </p>
-            </div>
-            <div className="feature-card">
-              <span className="feature-icon">🎖️</span>
-              <h3>Achievements</h3>
-              <p>
-                Compete for the top spots and earn badges for your achievements!
-              </p>
-            </div>
+      <section className="features-section">
+        <h2 className="section-title">How It Works</h2>
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🎭</div>
+            <h3 className="feature-title">Anonymous Vibes</h3>
+            <p className="feature-description">
+              Send vibes without revealing your identity. Let people know they're appreciated!
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">📊</div>
+            <h3 className="feature-title">Track Your Slay</h3>
+            <p className="feature-description">
+              Receive vibes and climb the UFAZ leaderboard. Show everyone your slay level!
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">🔥</div>
+            <h3 className="feature-title">Trending Tags</h3>
+            <p className="feature-description">
+              See what qualities are trending at UFAZ. Join the conversation with popular tags!
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">⚔️</div>
+            <h3 className="feature-title">Vibe Wars</h3>
+            <p className="feature-description">
+              Vote for the strongest vibes and help crown the ultimate slay champion!
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">💖</div>
+            <h3 className="feature-title">Spread Positivity</h3>
+            <p className="feature-description">
+              Create a culture of appreciation and support within the UFAZ community!
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">🏆</div>
+            <h3 className="feature-title">Achievements</h3>
+            <p className="feature-description">
+              Compete for the top spots and earn badges for your achievements!
+            </p>
           </div>
         </div>
       </section>
 
       {/* Rules Section */}
       <section className="rules-section">
-        <div className="container">
-          <div className="rules-book">
-            <h2 className="rules-title">The Rules of Slaying 👑</h2>
-            <div className="rules-list">
-              <div className="rule-item">
-                <span className="rule-number">#1</span>
-                <p>Be genuine with your vibes - real recognizes real</p>
-              </div>
-              <div className="rule-item">
-                <span className="rule-number">#2</span>
-                <p>On Wednesdays, we double the slay points</p>
-              </div>
-              <div className="rule-item">
-                <span className="rule-number">#3</span>
-                <p>No hate, only love - negativity drops your slay score to zero</p>
-              </div>
-              <div className="rule-item">
-                <span className="rule-number">#4</span>
-                <p>Every vibe matters - spread them generously!</p>
-              </div>
-            </div>
+        <h2 className="section-title">Slay Meter Rules</h2>
+        <div className="rules-grid">
+          <div className="rule-card">
+            <span className="rule-number">1</span>
+            <p className="rule-text">Be genuine with your vibes - real recognizes real</p>
           </div>
-        </div>
-      </section>
 
-      {/* Stats Preview */}
-      <section className="stats-preview">
-        <div className="container">
-          <h2 className="section-title">The Numbers Don't Lie 📊</h2>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <span className="stat-number">{stats.users}</span>
-              <span className="stat-label">Slayers</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{stats.vibes}</span>
-              <span className="stat-label">Vibes Sent</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{stats.tags}</span>
-              <span className="stat-label">Tags Used</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{stats.slayers}</span>
-              <span className="stat-label">Top Slayers</span>
-            </div>
+          <div className="rule-card wednesday">
+            <span className="rule-number">2</span>
+            <p className="rule-text">On Wednesdays, we double the slay points</p>
+          </div>
+
+          <div className="rule-card">
+            <span className="rule-number">3</span>
+            <p className="rule-text">No hate, only love - negativity drops your slay score to zero</p>
+          </div>
+
+          <div className="rule-card">
+            <span className="rule-number">4</span>
+            <p className="rule-text">Every vibe matters - spread them generously!</p>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="cta-section">
-        <div className="container">
-          <h2 className="cta-title shimmer-text">
-            Ready to Start Slaying? 👑
-          </h2>
-          <p className="cta-subtitle">
-            Join UFAZ Slay Meter today and start spreading amazing vibes!
-          </p>
-          <div className="cta-buttons">
-            {user ? (
-              <Link to="/dashboard" className="btn btn-fetch">
-                Go to Dashboard 🚀
-              </Link>
-            ) : (
-              <button onClick={onAuthClick} className="btn btn-fetch">
-                Join Now - It's Free! 💕
-              </button>
-            )}
-          </div>
-        </div>
+        <h2 className="cta-title">Ready to Start Slaying?</h2>
+        <p className="cta-text">
+          Join UFAZ Slay Meter today and start spreading amazing vibes!
+        </p>
+        <button className="btn btn-primary btn-large" onClick={onAuthClick}>
+          JOIN NOW <span className="arrow">→</span>
+        </button>
       </section>
     </div>
   );
