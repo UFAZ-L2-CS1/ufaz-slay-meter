@@ -12,6 +12,12 @@ router.get("/", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     
+    // ✅ Fetch real users from database
+    const users = await User.find()
+      .select('name handle avatarUrl bio')
+      .limit(20)
+      .lean();
+    
     let sortCriteria = { createdAt: -1 };
     let filter = { isVisible: true };
     
@@ -45,6 +51,8 @@ router.get("/", async (req, res) => {
     ]);
     
     res.json({
+      users,  // ✅ Now returns real users
+      recentVibes: vibes,
       vibes,
       page,
       limit,

@@ -41,6 +41,36 @@ router.put(
 );
 
 /**
+ * ✅ NEW: GET /api/users/search
+ * Search users by name or handle (for autocomplete)
+ */
+router.get("/search", async (req, res, next) => {
+  try {
+    const query = req.query.q || '';
+    
+    if (!query.trim()) {
+      return res.json({ users: [] });
+    }
+
+    // Search users whose handle starts with query OR name contains query
+    const users = await User.find({
+      $or: [
+        { handle: { $regex: `^${query}`, $options: 'i' } }, // Starts with
+        { name: { $regex: query, $options: 'i' } }           // Contains
+      ]
+    })
+    .select('name handle avatarUrl bio')
+    .limit(10)
+    .lean();
+
+    res.json({ users });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({ message: 'Search failed' });
+  }
+});
+
+/**
  * GET /api/users/:username
  * Public profile by username (no auth)
  */
