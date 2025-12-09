@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import LandingPage from './components/LandingPage';
@@ -27,13 +27,11 @@ function App() {
 }
 
 function AppContent() {
-  const { user, loading, login, register } = useAuth();
+  const { user, loading, login, register, logout } = useAuth(); // ✅ Added logout
   const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
-  console.log('🎯 AppContent render - User:', user);
-  console.log('🎯 Current path:', location.pathname);
+  console.log('🎯 User state:', user);
 
   if (loading) {
     return (
@@ -48,11 +46,9 @@ function AppContent() {
 
   const handleLoginSuccess = async (email, password) => {
     try {
-      console.log('🔑 handleLoginSuccess called');
+      console.log('🔑 Logging in...');
       await login(email, password);
-      console.log('✅ Login completed, closing modal and redirecting');
       setShowAuthModal(false);
-      // Redirect to dashboard after successful login
       setTimeout(() => navigate('/dashboard'), 100);
     } catch (error) {
       console.error('❌ Login error:', error);
@@ -62,11 +58,9 @@ function AppContent() {
 
   const handleRegisterSuccess = async (userData) => {
     try {
-      console.log('📝 handleRegisterSuccess called');
+      console.log('📝 Registering...');
       await register(userData);
-      console.log('✅ Registration completed, closing modal and redirecting');
       setShowAuthModal(false);
-      // Redirect to dashboard after successful registration
       setTimeout(() => navigate('/dashboard'), 100);
     } catch (error) {
       console.error('❌ Registration error:', error);
@@ -76,7 +70,12 @@ function AppContent() {
 
   return (
     <div className="app">
-      <Navigation onAuthClick={() => setShowAuthModal(true)} />
+      {/* ✅ Pass user and logout to Navigation */}
+      <Navigation 
+        user={user}
+        onAuthClick={() => setShowAuthModal(true)} 
+        onLogout={logout}
+      />
       
       <Routes>
         <Route path="/" element={<LandingPage onAuthClick={() => setShowAuthModal(true)} />} />

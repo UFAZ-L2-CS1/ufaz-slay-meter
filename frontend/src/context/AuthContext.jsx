@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       try {
-        const response = await api.get('/auth/me');
+        const response = await api.get('/auth/me'); // ✅ MUST BE /auth/me NOT /profile
         console.log('✅ checkAuth success - User:', response.data.user);
         setUser(response.data.user);
       } catch (error) {
@@ -46,15 +46,12 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
       
-      console.log('✅ Login success - Token:', token.substring(0, 20) + '...');
       console.log('✅ Login success - User:', user);
       
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
       setError(null);
-      
-      console.log('✅ User state updated:', user);
       return user;
     } catch (error) {
       console.error('❌ Login failed:', error);
@@ -66,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      console.log('📝 Attempting registration...', userData);
+      console.log('📝 Attempting registration...');
       const response = await api.post('/auth/register', userData);
       const { token, user } = response.data;
       
