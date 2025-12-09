@@ -9,6 +9,16 @@ import Vibe from "../models/Vibe.js";
 const router = Router();
 
 /**
+ * ✅ BASE ROUTE: GET /api/profile
+ * Just returns a simple message (prevents "Cannot GET /api/profile")
+ */
+router.get("/", (req, res) => {
+  res.json({
+    message: "Profile API is alive ✅ Use /me or /:handle endpoints.",
+  });
+});
+
+/**
  * GET /api/profile/me
  * Return current authenticated user's public data
  */
@@ -34,7 +44,7 @@ router.get("/me", auth, async (req, res, next) => {
 });
 
 /**
- * ✅ NEW: GET /api/profile/:handle
+ * GET /api/profile/:handle
  * Get public profile by handle with stats
  */
 router.get(
@@ -45,12 +55,11 @@ router.get(
     try {
       const handle = req.params.handle.toLowerCase().trim();
       const user = await User.findOne({ handle }).select("-password");
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Get user's vibes count
       const vibesReceived = await Vibe.countDocuments({
         recipientId: user._id,
         isVisible: true,
@@ -114,7 +123,8 @@ router.patch(
           handle: normalized,
           _id: { $ne: req.user._id },
         });
-        if (exists) return res.status(400).json({ message: "Handle already in use" });
+        if (exists)
+          return res.status(400).json({ message: "Handle already in use" });
         updates.handle = normalized;
       }
 
