@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
@@ -14,7 +14,6 @@ import Leaderboard from './components/Leaderboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
-
 function App() {
   return (
     <ThemeProvider>
@@ -27,11 +26,18 @@ function App() {
   );
 }
 
-
 function AppContent() {
-  const { user, loading, login, register } = useAuth(); // ✅ Added login and register
+  const { user, loading, login, register } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const navigate = useNavigate();
 
+  // ✅ Redirect to dashboard after successful login
+  useEffect(() => {
+    if (user && showAuthModal) {
+      setShowAuthModal(false);
+      navigate('/dashboard');
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -43,7 +49,6 @@ function AppContent() {
       </div>
     );
   }
-
 
   return (
     <div className="app">
@@ -61,15 +66,13 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
 
-
       {showAuthModal && (
         <AuthModal 
           onClose={() => setShowAuthModal(false)}
-          onLogin={login}           // ✅ Pass login function
-          onRegister={register}     // ✅ Pass register function
+          onLogin={login}
+          onRegister={register}
         />
       )}
-
 
       {/* Floating sparkles effect */}
       <div className="sparkles-container">
@@ -84,6 +87,5 @@ function AppContent() {
     </div>
   );
 }
-
 
 export default App;

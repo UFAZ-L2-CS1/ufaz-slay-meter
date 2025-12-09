@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       try {
-        const response = await api.get('/auth/me');
+        const response = await api.get('/auth/me'); // ✅ FIXED: changed from '/profile' to '/auth/me'
         setUser(response.data.user);
       } catch (error) {
         console.error('Auth check failed:', error);
