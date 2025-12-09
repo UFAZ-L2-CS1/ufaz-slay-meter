@@ -45,10 +45,11 @@ const ExplorePage = () => {
       }
 
       setLoadingSuggestions(true);
+      setShowSuggestions(true);
+
       try {
-        const response = await api.get(`/users/search?q=${encodeURIComponent(searchQuery)}`);
+        const response = await api.get(`/search?q=${encodeURIComponent(searchQuery)}&limit=5`);
         setSuggestions(response.data.users || []);
-        setShowSuggestions(true);
       } catch (err) {
         console.error('Error fetching suggestions:', err);
         setSuggestions([]);
@@ -102,8 +103,10 @@ const ExplorePage = () => {
   };
 
   // ✅ NEW: Handle suggestion click
-  const handleSuggestionClick = (handle) => {
-    window.location.href = `/profile/${handle}`;
+  const handleSuggestionClick = (userHandle) => {
+    setSearchQuery(`@${userHandle}`);
+    setShowSuggestions(false);
+    window.location.href = `/profile/${userHandle}`;
   };
 
   const handleSendVibe = (handle) => {
@@ -140,7 +143,7 @@ const ExplorePage = () => {
           </p>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar with Autocomplete */}
         <div className="search-section glass-card" ref={searchRef}>
           <form onSubmit={handleSearch} className="search-form">
             <div className="search-input-wrapper">
@@ -185,24 +188,24 @@ const ExplorePage = () => {
                   <span>No users found</span>
                 </div>
               ) : (
-                suggestions.slice(0, 5).map((suggestion) => (
+                suggestions.map((u) => (
                   <div
-                    key={suggestion.id}
+                    key={u.id}
                     className="suggestion-item"
-                    onClick={() => handleSuggestionClick(suggestion.handle)}
+                    onClick={() => handleSuggestionClick(u.handle)}
                   >
                     <div className="suggestion-avatar">
-                      {suggestion.avatarUrl ? (
-                        <img src={suggestion.avatarUrl} alt={suggestion.name} />
+                      {u.avatarUrl ? (
+                        <img src={u.avatarUrl} alt={u.name} />
                       ) : (
                         <div className="avatar-placeholder">
-                          {suggestion.name?.charAt(0).toUpperCase()}
+                          {u.name?.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div className="suggestion-info">
-                      <div className="suggestion-name">{suggestion.name}</div>
-                      <div className="suggestion-handle">@{suggestion.handle}</div>
+                      <div className="suggestion-name">{u.name}</div>
+                      <div className="suggestion-handle">@{u.handle}</div>
                     </div>
                   </div>
                 ))
