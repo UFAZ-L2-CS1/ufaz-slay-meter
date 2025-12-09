@@ -14,6 +14,27 @@ const SendVibe = () => {
     tags: [],
     emojis: []
   });
+  
+  // For user suggestions
+  const [suggestions, setSuggestions] = useState([]);
+  
+  const handleRecipientChange = async (e) => {
+    const value = e.target.value.replace("@", "").trim();
+    setFormData({ ...formData, recipientHandle: value });
+  
+    if (value.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+  
+    try {
+      const res = await api.get(`/users/search?q=${value}`);
+      setSuggestions(res.data.users);
+    } catch (err) {
+      console.error("Search failed:", err);
+    }
+  };
+
   const [currentTag, setCurrentTag] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
