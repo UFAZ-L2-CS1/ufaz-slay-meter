@@ -8,14 +8,14 @@ import User from "../models/User.js";
 const router = Router();
 
 /**
- * ✅ YENI: GET /api/users
+ * ✅ GET /api/users
  * List all users (paginated, public)
  */
 router.get(
   "/",
   [
     query("page").optional().toInt(),
-    query("limit").optional().toInt()
+    query("limit").optional().toInt(),
   ],
   validate,
   async (req, res, next) => {
@@ -47,29 +47,75 @@ router.get(
 );
 
 /**
- * GET /api/users/me
- * Return current user (private)
+ * ✅ GET /api/users/top
+ * Return top users for Explore page (sorted by newest or slayScore later)
  */
-router.get("/me", auth, async (req, res, next) => {
+router.get("/top", async (req, res, next) => {
   try {
-    res.json({ 
-      user: { 
-        id: req.user._id, 
-        name: req.user.name, 
-        email: req.user.email, 
-        handle: req.user.handle, 
-        bio: req.user.bio, 
-        avatarUrl: req.user.avatarUrl 
-      }
-    });
-  } catch (err) { 
-    next(err); 
+    const limit = Number(req.query.limit) || 50;
+    const users = await User.find()
+      .select("name handle bio avatarUrl createdAt")
+      .sort({ createdAt: -1 }) // you can change this to { slayScore: -1 } later
+      .limit(limit)
+      .lean();
+
+    res.json({ users });
+  } catch (err) {
+    console.error("Error fetching top users:", err);
+    next(err);
   }
 });
 
 /**
- * PUT /api/users/me
- * Update name/bio/avatarUrl (private)
+ * ✅ GET /api/users/search
+ * Search users by name or handle (for autocomplete)
+ */
+router.get("/search", async (req, res, next) => {
+  try {
+    const query = req.query.q || "";
+    if (!query.trim()) return res.json({ users: [] });
+
+    const users = await User.find({
+      $or: [
+        { handle: { $regex: `^${query}`, $options: "i" } },
+        { name: { $regex: query, $options: "i" } },
+      ],
+    })
+      .select("name handle avatarUrl bio")
+      .limit(10)
+      .lean();
+
+    res.json({ users });
+  } catch (error) {
+    console.error("Error searching users:", error);
+    res.status(500).json({ message: "Search failed" });
+  }
+});
+
+/**
+ * ✅ GET /api/users/me
+ * Return current logged-in user (private)
+ */
+router.get("/me", auth, async (req, res, next) => {
+  try {
+    res.json({
+      user: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        handle: req.user.handle,
+        bio: req.user.bio,
+        avatarUrl: req.user.avatarUrl,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * ✅ PUT /api/users/me
+ * Update your own name/bio/avatarUrl
  */
 router.put(
   "/me",
@@ -77,7 +123,10 @@ router.put(
   [
     body("name").optional().isLength({ min: 2, max: 40 }),
     body("bio").optional().isLength({ max: 200 }),
-    body("avatarUrl").optional().isURL().withMessage("avatarUrl must be a URL"),
+    body("avatarUrl")
+      .optional()
+      .isURL()
+      .withMessage("avatarUrl must be a valid URL"),
   ],
   validate,
   async (req, res, next) => {
@@ -87,54 +136,25 @@ router.put(
       if (bio !== undefined) req.user.bio = bio;
       if (avatarUrl !== undefined) req.user.avatarUrl = avatarUrl;
       await req.user.save();
-      res.json({ 
-        message: "Profile updated", 
-        user: { 
-          id: req.user._id, 
-          name: req.user.name, 
-          email: req.user.email, 
-          handle: req.user.handle, 
-          bio: req.user.bio, 
-          avatarUrl: req.user.avatarUrl 
-        }
+      res.json({
+        message: "Profile updated",
+        user: {
+          id: req.user._id,
+          name: req.user.name,
+          email: req.user.email,
+          handle: req.user.handle,
+          bio: req.user.bio,
+          avatarUrl: req.user.avatarUrl,
+        },
       });
-    } catch (err) { 
-      next(err); 
+    } catch (err) {
+      next(err);
     }
   }
 );
 
 /**
- * GET /api/users/search
- * Search users by name or handle (for autocomplete)
- */
-router.get("/search", async (req, res, next) => {
-  try {
-    const query = req.query.q || '';
-    
-    if (!query.trim()) {
-      return res.json({ users: [] });
-    }
-    
-    const users = await User.find({
-      $or: [
-        { handle: { $regex: `^${query}`, $options: 'i' } },
-        { name: { $regex: query, $options: 'i' } }
-      ]
-    })
-    .select('name handle avatarUrl bio')
-    .limit(10)
-    .lean();
-    
-    res.json({ users });
-  } catch (error) {
-    console.error('Error searching users:', error);
-    res.status(500).json({ message: 'Search failed' });
-  }
-});
-
-/**
- * GET /api/users/:handle
+ * ✅ GET /api/users/:handle
  * Public profile by handle
  */
 router.get(
@@ -143,13 +163,14 @@ router.get(
   validate,
   async (req, res, next) => {
     try {
-      const user = await User.findOne({ handle: req.params.handle.toLowerCase() })
-        .select("name handle bio avatarUrl createdAt");
-      
+      const user = await User.findOne({
+        handle: req.params.handle.toLowerCase(),
+      }).select("name handle bio avatarUrl createdAt");
+
       if (!user) return res.status(404).json({ message: "User not found" });
       res.json({ user });
-    } catch (err) { 
-      next(err); 
+    } catch (err) {
+      next(err);
     }
   }
 );
