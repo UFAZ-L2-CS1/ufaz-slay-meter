@@ -182,6 +182,35 @@ const SendVibe = () => {
                       required
                       autoComplete="off"
                     />
+                    {/* Autocomplete suggestions */}
+                      {suggestions.length > 0 && (
+                        <ul className="suggestions-list">
+                          {suggestions.map((u) => (
+                            <li
+                              key={u.handle}
+                              onClick={() => {
+                                setFormData({ ...formData, recipientHandle: u.handle });
+                                setSuggestions([]);
+                              }}
+                            >
+                              <img
+                                src={u.avatarUrl || "https://via.placeholder.com/36"}
+                                alt={u.name}
+                                className="suggestion-avatar"
+                              />
+                              <div className="suggestion-info">
+                                <span className="suggestion-name">{u.name}</span>
+                                <span className="suggestion-handle">@{u.handle}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      
+                      {formData.recipientHandle.length >= 2 && suggestions.length === 0 && (
+                        <div className="no-suggestions">No users found</div>
+                      )}
+
                     {suggestions.length > 0 && (
                       <ul className="suggestions-list">
                         {suggestions.map((u) => (
