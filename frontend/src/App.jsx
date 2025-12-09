@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
@@ -30,18 +30,10 @@ function AppContent() {
   const { user, loading, login, register } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   console.log('🎯 AppContent render - User:', user);
-  console.log('🎯 AppContent render - Loading:', loading);
-
-  // Redirect to dashboard when user logs in
-  useEffect(() => {
-    if (user) {
-      console.log('🚀 User detected, navigating to dashboard...');
-      navigate('/dashboard');
-      setShowAuthModal(false);
-    }
-  }, [user, navigate]);
+  console.log('🎯 Current path:', location.pathname);
 
   if (loading) {
     return (
@@ -58,7 +50,10 @@ function AppContent() {
     try {
       console.log('🔑 handleLoginSuccess called');
       await login(email, password);
-      console.log('✅ Login completed');
+      console.log('✅ Login completed, closing modal and redirecting');
+      setShowAuthModal(false);
+      // Redirect to dashboard after successful login
+      setTimeout(() => navigate('/dashboard'), 100);
     } catch (error) {
       console.error('❌ Login error:', error);
       throw error;
@@ -69,7 +64,10 @@ function AppContent() {
     try {
       console.log('📝 handleRegisterSuccess called');
       await register(userData);
-      console.log('✅ Registration completed');
+      console.log('✅ Registration completed, closing modal and redirecting');
+      setShowAuthModal(false);
+      // Redirect to dashboard after successful registration
+      setTimeout(() => navigate('/dashboard'), 100);
     } catch (error) {
       console.error('❌ Registration error:', error);
       throw error;
