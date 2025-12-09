@@ -36,7 +36,11 @@ router.post(
   "/register",
   [
     body("name").isLength({ min: 2, max: 60 }),
-    body("email").isEmail(),
+    body("email")
+      .isEmail()
+      .matches(/@ufaz\.az$/)
+      .withMessage("Only UFAZ email addresses are allowed (must end with @ufaz.az)"),
+
     body("password").isLength({ min: 6 }),
     body("handle")
       .optional()
