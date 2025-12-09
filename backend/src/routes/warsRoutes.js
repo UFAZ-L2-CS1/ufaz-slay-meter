@@ -3,6 +3,11 @@ import { Router } from "express";
 
 const router = Router();
 
+router.get("/", (req, res) => {
+  res.json({
+    message: "Wars API is alive ✅ Use /current or /leaderboard endpoints.",
+  });
+});
 // Get current vibe war
 router.get("/current", async (req, res) => {
   try {
