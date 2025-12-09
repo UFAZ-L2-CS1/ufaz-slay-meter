@@ -57,7 +57,7 @@ const ExplorePage = () => {
       }
     };
 
-    // Debounce search
+    // Debounce: wait 300ms after user stops typing
     const timeoutId = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
@@ -103,9 +103,6 @@ const ExplorePage = () => {
 
   // ✅ NEW: Handle suggestion click
   const handleSuggestionClick = (handle) => {
-    setSearchQuery('');
-    setSuggestions([]);
-    setShowSuggestions(false);
     window.location.href = `/profile/${handle}`;
   };
 
@@ -181,14 +178,14 @@ const ExplorePage = () => {
             <div className="search-suggestions">
               {loadingSuggestions ? (
                 <div className="suggestion-item loading">
-                  <span>🔍 Searching...</span>
+                  <span>Loading...</span>
                 </div>
               ) : suggestions.length === 0 ? (
                 <div className="suggestion-item no-results">
                   <span>No users found</span>
                 </div>
               ) : (
-                suggestions.map((suggestion) => (
+                suggestions.slice(0, 5).map((suggestion) => (
                   <div
                     key={suggestion.id}
                     className="suggestion-item"
