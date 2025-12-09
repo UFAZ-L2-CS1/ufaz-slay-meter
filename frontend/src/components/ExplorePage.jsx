@@ -22,10 +22,9 @@ const ExplorePage = () => {
       setLoading(true);
       setError(null);
       
-      // ✅ Real API call to backend
       const response = await api.get('/explore');
       setUsers(response.data.users || []);
-      setVibes(response.data.recentVibes || []);
+      setVibes(response.data.recentVibes || response.data.vibes || []);
     } catch (err) {
       console.error('Error fetching explore data:', err);
       setError('Could not load explore page');
@@ -45,7 +44,6 @@ const ExplorePage = () => {
       setLoading(true);
       setError(null);
       
-      // ✅ Real search API call
       const response = await api.get(`/search?q=${encodeURIComponent(searchQuery)}`);
       setUsers(response.data.users || []);
       setVibes(response.data.vibes || []);
@@ -55,6 +53,47 @@ const ExplorePage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ NEW: Handle like button
+  const handleLike = async (vibeId, index) => {
+    if (!user) {
+      alert('Please sign in to like vibes!');
+      return;
+    }
+
+    try {
+      await api.post(`/vibes/${vibeId}/react`, { type: 'love' });
+      
+      // Update local state
+      const updatedVibes = [...vibes];
+      const currentReactions = updatedVibes[index].reactions || [];
+      const userReactionIndex = currentReactions.findIndex(r => r.userId === user.id);
+      
+      if (userReactionIndex >= 0) {
+        // Remove like
+        currentReactions.splice(userReactionIndex, 1);
+      } else {
+        // Add like
+        currentReactions.push({ userId: user.id, type: 'love' });
+      }
+      
+      updatedVibes[index].reactions = currentReactions;
+      setVibes(updatedVibes);
+    } catch (error) {
+      console.error('Error liking vibe:', error);
+      alert('Failed to like vibe');
+    }
+  };
+
+  // ✅ NEW: Handle comment button (placeholder - you can implement comments later)
+  const handleComment = (vibeId) => {
+    if (!user) {
+      alert('Please sign in to comment!');
+      return;
+    }
+    // TODO: Open comment modal or navigate to comment page
+    alert('Comment feature coming soon! 💬');
   };
 
   const handleSendVibe = (handle) => {
@@ -158,7 +197,7 @@ const ExplorePage = () => {
               </div>
             ) : (
               filteredUsers.map(u => (
-                <div key={u.id} className="user-card glass-card">
+                <div key={u._id || u.id} className="user-card glass-card">
                   <div className="user-card-header">
                     <Link to={`/profile/${u.handle}`} className="user-avatar-link">
                       <div className="user-avatar">
@@ -226,72 +265,96 @@ const ExplorePage = () => {
                 </Link>
               </div>
             ) : (
-              vibes.map(vibe => (
-                <div key={vibe.id} className="vibe-card glass-card">
-                  <div className="vibe-header">
-                    <div className="vibe-sender">
-                      {vibe.isAnonymous ? (
-                        <div className="anonymous-avatar">
-                          <span>💭</span>
-                        </div>
-                      ) : (
-                        <Link to={`/profile/${vibe.sender?.handle}`}>
-                          <div className="vibe-avatar">
-                            {vibe.sender?.avatarUrl ? (
-                              <img src={vibe.sender.avatarUrl} alt={vibe.sender.name} />
-                            ) : (
-                              <span>{vibe.sender?.name?.charAt(0).toUpperCase()}</span>
-                            )}
-                          </div>
-                        </Link>
-                      )}
-                      <div className="vibe-sender-info">
+              vibes.map((vibe, index) => {
+                // ✅ FIXED: Check both senderId and recipientId objects
+                const sender = vibe.senderId || vibe.sender;
+                const recipient = vibe.recipientId || vibe.recipient;
+                const likesCount = vibe.reactions?.filter(r => r.type === 'love').length || 0;
+                const isLikedByUser = user && vibe.reactions?.some(r => r.userId === user.id);
+
+                return (
+                  <div key={vibe._id || vibe.id} className="vibe-card glass-card">
+                    <div className="vibe-header">
+                      <div className="vibe-sender">
                         {vibe.isAnonymous ? (
-                          <span className="anonymous-label">Anonymous</span>
-                        ) : (
-                          <Link to={`/profile/${vibe.sender?.handle}`}>
-                            <strong>{vibe.sender?.name}</strong>
+                          <div className="anonymous-avatar">
+                            <span>💭</span>
+                          </div>
+                        ) : sender ? (
+                          <Link to={`/profile/${sender.handle}`}>
+                            <div className="vibe-avatar">
+                              {sender.avatarUrl ? (
+                                <img src={sender.avatarUrl} alt={sender.name} />
+                              ) : (
+                                <span>{sender.name?.charAt(0).toUpperCase()}</span>
+                              )}
+                            </div>
                           </Link>
+                        ) : (
+                          <div className="vibe-avatar">
+                            <span>?</span>
+                          </div>
                         )}
-                        <span className="vibe-arrow">→</span>
-                        <Link to={`/profile/${vibe.recipient?.handle}`}>
-                          <strong>{vibe.recipient?.name}</strong>
-                        </Link>
+                        <div className="vibe-sender-info">
+                          {vibe.isAnonymous ? (
+                            <span className="anonymous-label">Anonymous</span>
+                          ) : sender ? (
+                            <Link to={`/profile/${sender.handle}`}>
+                              <strong>{sender.name}</strong>
+                            </Link>
+                          ) : (
+                            <strong>Unknown</strong>
+                          )}
+                          <span className="vibe-arrow">→</span>
+                          {recipient ? (
+                            <Link to={`/profile/${recipient.handle}`}>
+                              <strong>{recipient.name}</strong>
+                            </Link>
+                          ) : (
+                            <strong>Unknown</strong>
+                          )}
+                        </div>
                       </div>
+                      <span className="vibe-time">
+                        {new Date(vibe.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span className="vibe-time">
-                      {new Date(vibe.createdAt).toLocaleDateString()}
-                    </span>
+
+                    <p className="vibe-text">{vibe.text}</p>
+
+                    {vibe.tags && vibe.tags.length > 0 && (
+                      <div className="vibe-tags">
+                        {vibe.tags.map((tag, i) => (
+                          <span key={i} className="vibe-tag">#{tag}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    {vibe.emojis && vibe.emojis.length > 0 && (
+                      <div className="vibe-emojis">
+                        {vibe.emojis.map((emoji, i) => (
+                          <span key={i}>{emoji}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="vibe-actions">
+                      <button 
+                        className={`vibe-action-btn ${isLikedByUser ? 'liked' : ''}`}
+                        onClick={() => handleLike(vibe._id || vibe.id, index)}
+                      >
+                        {isLikedByUser ? '❤️' : '🤍'} {likesCount}
+                      </button>
+                      <button 
+                        className="vibe-action-btn"
+                        onClick={() => handleComment(vibe._id || vibe.id)}
+                      >
+                        💬 {vibe.comments || 0}
+                      </button>
+                    </div>
                   </div>
-
-                  <p className="vibe-text">{vibe.text}</p>
-
-                  {vibe.tags && vibe.tags.length > 0 && (
-                    <div className="vibe-tags">
-                      {vibe.tags.map((tag, i) => (
-                        <span key={i} className="vibe-tag">#{tag}</span>
-                      ))}
-                    </div>
-                  )}
-
-                  {vibe.emojis && vibe.emojis.length > 0 && (
-                    <div className="vibe-emojis">
-                      {vibe.emojis.map((emoji, i) => (
-                        <span key={i}>{emoji}</span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="vibe-actions">
-                    <button className="vibe-action-btn">
-                      ❤️ {vibe.likes || 0}
-                    </button>
-                    <button className="vibe-action-btn">
-                      💬 {vibe.comments || 0}
-                    </button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
