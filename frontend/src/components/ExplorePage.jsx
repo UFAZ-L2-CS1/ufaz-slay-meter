@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -12,62 +12,17 @@ const ExplorePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // ✅ NEW: Autocomplete states
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const searchRef = useRef(null);
 
   useEffect(() => {
     fetchExploreData();
   }, []);
-
-  // ✅ NEW: Close suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // ✅ NEW: Fetch suggestions as user types
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (!searchQuery.trim()) {
-        setSuggestions([]);
-        setShowSuggestions(false);
-        return;
-      }
-
-      setLoadingSuggestions(true);
-      setShowSuggestions(true);
-
-      try {
-        const response = await api.get(`/search?q=${encodeURIComponent(searchQuery)}&limit=5`);
-        setSuggestions(response.data.users || []);
-      } catch (err) {
-        console.error('Error fetching suggestions:', err);
-        setSuggestions([]);
-      } finally {
-        setLoadingSuggestions(false);
-      }
-    };
-
-    // Debounce: wait 300ms after user stops typing
-    const timeoutId = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
 
   const fetchExploreData = async () => {
     try {
       setLoading(true);
       setError(null);
       
+      // ✅ Real API call to backend
       const response = await api.get('/explore');
       setUsers(response.data.users || []);
       setVibes(response.data.recentVibes || []);
@@ -89,8 +44,8 @@ const ExplorePage = () => {
     try {
       setLoading(true);
       setError(null);
-      setShowSuggestions(false);
       
+      // ✅ Real search API call
       const response = await api.get(`/search?q=${encodeURIComponent(searchQuery)}`);
       setUsers(response.data.users || []);
       setVibes(response.data.vibes || []);
@@ -100,13 +55,6 @@ const ExplorePage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // ✅ NEW: Handle suggestion click
-  const handleSuggestionClick = (userHandle) => {
-    setSearchQuery(`@${userHandle}`);
-    setShowSuggestions(false);
-    window.location.href = `/profile/${userHandle}`;
   };
 
   const handleSendVibe = (handle) => {
@@ -143,8 +91,8 @@ const ExplorePage = () => {
           </p>
         </div>
 
-        {/* Search Bar with Autocomplete */}
-        <div className="search-section glass-card" ref={searchRef}>
+        {/* Search Bar */}
+        <div className="search-section glass-card">
           <form onSubmit={handleSearch} className="search-form">
             <div className="search-input-wrapper">
               <span className="search-icon">🔍</span>
@@ -154,7 +102,6 @@ const ExplorePage = () => {
                 placeholder="Search for users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => searchQuery && setShowSuggestions(true)}
               />
               {searchQuery && (
                 <button
@@ -162,8 +109,6 @@ const ExplorePage = () => {
                   className="clear-search"
                   onClick={() => {
                     setSearchQuery('');
-                    setSuggestions([]);
-                    setShowSuggestions(false);
                     fetchExploreData();
                   }}
                 >
@@ -175,43 +120,6 @@ const ExplorePage = () => {
               Search
             </button>
           </form>
-
-          {/* ✅ NEW: Autocomplete Suggestions */}
-          {showSuggestions && (
-            <div className="search-suggestions">
-              {loadingSuggestions ? (
-                <div className="suggestion-item loading">
-                  <span>Loading...</span>
-                </div>
-              ) : suggestions.length === 0 ? (
-                <div className="suggestion-item no-results">
-                  <span>No users found</span>
-                </div>
-              ) : (
-                suggestions.map((u) => (
-                  <div
-                    key={u.id}
-                    className="suggestion-item"
-                    onClick={() => handleSuggestionClick(u.handle)}
-                  >
-                    <div className="suggestion-avatar">
-                      {u.avatarUrl ? (
-                        <img src={u.avatarUrl} alt={u.name} />
-                      ) : (
-                        <div className="avatar-placeholder">
-                          {u.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="suggestion-info">
-                      <div className="suggestion-name">{u.name}</div>
-                      <div className="suggestion-handle">@{u.handle}</div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
         </div>
 
         {error && (
