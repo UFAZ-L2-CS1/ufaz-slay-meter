@@ -14,6 +14,7 @@ import Leaderboard from './components/Leaderboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
+
 function App() {
   return (
     <ThemeProvider>
@@ -26,9 +27,11 @@ function App() {
   );
 }
 
+
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, login, register } = useAuth(); // ✅ Added login and register
   const [showAuthModal, setShowAuthModal] = useState(false);
+
 
   if (loading) {
     return (
@@ -40,6 +43,7 @@ function AppContent() {
       </div>
     );
   }
+
 
   return (
     <div className="app">
@@ -57,9 +61,15 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
 
+
       {showAuthModal && (
-        <AuthModal onClose={() => setShowAuthModal(false)} />
+        <AuthModal 
+          onClose={() => setShowAuthModal(false)}
+          onLogin={login}           // ✅ Pass login function
+          onRegister={register}     // ✅ Pass register function
+        />
       )}
+
 
       {/* Floating sparkles effect */}
       <div className="sparkles-container">
@@ -74,5 +84,6 @@ function AppContent() {
     </div>
   );
 }
+
 
 export default App;
