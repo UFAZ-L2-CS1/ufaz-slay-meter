@@ -1,9 +1,10 @@
 // backend/src/routes/profileRoutes.js
 import { Router } from "express";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import auth from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import User from "../models/User.js";
+import Vibe from "../models/Vibe.js";
 
 const router = Router();
 
@@ -13,7 +14,7 @@ const router = Router();
  */
 router.get("/me", auth, async (req, res, next) => {
   try {
-    const u = req.user; // set by auth middleware (password already excluded)
+    const u = req.user;
     res.json({
       user: {
         id: u._id,
@@ -31,6 +32,50 @@ router.get("/me", auth, async (req, res, next) => {
     next(err);
   }
 });
+
+/**
+ * ✅ NEW: GET /api/profile/:handle
+ * Get public profile by handle with stats
+ */
+router.get(
+  "/:handle",
+  [param("handle").isLength({ min: 2, max: 30 })],
+  validate,
+  async (req, res, next) => {
+    try {
+      const handle = req.params.handle.toLowerCase().trim();
+      const user = await User.findOne({ handle }).select("-password");
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get user's vibes count
+      const vibesReceived = await Vibe.countDocuments({
+        recipientId: user._id,
+        isVisible: true,
+      });
+
+      res.json({
+        user: {
+          id: user._id,
+          name: user.name,
+          handle: user.handle,
+          bio: user.bio,
+          avatarUrl: user.avatarUrl,
+          links: user.links,
+          createdAt: user.createdAt,
+          stats: {
+            vibesReceived,
+            slayScore: vibesReceived * 10,
+          },
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 /**
  * PATCH /api/profile

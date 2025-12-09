@@ -11,14 +11,13 @@ const router = Router();
  */
 router.get("/me", auth, async (req, res, next) => {
   try {
-    // req.user comes from auth middleware
-    res.json({ user: { id: req.user._id, name: req.user.name, email: req.user.email, bio: req.user.bio, profilePicture: req.user.profilePicture }});
+    res.json({ user: { id: req.user._id, name: req.user.name, email: req.user.email, handle: req.user.handle, bio: req.user.bio, avatarUrl: req.user.avatarUrl }});
   } catch (err) { next(err); }
 });
 
 /**
  * PUT /api/users/me
- * Update name/bio/profilePicture (private)
+ * Update name/bio/avatarUrl (private)
  */
 router.put(
   "/me",
@@ -26,16 +25,16 @@ router.put(
   [
     body("name").optional().isLength({ min: 2, max: 40 }),
     body("bio").optional().isLength({ max: 200 }),
-    body("profilePicture").optional().isURL().withMessage("profilePicture must be a URL"),
+    body("avatarUrl").optional().isURL().withMessage("avatarUrl must be a URL"),
   ],
   async (req, res, next) => {
     try {
-      const { name, bio, profilePicture } = req.body;
+      const { name, bio, avatarUrl } = req.body;
       if (name !== undefined) req.user.name = name;
       if (bio !== undefined) req.user.bio = bio;
-      if (profilePicture !== undefined) req.user.profilePicture = profilePicture;
+      if (avatarUrl !== undefined) req.user.avatarUrl = avatarUrl;
       await req.user.save();
-      res.json({ message: "Profile updated", user: { id: req.user._id, name: req.user.name, email: req.user.email, bio: req.user.bio, profilePicture: req.user.profilePicture }});
+      res.json({ message: "Profile updated", user: { id: req.user._id, name: req.user.name, email: req.user.email, handle: req.user.handle, bio: req.user.bio, avatarUrl: req.user.avatarUrl }});
     } catch (err) { next(err); }
   }
 );
@@ -52,11 +51,10 @@ router.get("/search", async (req, res, next) => {
       return res.json({ users: [] });
     }
 
-    // Search users whose handle starts with query OR name contains query
     const users = await User.find({
       $or: [
-        { handle: { $regex: `^${query}`, $options: 'i' } }, // Starts with
-        { name: { $regex: query, $options: 'i' } }           // Contains
+        { handle: { $regex: `^${query}`, $options: 'i' } },
+        { name: { $regex: query, $options: 'i' } }
       ]
     })
     .select('name handle avatarUrl bio')
@@ -71,15 +69,17 @@ router.get("/search", async (req, res, next) => {
 });
 
 /**
- * GET /api/users/:username
- * Public profile by username (no auth)
+ * ✅ FIXED: GET /api/users/:handle
+ * Public profile by handle (changed from username to handle)
  */
 router.get(
-  "/:username",
-  [param("username").isLength({ min: 2 })],
+  "/:handle",
+  [param("handle").isLength({ min: 2 })],
   async (req, res, next) => {
     try {
-      const user = await User.findOne({ username: req.params.username }).select("username name bio profilePicture createdAt");
+      const user = await User.findOne({ handle: req.params.handle.toLowerCase() })
+        .select("name handle bio avatarUrl createdAt");
+      
       if (!user) return res.status(404).json({ message: "User not found" });
       res.json({ user });
     } catch (err) { next(err); }

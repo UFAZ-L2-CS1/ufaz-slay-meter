@@ -116,6 +116,44 @@ router.get("/vibes/public", async (req, res) => {
   }
 });
 
+// ✅ NEW: Search users and vibes
+router.get("/search", async (req, res) => {
+  try {
+    const query = req.query.q || '';
+    
+    if (!query.trim()) {
+      return res.json({ users: [], vibes: [] });
+    }
+
+    const users = await User.find({
+      $or: [
+        { handle: { $regex: query, $options: 'i' } },
+        { name: { $regex: query, $options: 'i' } }
+      ]
+    })
+    .select('name handle avatarUrl bio')
+    .limit(20)
+    .lean();
+
+    const vibes = await Vibe.find({
+      isVisible: true,
+      $or: [
+        { text: { $regex: query, $options: 'i' } },
+        { tags: { $in: [query.toLowerCase()] } }
+      ]
+    })
+    .populate('senderId', 'name handle avatarUrl')
+    .populate('recipientId', 'name handle avatarUrl')
+    .limit(20)
+    .lean();
+
+    res.json({ users, vibes });
+  } catch (error) {
+    console.error('Error searching:', error);
+    res.status(500).json({ message: 'Search failed' });
+  }
+});
+
 // Get leaderboard for vibes
 router.get("/leaderboard/vibes", async (req, res) => {
   try {
