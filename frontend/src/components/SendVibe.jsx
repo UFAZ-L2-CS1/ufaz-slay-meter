@@ -1,32 +1,32 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import './SendVibe.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
+import "./SendVibe.css";
 
 const SendVibe = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [formData, setFormData] = useState({
-    recipientHandle: '',
-    text: '',
+    recipientHandle: "",
+    text: "",
     tags: [],
-    emojis: []
+    emojis: [],
   });
-  
-  // For user suggestions
+
+  // 🧠 For user suggestions
   const [suggestions, setSuggestions] = useState([]);
-  
+
   const handleRecipientChange = async (e) => {
-    const value = e.target.value.replace("@", "").trim();
+    const value = e.target.value.trim().replace("@", "");
     setFormData({ ...formData, recipientHandle: value });
-  
+
     if (value.length < 2) {
       setSuggestions([]);
       return;
     }
-  
+
     try {
       const res = await api.get(`/users/search?q=${value}`);
       setSuggestions(res.data.users);
@@ -35,19 +35,30 @@ const SendVibe = () => {
     }
   };
 
-  const [currentTag, setCurrentTag] = useState('');
+  const [currentTag, setCurrentTag] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const popularTags = ['kind', 'smart', 'funny', 'creative', 'inspiring', 'talented', 'beautiful', 'amazing', 'helpful', 'cool'];
-  const emojiOptions = ['💖', '✨', '🔥', '👑', '💯', '🌟', '💕', '⚡'];
+  const popularTags = [
+    "kind",
+    "smart",
+    "funny",
+    "creative",
+    "inspiring",
+    "talented",
+    "beautiful",
+    "amazing",
+    "helpful",
+    "cool",
+  ];
+  const emojiOptions = ["💖", "✨", "🔥", "👑", "💯", "🌟", "💕", "⚡"];
   const vibeTemplates = [
     "You're absolutely amazing and don't let anyone tell you otherwise! ✨",
     "Your energy lights up every room you enter 💫",
     "You inspire me to be a better person every day 🌟",
     "The world is a better place because you're in it 💖",
-    "Your creativity knows no bounds! Keep shining ⭐"
+    "Your creativity knows no bounds! Keep shining ⭐",
   ];
 
   const handleChange = (e) => {
@@ -64,21 +75,21 @@ const SendVibe = () => {
   const removeTag = (tagToRemove) => {
     setFormData({
       ...formData,
-      tags: formData.tags.filter(tag => tag !== tagToRemove)
+      tags: formData.tags.filter((tag) => tag !== tagToRemove),
     });
   };
 
   const handleCustomTag = (e) => {
-    if (e.key === 'Enter' && currentTag.trim()) {
+    if (e.key === "Enter" && currentTag.trim()) {
       e.preventDefault();
       addTag(currentTag.trim().toLowerCase());
-      setCurrentTag('');
+      setCurrentTag("");
     }
   };
 
   const toggleEmoji = (emoji) => {
     const newEmojis = formData.emojis.includes(emoji)
-      ? formData.emojis.filter(e => e !== emoji)
+      ? formData.emojis.filter((e) => e !== emoji)
       : [...formData.emojis, emoji];
     setFormData({ ...formData, emojis: newEmojis.slice(0, 8) });
   };
@@ -89,13 +100,12 @@ const SendVibe = () => {
     setError(null);
 
     try {
-      // ✅ Real API call to backend
-      await api.post('/vibes/send', {
+      await api.post("/vibes/send", {
         recipientHandle: formData.recipientHandle,
         text: formData.text,
         tags: formData.tags,
         emojis: formData.emojis,
-        isAnonymous: isAnonymous
+        isAnonymous: isAnonymous,
       });
 
       setSuccess(true);
@@ -103,8 +113,8 @@ const SendVibe = () => {
         navigate(`/profile/${formData.recipientHandle}`);
       }, 2000);
     } catch (err) {
-      console.error('Error sending vibe:', err);
-      setError(err.response?.data?.message || 'Failed to send vibe. Try again!');
+      console.error("Error sending vibe:", err);
+      setError(err.response?.data?.message || "Failed to send vibe. Try again!");
     } finally {
       setLoading(false);
     }
@@ -149,26 +159,63 @@ const SendVibe = () => {
                       <span className="toggle-text">Send Anonymously</span>
                     </label>
                     <p className="toggle-hint">
-                      {isAnonymous ? "Your identity will be hidden" : "They'll know it's from you"}
+                      {isAnonymous
+                        ? "Your identity will be hidden"
+                        : "They'll know it's from you"}
                     </p>
                   </div>
                 )}
 
+                {/* 🔍 Recipient autocomplete */}
                 <div className="input-group">
                   <label htmlFor="recipientHandle">
                     Who's getting this vibe? <span className="required">*</span>
                   </label>
-                  <input
-                    type="text"
-                    id="recipientHandle"
-                    name="recipientHandle"
-                    value={formData.recipientHandle}
-                    onChange={handleChange}
-                    placeholder="@username (without @)"
-                    required
-                  />
+                  <div className="recipient-autocomplete">
+                    <input
+                      type="text"
+                      id="recipientHandle"
+                      name="recipientHandle"
+                      value={formData.recipientHandle}
+                      onChange={handleRecipientChange}
+                      placeholder="@username"
+                      required
+                      autoComplete="off"
+                    />
+                    {suggestions.length > 0 && (
+                      <ul className="suggestions-list">
+                        {suggestions.map((u) => (
+                          <li
+                            key={u.handle}
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                recipientHandle: u.handle,
+                              });
+                              setSuggestions([]);
+                            }}
+                          >
+                            <img
+                              src={
+                                u.avatarUrl || "https://via.placeholder.com/30"
+                              }
+                              alt={u.name}
+                              className="suggestion-avatar"
+                            />
+                            <div className="suggestion-info">
+                              <span className="suggestion-name">{u.name}</span>
+                              <span className="suggestion-handle">
+                                @{u.handle}
+                              </span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
 
+                {/* Message */}
                 <div className="input-group">
                   <label htmlFor="text">
                     Your Vibe Message <span className="required">*</span>
@@ -184,73 +231,45 @@ const SendVibe = () => {
                     maxLength="280"
                     required
                   />
-                  <div className="templates">
-                    <p className="templates-label">Need inspiration? Try these:</p>
-                    <div className="template-chips">
-                      {vibeTemplates.map((template, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="template-chip"
-                          onClick={() => setFormData({ ...formData, text: template })}
-                        >
-                          {template.substring(0, 30)}...
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
+                {/* Tags */}
                 <div className="input-group">
                   <label>Add Tags (Max 8)</label>
-                  <div className="tag-input-wrapper">
-                    <input
-                      type="text"
-                      value={currentTag}
-                      onChange={(e) => setCurrentTag(e.target.value)}
-                      onKeyDown={handleCustomTag}
-                      placeholder="Press Enter to add custom tag"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={currentTag}
+                    onChange={(e) => setCurrentTag(e.target.value)}
+                    onKeyDown={handleCustomTag}
+                    placeholder="Press Enter to add custom tag"
+                  />
                   <div className="popular-tags">
-                    {popularTags.map(tag => (
+                    {popularTags.map((tag) => (
                       <button
                         key={tag}
                         type="button"
-                        className={`tag-suggestion ${formData.tags.includes(tag) ? 'selected' : ''}`}
+                        className={`tag-suggestion ${
+                          formData.tags.includes(tag) ? "selected" : ""
+                        }`}
                         onClick={() => addTag(tag)}
-                        disabled={formData.tags.includes(tag)}
                       >
                         #{tag}
                       </button>
                     ))}
                   </div>
-                  {formData.tags.length > 0 && (
-                    <div className="selected-tags">
-                      {formData.tags.map(tag => (
-                        <span key={tag} className="selected-tag">
-                          #{tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="remove-tag"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
+                {/* Emojis */}
                 <div className="input-group">
                   <label>Add Emojis (Optional)</label>
                   <div className="emoji-selector">
-                    {emojiOptions.map(emoji => (
+                    {emojiOptions.map((emoji) => (
                       <button
                         key={emoji}
                         type="button"
-                        className={`emoji-option ${formData.emojis.includes(emoji) ? 'selected' : ''}`}
+                        className={`emoji-option ${
+                          formData.emojis.includes(emoji) ? "selected" : ""
+                        }`}
                         onClick={() => toggleEmoji(emoji)}
                       >
                         {emoji}
@@ -270,52 +289,10 @@ const SendVibe = () => {
                   className="btn btn-primary submit-vibe"
                   disabled={loading}
                 >
-                  {loading ? '⏳ Sending...' : '💖 Send Vibe'}
+                  {loading ? "⏳ Sending..." : "💖 Send Vibe"}
                 </button>
               </form>
             )}
-          </div>
-
-          <div className="vibe-preview-section">
-            <h3>Preview</h3>
-            <div className="vibe-preview glass-card">
-              <div className="preview-header">
-                <span className="preview-sender">
-                  {isAnonymous || !user ? "💭 Anonymous" : `From: ${user?.name} 💕 (You)`}
-                </span>
-                <span className="preview-recipient">
-                  To: @{formData.recipientHandle || "someone"}
-                </span>
-              </div>
-              <p className="preview-text">
-                {formData.text || "Your vibe message will appear here..."}
-              </p>
-              {formData.tags.length > 0 && (
-                <div className="preview-tags">
-                  {formData.tags.map(tag => (
-                    <span key={tag} className="preview-tag">#{tag}</span>
-                  ))}
-                </div>
-              )}
-              {formData.emojis.length > 0 && (
-                <div className="preview-emojis">
-                  {formData.emojis.map(emoji => (
-                    <span key={emoji}>{emoji}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="vibe-tips glass-card">
-              <h4>💡 Vibe Tips</h4>
-              <ul>
-                <li>Be genuine and specific</li>
-                <li>Focus on positivity</li>
-                <li>Use tags to highlight qualities</li>
-                <li>Add emojis for extra sparkle ✨</li>
-                <li>Remember: kindness is always slay!</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>
