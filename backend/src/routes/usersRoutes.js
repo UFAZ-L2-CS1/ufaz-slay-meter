@@ -48,14 +48,14 @@ router.get(
 
 /**
  * ✅ GET /api/users/top
- * Return top users for Explore page (sorted by newest or slayScore later)
+ * Return top users for Explore page
  */
 router.get("/top", async (req, res, next) => {
   try {
     const limit = Number(req.query.limit) || 50;
     const users = await User.find()
       .select("name handle bio avatarUrl createdAt")
-      .sort({ createdAt: -1 }) // you can change this to { slayScore: -1 } later
+      .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
 
@@ -68,17 +68,23 @@ router.get("/top", async (req, res, next) => {
 
 /**
  * ✅ GET /api/users/search
- * Search users by name or handle (for autocomplete)
+ * Search users by name or handle (autocomplete for Send Vibe)
+ * — yalnız @ufaz.az emailli istifadəçilər üçün
  */
 router.get("/search", async (req, res, next) => {
   try {
-    const query = req.query.q || "";
-    if (!query.trim()) return res.json({ users: [] });
+    const query = req.query.q?.trim() || "";
+    if (!query) return res.json({ users: [] });
 
     const users = await User.find({
-      $or: [
-        { handle: { $regex: `^${query}`, $options: "i" } },
-        { name: { $regex: query, $options: "i" } },
+      $and: [
+        {
+          $or: [
+            { handle: { $regex: `^${query}`, $options: "i" } },
+            { name: { $regex: query, $options: "i" } },
+          ],
+        },
+        { email: { $regex: "@ufaz\\.az$", $options: "i" } },
       ],
     })
       .select("name handle avatarUrl bio")
@@ -94,7 +100,7 @@ router.get("/search", async (req, res, next) => {
 
 /**
  * ✅ GET /api/users/me
- * Return current logged-in user (private)
+ * Return current logged-in user
  */
 router.get("/me", auth, async (req, res, next) => {
   try {
@@ -115,7 +121,7 @@ router.get("/me", auth, async (req, res, next) => {
 
 /**
  * ✅ PUT /api/users/me
- * Update your own name/bio/avatarUrl
+ * Update own profile fields
  */
 router.put(
   "/me",
@@ -136,6 +142,7 @@ router.put(
       if (bio !== undefined) req.user.bio = bio;
       if (avatarUrl !== undefined) req.user.avatarUrl = avatarUrl;
       await req.user.save();
+
       res.json({
         message: "Profile updated",
         user: {
