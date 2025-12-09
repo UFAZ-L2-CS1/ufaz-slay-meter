@@ -23,6 +23,44 @@ function normalizeTags(tags = []) {
   return [...new Set(cleaned)].slice(0, 8); // max 8 tags
 }
 
+/** ✅ YENI: GET /api/vibes  — bütün vibes-ləri gətir (paginated) */
+router.get(
+  "/",
+  [
+    query("page").optional().toInt(),
+    query("limit").optional().toInt()
+  ],
+  validate,
+  async (req, res, next) => {
+    try {
+      const page = Math.max(1, req.query.page || 1);
+      const limit = Math.min(50, Math.max(1, req.query.limit || 20));
+
+      const filter = { isVisible: true };
+      const [items, total] = await Promise.all([
+        Vibe.find(filter)
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .populate('recipientId', 'name handle avatarUrl')
+          .populate('senderId', 'name handle avatarUrl')
+          .lean(),
+        Vibe.countDocuments(filter),
+      ]);
+
+      res.json({
+        items,
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
 /** 1) POST /api/vibes  — logged-in sender */
 router.post(
   "/",
@@ -41,7 +79,7 @@ router.post(
       const recipient = await findRecipientByHandle(recipientHandle);
       if (!recipient) return res.status(404).json({ message: "Recipient not found" });
       if (String(recipient._id) === String(req.user._id)) {
-        return res.status(400).json({ message: "You can’t send a vibe to yourself" });
+        return res.status(400).json({ message: "You can't send a vibe to yourself" });
       }
 
       const vibe = await Vibe.create({
@@ -94,7 +132,7 @@ router.post(
   }
 );
 
-/** 3) GET /api/vibes/user/:handle  — list recipient’s vibes (paginated) */
+/** 3) GET /api/vibes/user/:handle  — list recipient's vibes (paginated) */
 router.get(
   "/user/:handle",
   [param("handle").isString().isLength({ min: 2, max: 30 }), query("page").optional().toInt(), query("limit").optional().toInt()],
