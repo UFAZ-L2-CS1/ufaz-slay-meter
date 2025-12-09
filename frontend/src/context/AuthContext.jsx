@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       try {
-        const response = await api.get('/profile');
+        const response = await api.get('/auth/me'); // Fixed: was '/profile'
         setUser(response.data.user);
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -40,16 +40,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
-      
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
       setError(null);
-      
       return user;
     } catch (error) {
-      setError(error.response?.data?.message || 'Login failed');
-      throw error;
+      const errorMessage = error.response?.data?.message || 'Login failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -57,16 +56,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/register', userData);
       const { token, user } = response.data;
-      
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
       setError(null);
-      
       return user;
     } catch (error) {
-      setError(error.response?.data?.message || 'Registration failed');
-      throw error;
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
