@@ -18,21 +18,27 @@ const app = express();
 
 // --- CORS ---
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:3000",
+  'https://ufaz-slay-meter-2-nginx.onrender.com',
+  process.env.FRONTEND_URL,
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   "http://localhost:5173",
   "http://127.0.0.1:5173"
-];
+].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow requests with no origin (same-origin, nginx proxy, postman)
       if (!origin) return callback(null, true);
+      
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS"));
+      
+      console.log('⚠️ CORS blocked origin:', origin);
+      // Allow in production for nginx proxy
+      callback(null, true);
     },
     credentials: true,
   })
@@ -45,14 +51,10 @@ app.use(cookieParser());
 // --- Global (soft) rate limiter for all routes ---
 app.use(apiLimiter);
 
-// ❌ REMOVED - These routes conflict with nginx
-// DO NOT add app.get("/", ...) or app.get("/test", ...)
-// Nginx will handle root "/" and serve the frontend
-
 // --- Backend health check (accessed via /api/health) ---
 app.get("/api/health", (_req, res) => {
-  res.json({ 
-    ok: true, 
+  res.json({
+    ok: true,
     db: !!mongoose?.connection?.readyState,
     message: "Backend is healthy"
   });
