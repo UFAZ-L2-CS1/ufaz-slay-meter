@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body } from "express-validator";
+import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import auth from "../middleware/auth.js";
@@ -42,10 +42,19 @@ router.post(
   ],
   async (req, res, next) => {
     try {
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          message: errors.array()[0].msg,
+          errors: errors.array() 
+        });
+      }
+
       const { name, email, password, handle } = req.body;
 
       // --- Check for duplicates ---
-      const existingEmail = await User.findOne({ email });
+      const existingEmail = await User.findOne({ email: email.toLowerCase().trim() });
       if (existingEmail)
         return res.status(400).json({ message: "Email already registered" });
 
@@ -66,10 +75,10 @@ router.post(
       });
 
       await user.save();
-
       const token = signToken(user._id);
       res.status(201).json({ user: publicUser(user), token });
     } catch (err) {
+      console.error("Registration error:", err);
       next(err);
     }
   }
@@ -80,9 +89,14 @@ router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
     const user = await User.findOne({
       email: (email || "").toLowerCase().trim(),
     });
+
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     const ok = await user.matchPassword(password);
@@ -91,6 +105,7 @@ router.post("/login", async (req, res, next) => {
     const token = signToken(user._id);
     res.json({ user: publicUser(user), token });
   } catch (err) {
+    console.error("Login error:", err);
     next(err);
   }
 });
