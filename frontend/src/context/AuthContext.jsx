@@ -22,15 +22,19 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
+    console.log('🔍 checkAuth - Token exists:', !!token);
+    
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       try {
-        const response = await api.get('/auth/me'); // ✅ FIXED: changed from '/profile' to '/auth/me'
+        const response = await api.get('/auth/me');
+        console.log('✅ checkAuth success - User:', response.data.user);
         setUser(response.data.user);
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('❌ checkAuth failed:', error);
         localStorage.removeItem('token');
         delete api.defaults.headers.common['Authorization'];
+        setUser(null);
       }
     }
     setLoading(false);
@@ -38,14 +42,22 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('🔐 Attempting login...');
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
+      
+      console.log('✅ Login success - Token:', token.substring(0, 20) + '...');
+      console.log('✅ Login success - User:', user);
+      
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
       setError(null);
+      
+      console.log('✅ User state updated:', user);
       return user;
     } catch (error) {
+      console.error('❌ Login failed:', error);
       const errorMessage = error.response?.data?.message || 'Login failed';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -54,14 +66,19 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      console.log('📝 Attempting registration...', userData);
       const response = await api.post('/auth/register', userData);
       const { token, user } = response.data;
+      
+      console.log('✅ Registration success - User:', user);
+      
       localStorage.setItem('token', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
       setError(null);
       return user;
     } catch (error) {
+      console.error('❌ Registration failed:', error);
       const errorMessage = error.response?.data?.message || 'Registration failed';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -69,6 +86,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    console.log('🚪 Logging out...');
     localStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);

@@ -31,13 +31,17 @@ function AppContent() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Redirect to dashboard after successful login
+  console.log('🎯 AppContent render - User:', user);
+  console.log('🎯 AppContent render - Loading:', loading);
+
+  // Redirect to dashboard when user logs in
   useEffect(() => {
-    if (user && showAuthModal) {
-      setShowAuthModal(false);
+    if (user) {
+      console.log('🚀 User detected, navigating to dashboard...');
       navigate('/dashboard');
+      setShowAuthModal(false);
     }
-  }, [user]);
+  }, [user, navigate]);
 
   if (loading) {
     return (
@@ -49,6 +53,28 @@ function AppContent() {
       </div>
     );
   }
+
+  const handleLoginSuccess = async (email, password) => {
+    try {
+      console.log('🔑 handleLoginSuccess called');
+      await login(email, password);
+      console.log('✅ Login completed');
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      throw error;
+    }
+  };
+
+  const handleRegisterSuccess = async (userData) => {
+    try {
+      console.log('📝 handleRegisterSuccess called');
+      await register(userData);
+      console.log('✅ Registration completed');
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      throw error;
+    }
+  };
 
   return (
     <div className="app">
@@ -69,8 +95,8 @@ function AppContent() {
       {showAuthModal && (
         <AuthModal 
           onClose={() => setShowAuthModal(false)}
-          onLogin={login}
-          onRegister={register}
+          onLogin={handleLoginSuccess}
+          onRegister={handleRegisterSuccess}
         />
       )}
 
