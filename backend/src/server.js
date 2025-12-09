@@ -8,9 +8,10 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import vibeRoutes from "./routes/vibeRoutes.js";
+import usersRoutes from "./routes/usersRoutes.js";   // 🧩 ADD THIS LINE
 import apiRoutes from "./routes/apiRoutes.js";
-import warsRoutes from "./routes/warsRoutes.js"; // ✅ NEW
-import exploreRoutes from "./routes/exploreRoutes.js"; // ✅ NEW
+import warsRoutes from "./routes/warsRoutes.js";
+import exploreRoutes from "./routes/exploreRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
 
@@ -46,10 +47,10 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// --- Global (soft) rate limiter for all routes ---
+// --- Global (soft) rate limiter ---
 app.use(apiLimiter);
 
-// --- Backend health check (accessed via /api/health) ---
+// --- Health check ---
 app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
@@ -58,7 +59,7 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-// --- Test route (accessed via /api/test) ---
+// --- Test route ---
 app.get("/api/test", (req, res) => {
   res.json({
     message: "Hello from backend!",
@@ -72,17 +73,17 @@ app.use("/api", apiRoutes);
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/vibes", vibeRoutes);
-app.use("/api/wars", warsRoutes); // ✅ NEW
-app.use("/api/explore", exploreRoutes); // ✅ NEW
+app.use("/api/users", usersRoutes);    // 🧩 ADD THIS LINE
+app.use("/api/wars", warsRoutes);
+app.use("/api/explore", exploreRoutes);
 
-// --- Centralized error handler (MUST be last) ---
+// --- Error handler ---
 app.use(errorHandler);
 
-// --- Start server after DB ---
+// --- Start server ---
 const PORT = process.env.PORT || 5000;
-
 connectDB().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server listening on http://localhost:${PORT}`);
   });
 });
