@@ -5,7 +5,11 @@ import User from "../models/User.js";
 import auth from "../middleware/auth.js";
 
 const router = Router();
-
+router.get("/", (req, res) => {
+  res.json({
+    message: "Auth API is alive ✅ Use /login, /register, /me, or /logout endpoints.",
+  });
+});
 // --- Helper to sign JWTs ---
 function signToken(id) {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
