@@ -9,6 +9,8 @@ import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import vibeRoutes from "./routes/vibeRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
+import warsRoutes from "./routes/warsRoutes.js"; // ✅ NEW
+import exploreRoutes from "./routes/exploreRoutes.js"; // ✅ NEW
 import errorHandler from "./middleware/errorHandler.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
 
@@ -29,15 +31,11 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (same-origin, nginx proxy, postman)
       if (!origin) return callback(null, true);
-      
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      
       console.log('⚠️ CORS blocked origin:', origin);
-      // Allow in production for nginx proxy
       callback(null, true);
     },
     credentials: true,
@@ -74,6 +72,8 @@ app.use("/api", apiRoutes);
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/vibes", vibeRoutes);
+app.use("/api/wars", warsRoutes); // ✅ NEW
+app.use("/api/explore", exploreRoutes); // ✅ NEW
 
 // --- Centralized error handler (MUST be last) ---
 app.use(errorHandler);
