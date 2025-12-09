@@ -8,7 +8,7 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import vibeRoutes from "./routes/vibeRoutes.js";
-import userRoutes from "./routes/userRoutes.js";  // ✅ ƏLAVƏ ET
+import userRoutes from "./routes/usersRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
@@ -62,8 +62,8 @@ app.get("/api/test", (req, res) => {
 // ✅ CRITICAL: Specific routes BEFORE catch-all /api route
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/profile", profileRoutes);
-app.use("/api/users", userRoutes);     // ✅ ƏLAVƏ ET
-app.use("/api/vibes", vibeRoutes);     // ✅ /api-dan ƏVVƏL
+app.use("/api/users", userRoutes);    
+app.use("/api/vibes", vibeRoutes);    
 
 // ✅ General /api routes LAST (catch-all)
 app.use("/api", apiRoutes);
