@@ -45,11 +45,10 @@ const ExplorePage = () => {
       }
 
       setLoadingSuggestions(true);
-      setShowSuggestions(true);
-
       try {
-        const response = await api.get(`/search?q=${encodeURIComponent(searchQuery)}&limit=5`);
+        const response = await api.get(`/users/search?q=${encodeURIComponent(searchQuery)}`);
         setSuggestions(response.data.users || []);
+        setShowSuggestions(true);
       } catch (err) {
         console.error('Error fetching suggestions:', err);
         setSuggestions([]);
@@ -58,7 +57,7 @@ const ExplorePage = () => {
       }
     };
 
-    // Debounce: wait 300ms after user stops typing
+    // Debounce search
     const timeoutId = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
@@ -103,10 +102,11 @@ const ExplorePage = () => {
   };
 
   // ✅ NEW: Handle suggestion click
-  const handleSuggestionClick = (userHandle) => {
-    setSearchQuery(`@${userHandle}`);
+  const handleSuggestionClick = (handle) => {
+    setSearchQuery('');
+    setSuggestions([]);
     setShowSuggestions(false);
-    window.location.href = `/profile/${userHandle}`;
+    window.location.href = `/profile/${handle}`;
   };
 
   const handleSendVibe = (handle) => {
@@ -143,7 +143,7 @@ const ExplorePage = () => {
           </p>
         </div>
 
-        {/* Search Bar with Autocomplete */}
+        {/* Search Bar */}
         <div className="search-section glass-card" ref={searchRef}>
           <form onSubmit={handleSearch} className="search-form">
             <div className="search-input-wrapper">
@@ -181,31 +181,31 @@ const ExplorePage = () => {
             <div className="search-suggestions">
               {loadingSuggestions ? (
                 <div className="suggestion-item loading">
-                  <span>Loading...</span>
+                  <span>🔍 Searching...</span>
                 </div>
               ) : suggestions.length === 0 ? (
                 <div className="suggestion-item no-results">
                   <span>No users found</span>
                 </div>
               ) : (
-                suggestions.map((u) => (
+                suggestions.map((suggestion) => (
                   <div
-                    key={u.id}
+                    key={suggestion.id}
                     className="suggestion-item"
-                    onClick={() => handleSuggestionClick(u.handle)}
+                    onClick={() => handleSuggestionClick(suggestion.handle)}
                   >
                     <div className="suggestion-avatar">
-                      {u.avatarUrl ? (
-                        <img src={u.avatarUrl} alt={u.name} />
+                      {suggestion.avatarUrl ? (
+                        <img src={suggestion.avatarUrl} alt={suggestion.name} />
                       ) : (
                         <div className="avatar-placeholder">
-                          {u.name?.charAt(0).toUpperCase()}
+                          {suggestion.name?.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div className="suggestion-info">
-                      <div className="suggestion-name">{u.name}</div>
-                      <div className="suggestion-handle">@{u.handle}</div>
+                      <div className="suggestion-name">{suggestion.name}</div>
+                      <div className="suggestion-handle">@{suggestion.handle}</div>
                     </div>
                   </div>
                 ))
