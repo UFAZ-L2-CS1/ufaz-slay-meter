@@ -151,6 +151,7 @@ router.get(
           .sort({ createdAt: -1 })
           .skip((page - 1) * limit)
           .limit(limit)
+          .populate('senderId', 'name handle avatarUrl') // ✅ FIXED: Populate sender info
           .lean(),
         Vibe.countDocuments(filter),
       ]);
