@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import './ProfilePage.css';
@@ -8,6 +8,7 @@ const ProfilePage = () => {
   const { user: currentUser } = useAuth();
   const { handle } = useParams();
   const [profile, setProfile] = useState(null);
+  const [vibes, setVibes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,14 +20,32 @@ const ProfilePage = () => {
         setLoading(true);
         setError(null);
 
+        let profileData;
+
         if (isOwnProfile && currentUser) {
-          // Load own profile
-          setProfile(currentUser);
+          // Load own profile with stats
+          const response = await api.get('/profile/me');
+          profileData = response.data.user;
         } else {
-          // Load other user's profile
-          const response = await api.get(`/users/${handle}`);
-          setProfile(response.data.user);
+          // Load other user's profile with stats
+          const response = await api.get(`/profile/${handle}`);
+          profileData = response.data.user;
         }
+
+        setProfile(profileData);
+
+        // Load vibes for this user
+        try {
+          const vibesResponse = await api.get(`/vibes/user/${profileData.handle}`, {
+            params: { page: 1, limit: 10 }
+          });
+          setVibes(vibesResponse.data.items || []);
+        } catch (vibesErr) {
+          console.error('Error loading vibes:', vibesErr);
+          // Don't fail the whole page if vibes fail
+          setVibes([]);
+        }
+
       } catch (err) {
         console.error('Error loading profile:', err);
         setError('Could not load profile.');
@@ -58,6 +77,7 @@ const ProfilePage = () => {
         <div className="profile-card error">
           <h2>Profile not found</h2>
           <p>{error || 'This profile could not be loaded.'}</p>
+          <Link to="/" className="btn-back">Go Home</Link>
         </div>
       </div>
     );
@@ -79,6 +99,16 @@ const ProfilePage = () => {
             <p className="profile-handle">@{profile.handle}</p>
             {profile.bio && <p className="profile-bio">{profile.bio}</p>}
           </div>
+          
+          {isOwnProfile && (
+            <Link to="/settings" className="btn-edit">Edit Profile</Link>
+          )}
+          
+          {!isOwnProfile && (
+            <Link to={`/send?to=${profile.handle}`} className="btn-send-vibe">
+              💌 Send Vibe
+            </Link>
+          )}
         </div>
 
         <div className="profile-stats">
@@ -96,18 +126,70 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {profile.socials && (
+        {/* Top Tags Section */}
+        {profile.stats?.topTags && profile.stats.topTags.length > 0 && (
+          <div className="profile-top-tags">
+            <h3>Top Vibes 🌟</h3>
+            <div className="tags-list">
+              {profile.stats.topTags.map((tagData) => (
+                <span key={tagData.tag} className="tag-item">
+                  #{tagData.tag} ({tagData.pct}%)
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Vibes Section */}
+        {vibes.length > 0 && (
+          <div className="profile-vibes">
+            <h3>Recent Vibes 💌</h3>
+            <div className="vibes-list">
+              {vibes.map((vibe) => (
+                <div key={vibe._id} className="vibe-item">
+                  <div className="vibe-header">
+                    <span className="vibe-from">
+                      {vibe.isAnonymous ? '🎭 Anonymous' : `${vibe.senderId?.name || 'Someone'}`}
+                    </span>
+                    <span className="vibe-date">
+                      {new Date(vibe.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="vibe-text">{vibe.text}</p>
+                  {vibe.tags && vibe.tags.length > 0 && (
+                    <div className="vibe-tags">
+                      {vibe.tags.map((tag, idx) => (
+                        <span key={idx} className="vibe-tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Social Links */}
+        {profile.links && (profile.links.instagram || profile.links.tiktok || profile.links.website) && (
           <div className="profile-socials">
-            {profile.socials.instagram && (
-              <a href={profile.socials.instagram} target="_blank" rel="noreferrer">
-                Instagram
-              </a>
-            )}
-            {profile.socials.tiktok && (
-              <a href={profile.socials.tiktok} target="_blank" rel="noreferrer">
-                TikTok
-              </a>
-            )}
+            <h3>Connect</h3>
+            <div className="socials-list">
+              {profile.links.instagram && (
+                <a href={profile.links.instagram} target="_blank" rel="noreferrer">
+                  📸 Instagram
+                </a>
+              )}
+              {profile.links.tiktok && (
+                <a href={profile.links.tiktok} target="_blank" rel="noreferrer">
+                  🎵 TikTok
+                </a>
+              )}
+              {profile.links.website && (
+                <a href={profile.links.website} target="_blank" rel="noreferrer">
+                  🌐 Website
+                </a>
+              )}
+            </div>
           </div>
         )}
       </div>
