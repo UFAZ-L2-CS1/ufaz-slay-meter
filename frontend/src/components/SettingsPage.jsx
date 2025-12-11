@@ -25,14 +25,13 @@ const SettingsPage = () => {
     }
   });
 
-  // ✅ FIXED: Load user data whenever user changes
+  // Load user data
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        // Fetch fresh user data from the server
         const response = await api.get('/profile/me');
         const userData = response.data.user;
-        
+
         setProfileData({
           name: userData.name || '',
           handle: userData.handle || '',
@@ -46,7 +45,6 @@ const SettingsPage = () => {
         });
       } catch (err) {
         console.error('Error loading user data:', err);
-        // Fallback to context user if API fails
         if (user) {
           setProfileData({
             name: user.name || '',
@@ -66,55 +64,37 @@ const SettingsPage = () => {
     if (user) {
       loadUserData();
     }
-  }, [user]); // Re-run when user changes
+  }, [user]);
 
-  // Privacy Settings
+  // Privacy Settings (profileVisibility removed)
   const [privacySettings, setPrivacySettings] = useState({
-    profileVisibility: 'public',
     allowAnonymousVibes: true,
     showVibesOnProfile: true,
     showStatsPublicly: true
   });
 
-  // Notification Settings
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    vibeReceived: true,
-    weeklyDigest: true,
-    newFollowers: false,
-    vibeMilestones: true
-  });
-
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    
-    // Handle nested links
+
     if (name.startsWith('links.')) {
       const linkKey = name.split('.')[1];
-      setProfileData({
-        ...profileData,
+      setProfileData((prev) => ({
+        ...prev,
         links: {
-          ...profileData.links,
+          ...prev.links,
           [linkKey]: value
         }
-      });
+      }));
     } else {
-      setProfileData({ ...profileData, [name]: value });
+      setProfileData((prev) => ({ ...prev, [name]: value }));
     }
-    
+
     setError('');
     setSuccess('');
   };
 
   const handlePrivacyChange = (name, value) => {
-    setPrivacySettings({ ...privacySettings, [name]: value });
-  };
-
-  const handleNotificationChange = (name) => {
-    setNotificationSettings({
-      ...notificationSettings,
-      [name]: !notificationSettings[name]
-    });
+    setPrivacySettings((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSaveProfile = async (e) => {
@@ -124,7 +104,6 @@ const SettingsPage = () => {
     setSuccess('');
 
     try {
-      // Save the profile
       const response = await api.patch('/profile', {
         name: profileData.name,
         handle: profileData.handle,
@@ -133,14 +112,12 @@ const SettingsPage = () => {
         links: profileData.links
       });
 
-      // ✅ FIXED: Update user in context AND reload fresh data
       const updatedUser = response.data.user;
-      
+
       if (setUser) {
         setUser(updatedUser);
       }
 
-      // ✅ Update the form with the fresh data from server
       setProfileData({
         name: updatedUser.name || '',
         handle: updatedUser.handle || '',
@@ -154,15 +131,12 @@ const SettingsPage = () => {
       });
 
       setSuccess('Profile updated successfully!');
-      
-      // Optional: Remove redirect or keep it with longer delay
-      // setTimeout(() => {
-      //   navigate(`/profile/${updatedUser.handle}`);
-      // }, 1500);
-
     } catch (err) {
       console.error('Error updating profile:', err);
-      setError(err.response?.data?.message || 'Failed to update profile. Please try again.');
+      setError(
+        err.response?.data?.message ||
+          'Failed to update profile. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -174,27 +148,11 @@ const SettingsPage = () => {
     setSuccess('');
 
     try {
-      // TODO: Implement privacy settings API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // TODO: hook this up to real API later
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setSuccess('Privacy settings updated successfully!');
     } catch (err) {
       setError('Failed to update privacy settings.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveNotifications = async () => {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      // TODO: Implement notification settings API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSuccess('Notification settings updated successfully!');
-    } catch (err) {
-      setError('Failed to update notification settings.');
     } finally {
       setLoading(false);
     }
@@ -235,28 +193,27 @@ const SettingsPage = () => {
           <div className="settings-sidebar">
             <nav className="settings-nav">
               <button
-                className={`nav-item ${activeSection === 'profile' ? 'active' : ''}`}
+                className={`nav-item ${
+                  activeSection === 'profile' ? 'active' : ''
+                }`}
                 onClick={() => setActiveSection('profile')}
               >
                 <span className="nav-icon">👤</span>
                 Profile
               </button>
               <button
-                className={`nav-item ${activeSection === 'privacy' ? 'active' : ''}`}
+                className={`nav-item ${
+                  activeSection === 'privacy' ? 'active' : ''
+                }`}
                 onClick={() => setActiveSection('privacy')}
               >
                 <span className="nav-icon">🔒</span>
                 Privacy
               </button>
               <button
-                className={`nav-item ${activeSection === 'notifications' ? 'active' : ''}`}
-                onClick={() => setActiveSection('notifications')}
-              >
-                <span className="nav-icon">🔔</span>
-                Notifications
-              </button>
-              <button
-                className={`nav-item ${activeSection === 'account' ? 'active' : ''}`}
+                className={`nav-item ${
+                  activeSection === 'account' ? 'active' : ''
+                }`}
                 onClick={() => setActiveSection('account')}
               >
                 <span className="nav-icon">⚠️</span>
@@ -267,7 +224,6 @@ const SettingsPage = () => {
 
           {/* Main Content */}
           <div className="settings-main">
-            {/* Success/Error Messages */}
             {success && (
               <div className="success-message">
                 <span>✓</span>
@@ -395,29 +351,11 @@ const SettingsPage = () => {
               </div>
             )}
 
-            {/* Privacy Section */}
+            {/* Privacy Section (no profile visibility) */}
             {activeSection === 'privacy' && (
               <div className="glass-card settings-section">
                 <h2 className="section-title">Privacy Settings</h2>
                 <div className="settings-form">
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h3>Profile Visibility</h3>
-                      <p>Control who can see your profile</p>
-                    </div>
-                    <select
-                      value={privacySettings.profileVisibility}
-                      onChange={(e) =>
-                        handlePrivacyChange('profileVisibility', e.target.value)
-                      }
-                      className="select-input"
-                    >
-                      <option value="public">Public</option>
-                      <option value="friends">Friends Only</option>
-                      <option value="private">Private</option>
-                    </select>
-                  </div>
-
                   <div className="setting-item">
                     <div className="setting-info">
                       <h3>Allow Anonymous Vibes</h3>
@@ -484,105 +422,6 @@ const SettingsPage = () => {
                     disabled={loading}
                   >
                     {loading ? 'Saving...' : 'Save Privacy Settings'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Notifications Section */}
-            {activeSection === 'notifications' && (
-              <div className="glass-card settings-section">
-                <h2 className="section-title">Notification Preferences</h2>
-                <div className="settings-form">
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h3>Email Notifications</h3>
-                      <p>Receive notifications via email</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={notificationSettings.emailNotifications}
-                        onChange={() =>
-                          handleNotificationChange('emailNotifications')
-                        }
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h3>Vibe Received</h3>
-                      <p>Get notified when you receive a new vibe</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={notificationSettings.vibeReceived}
-                        onChange={() => handleNotificationChange('vibeReceived')}
-                        disabled={!notificationSettings.emailNotifications}
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h3>Weekly Digest</h3>
-                      <p>Receive a weekly summary of your vibes</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={notificationSettings.weeklyDigest}
-                        onChange={() => handleNotificationChange('weeklyDigest')}
-                        disabled={!notificationSettings.emailNotifications}
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h3>New Followers</h3>
-                      <p>Get notified when someone follows you</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={notificationSettings.newFollowers}
-                        onChange={() => handleNotificationChange('newFollowers')}
-                        disabled={!notificationSettings.emailNotifications}
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-
-                  <div className="setting-item">
-                    <div className="setting-info">
-                      <h3>Vibe Milestones</h3>
-                      <p>Celebrate when you reach vibe milestones</p>
-                    </div>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={notificationSettings.vibeMilestones}
-                        onChange={() =>
-                          handleNotificationChange('vibeMilestones')
-                        }
-                        disabled={!notificationSettings.emailNotifications}
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                  </div>
-
-                  <button
-                    className="btn btn-primary"
-                    onClick={handleSaveNotifications}
-                    disabled={loading}
-                  >
-                    {loading ? 'Saving...' : 'Save Notification Settings'}
                   </button>
                 </div>
               </div>
