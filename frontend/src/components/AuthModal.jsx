@@ -128,7 +128,7 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
               id="email"
               type="email"
               name="email"
-              placeholder="your@email.com"
+              placeholder="youremail@gmail.com"
               value={formData.email}
               onChange={handleChange}
               required
