@@ -27,7 +27,7 @@ function App() {
 }
 
 function AppContent() {
-  const { user, loading, login, register, logout } = useAuth(); // ✅ Added logout
+  const { user, loading, login, register, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
 
@@ -70,7 +70,6 @@ function AppContent() {
 
   return (
     <div className="app">
-      {/* ✅ Pass user and logout to Navigation */}
       <Navigation 
         user={user}
         onAuthClick={() => setShowAuthModal(true)} 
@@ -78,7 +77,16 @@ function AppContent() {
       />
       
       <Routes>
-        <Route path="/" element={<LandingPage onAuthClick={() => setShowAuthModal(true)} />} />
+        {/* ✅ FIXED: Added user prop to LandingPage */}
+        <Route 
+          path="/" 
+          element={
+            <LandingPage 
+              onAuthClick={() => setShowAuthModal(true)} 
+              user={user} 
+            />
+          } 
+        />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
         <Route path="/profile/:handle" element={<ProfilePage />} />
         <Route path="/send-vibe" element={<SendVibe />} />
