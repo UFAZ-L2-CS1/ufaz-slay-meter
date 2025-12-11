@@ -73,7 +73,7 @@ const LandingPage = ({ onAuthClick, user }) => {
             </p>
           </div>
           
-          {/* ✅ FIXED: Hide buttons when user is logged in */}
+          {/* ✅ FIXED: Only show buttons if user is NOT logged in */}
           {!user && (
             <div className="hero-buttons">
               <button onClick={onAuthClick} className="btn btn-fetch">
@@ -230,7 +230,7 @@ const LandingPage = ({ onAuthClick, user }) => {
             Join UFAZ Slay Meter today and start spreading amazing vibes!
           </p>
           
-          {/* ✅ FIXED: Hide button when user is logged in */}
+          {/* ✅ FIXED: Only show button if user is NOT logged in */}
           {!user && (
             <div className="cta-buttons">
               <button onClick={onAuthClick} className="btn btn-fetch">
