@@ -11,7 +11,7 @@
     hsl(var(--pink-400)),
     hsl(var(--pink-500))
   );
-  margin-top: 60px; /* Matches navigation height */
+  margin-top: 110px; /* Matches navigation height */
   padding: 2rem 1rem 3rem; /* Increased top padding for spacing */
   display: flex;
   flex-direction: column;

@@ -53,7 +53,7 @@ async function createDailyWar() {
 
     // War schedule: 9:30 AM - 10:30 AM
     const startTime = new Date(today);
-    startTime.setHours(1, 20, 0, 0);
+    startTime.setHours(2, 20, 0, 0);
 
     const endTime = new Date(startTime);
     endTime.setHours(2, 20, 0, 0);
@@ -77,7 +77,7 @@ async function createDailyWar() {
       contestant2: contestants.contestant2,
       startTime,
       endTime,
-      status: "scheduled",
+      status: "active",
     });
 
     console.log("✅ Daily war created:", war._id);
@@ -117,14 +117,17 @@ export function initWarScheduler() {
   console.log("🚀 War Scheduler initialized");
 
   // 1. Create daily war at 9:00 AM (30 mins before start)
-  cron.schedule("0 9 * * *", async () => {
-    console.log("⏰ Creating daily war...");
-    try {
-      await createDailyWar();
-    } catch (error) {
-      console.error("❌ Failed to create daily war:", error);
-    }
-  });
+cron.schedule("20 2 * * *", async () => {
+  console.log("⏰ Creating daily war (Asia/Baku)...");
+  try {
+    await createDailyWar();
+  } catch (error) {
+    console.error("❌ Failed to create daily war:", error);
+  }
+}, {
+  timezone: "Asia/Baku" // 🔥 vacibdir
+});
+
 
   // 2. Check every minute to end expired wars
   cron.schedule("* * * * *", async () => {
