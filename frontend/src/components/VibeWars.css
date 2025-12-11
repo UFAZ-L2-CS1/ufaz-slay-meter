@@ -1,8 +1,3 @@
-/* VibeWars.css - Pink Theme (UPDATED WITH FIXES)
-   Author: ChatGPT x Aniya
-   Fixed: Navigation centering and header spacing
-*/
-
 .vibe-wars-page {
   min-height: 100vh;
   background: linear-gradient(
@@ -11,8 +6,8 @@
     hsl(var(--pink-400)),
     hsl(var(--pink-500))
   );
-  margin-top: 110px; /* Matches navigation height */
-  padding: 2rem 1rem 3rem; /* Increased top padding for spacing */
+  margin-top: 80px; /* Matches navigation height */
+  padding: 2.5rem 1rem 3rem; /* Increased top padding for spacing */
   display: flex;
   flex-direction: column;
   align-items: center;
