@@ -100,12 +100,14 @@ const SendVibe = () => {
     setError(null);
 
     try {
-      await api.post("/vibes/send", {
+      // ✅ FIXED: Use correct endpoint based on authentication and anonymous status
+      const endpoint = !user || isAnonymous ? "/vibes/anon" : "/vibes";
+
+      await api.post(endpoint, {
         recipientHandle: formData.recipientHandle,
         text: formData.text,
         tags: formData.tags,
         emojis: formData.emojis,
-        isAnonymous: isAnonymous,
       });
 
       setSuccess(true);
@@ -182,64 +184,34 @@ const SendVibe = () => {
                       required
                       autoComplete="off"
                     />
+                    
                     {/* Autocomplete suggestions */}
-                      {suggestions.length > 0 && (
-                        <ul className="suggestions-list">
-                          {suggestions.map((u) => (
-                            <li
-                              key={u.handle}
-                              onClick={() => {
-                                setFormData({ ...formData, recipientHandle: u.handle });
-                                setSuggestions([]);
-                              }}
-                            >
-                              <img
-                                src={u.avatarUrl || "https://via.placeholder.com/36"}
-                                alt={u.name}
-                                className="suggestion-avatar"
-                              />
-                              <div className="suggestion-info">
-                                <span className="suggestion-name">{u.name}</span>
-                                <span className="suggestion-handle">@{u.handle}</span>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      
-                      {formData.recipientHandle.length >= 2 && suggestions.length === 0 && (
-                        <div className="no-suggestions">No users found</div>
-                      )}
-
                     {suggestions.length > 0 && (
                       <ul className="suggestions-list">
                         {suggestions.map((u) => (
                           <li
                             key={u.handle}
                             onClick={() => {
-                              setFormData({
-                                ...formData,
-                                recipientHandle: u.handle,
-                              });
+                              setFormData({ ...formData, recipientHandle: u.handle });
                               setSuggestions([]);
                             }}
                           >
                             <img
-                              src={
-                                u.avatarUrl || "https://via.placeholder.com/30"
-                              }
+                              src={u.avatarUrl || "https://via.placeholder.com/36"}
                               alt={u.name}
                               className="suggestion-avatar"
                             />
                             <div className="suggestion-info">
                               <span className="suggestion-name">{u.name}</span>
-                              <span className="suggestion-handle">
-                                @{u.handle}
-                              </span>
+                              <span className="suggestion-handle">@{u.handle}</span>
                             </div>
                           </li>
                         ))}
                       </ul>
+                    )}
+                    
+                    {formData.recipientHandle.length >= 2 && suggestions.length === 0 && (
+                      <div className="no-suggestions">No users found</div>
                     )}
                   </div>
                 </div>
@@ -262,6 +234,24 @@ const SendVibe = () => {
                   />
                 </div>
 
+                {/* Selected Tags Display */}
+                {formData.tags.length > 0 && (
+                  <div className="selected-tags">
+                    {formData.tags.map((tag) => (
+                      <span key={tag} className="selected-tag">
+                        #{tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="remove-tag"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 {/* Tags */}
                 <div className="input-group">
                   <label>Add Tags (Max 8)</label>
@@ -281,6 +271,7 @@ const SendVibe = () => {
                           formData.tags.includes(tag) ? "selected" : ""
                         }`}
                         onClick={() => addTag(tag)}
+                        disabled={formData.tags.length >= 8}
                       >
                         #{tag}
                       </button>
