@@ -9,13 +9,10 @@ const Dashboard = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('received');
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
-
-  useEffect(() => {
-    fetchVibes();
   }, [activeTab]);
 
   const fetchDashboardData = async () => {
@@ -27,26 +24,18 @@ const Dashboard = ({ user }) => {
       const statsResponse = await api.get('/users/me/stats');
       setStats(statsResponse.data);
 
-      // Fetch received vibes
-      await fetchVibes();
+      // Fetch vibes based on active tab
+      const vibesEndpoint = activeTab === 'received' ? '/vibes/received' : '/vibes/sent';
+      const vibesResponse = await api.get(vibesEndpoint, {
+        params: { page: 1, limit: 10 }
+      });
+      setVibes(vibesResponse.data.vibes || []);
 
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchVibes = async () => {
-    try {
-      const endpoint = activeTab === 'received' ? '/vibes/received' : '/vibes/sent';
-      const vibesResponse = await api.get(endpoint, {
-        params: { page: 1, limit: 10 }
-      });
-      setVibes(vibesResponse.data.vibes || []);
-    } catch (err) {
-      console.error('Error fetching vibes:', err);
     }
   };
 
@@ -66,19 +55,6 @@ const Dashboard = ({ user }) => {
   ];
 
   const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
-
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return 'Recently';
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000); // difference in seconds
-
-    if (diff < 60) return 'Just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
-    if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
-    return date.toLocaleDateString();
-  };
 
   if (loading) {
     return (
@@ -107,9 +83,9 @@ const Dashboard = ({ user }) => {
           <div className="container">
             <div className="glass-card">
               <div className="error-state">
-                <h3>⚠️ {error}</h3>
+                <p>{error}</p>
                 <button onClick={fetchDashboardData} className="btn btn-primary">
-                  Try Again
+                  Retry
                 </button>
               </div>
             </div>
@@ -197,19 +173,24 @@ const Dashboard = ({ user }) => {
                   <div key={vibe._id} className="glass-card vibe-item">
                     <div className="vibe-header">
                       <div className="vibe-sender">
-                        {vibe.isAnonymous || !vibe.senderId ? (
+                        {vibe.isAnonymous || vibe.anonymous ? (
                           <span className="anonymous">🎭 Anonymous</span>
+                        ) : activeTab === 'received' ? (
+                          <span>
+                            <strong>{vibe.from?.name || vibe.senderId?.name}</strong> 
+                            {vibe.from?.handle && ` @${vibe.from.handle}`}
+                          </span>
                         ) : (
                           <span>
-                            <strong>{activeTab === 'received' ? vibe.senderId?.name : vibe.recipientId?.name}</strong> 
-                            {' '}@{activeTab === 'received' ? vibe.senderId?.handle : vibe.recipientId?.handle}
+                            To <strong>{vibe.to?.name || vibe.recipientId?.name}</strong>
+                            {vibe.to?.handle && ` @${vibe.to.handle}`}
                           </span>
                         )}
                       </div>
-                      <span className="vibe-time">{formatTimestamp(vibe.createdAt)}</span>
+                      <span className="vibe-time">{vibe.timestamp}</span>
                     </div>
                     <p className="vibe-message">
-                      {vibe.text}
+                      {vibe.text || vibe.message || "You're amazing! Keep slaying! 💕"}
                     </p>
                     {vibe.tags && vibe.tags.length > 0 && (
                       <div className="vibe-tags">
