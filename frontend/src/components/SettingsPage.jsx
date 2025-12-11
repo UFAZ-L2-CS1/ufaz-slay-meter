@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import './SettingsPage.css';
 
-const SettingsPage = ({ user }) => {
+const SettingsPage = () => {
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
   const [activeSection, setActiveSection] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -11,11 +14,33 @@ const SettingsPage = ({ user }) => {
 
   // Profile Settings
   const [profileData, setProfileData] = useState({
-    name: user?.name || '',
-    handle: user?.handle || '',
-    bio: user?.bio || '',
-    avatarUrl: user?.avatarUrl || ''
+    name: '',
+    handle: '',
+    bio: '',
+    avatarUrl: '',
+    links: {
+      instagram: '',
+      tiktok: '',
+      website: ''
+    }
   });
+
+  // Load user data when component mounts
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        name: user.name || '',
+        handle: user.handle || '',
+        bio: user.bio || '',
+        avatarUrl: user.avatarUrl || '',
+        links: {
+          instagram: user.links?.instagram || '',
+          tiktok: user.links?.tiktok || '',
+          website: user.links?.website || ''
+        }
+      });
+    }
+  }, [user]);
 
   // Privacy Settings
   const [privacySettings, setPrivacySettings] = useState({
@@ -35,7 +60,22 @@ const SettingsPage = ({ user }) => {
   });
 
   const handleProfileChange = (e) => {
-    setProfileData({ ...profileData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Handle nested links
+    if (name.startsWith('links.')) {
+      const linkKey = name.split('.')[1];
+      setProfileData({
+        ...profileData,
+        links: {
+          ...profileData.links,
+          [linkKey]: value
+        }
+      });
+    } else {
+      setProfileData({ ...profileData, [name]: value });
+    }
+    
     setError('');
     setSuccess('');
   };
@@ -58,11 +98,30 @@ const SettingsPage = ({ user }) => {
     setSuccess('');
 
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // ✅ FIXED: Actually call the API
+      const response = await api.patch('/profile', {
+        name: profileData.name,
+        handle: profileData.handle,
+        bio: profileData.bio,
+        avatarUrl: profileData.avatarUrl,
+        links: profileData.links
+      });
+
+      // Update user in context
+      if (setUser && response.data.user) {
+        setUser(response.data.user);
+      }
+
       setSuccess('Profile updated successfully!');
+      
+      // Redirect to profile after 1.5 seconds
+      setTimeout(() => {
+        navigate(`/profile/${response.data.user.handle}`);
+      }, 1500);
+
     } catch (err) {
-      setError('Failed to update profile. Please try again.');
+      console.error('Error updating profile:', err);
+      setError(err.response?.data?.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -74,6 +133,7 @@ const SettingsPage = ({ user }) => {
     setSuccess('');
 
     try {
+      // TODO: Implement privacy settings API
       await new Promise(resolve => setTimeout(resolve, 1000));
       setSuccess('Privacy settings updated successfully!');
     } catch (err) {
@@ -89,6 +149,7 @@ const SettingsPage = ({ user }) => {
     setSuccess('');
 
     try {
+      // TODO: Implement notification settings API
       await new Promise(resolve => setTimeout(resolve, 1000));
       setSuccess('Notification settings updated successfully!');
     } catch (err) {
@@ -106,7 +167,9 @@ const SettingsPage = ({ user }) => {
     ) {
       setLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // TODO: Implement delete account API
+        await api.delete('/profile');
+        localStorage.removeItem('token');
         navigate('/');
       } catch (err) {
         setError('Failed to delete account.');
@@ -214,7 +277,7 @@ const SettingsPage = ({ user }) => {
                     <label htmlFor="bio">
                       Bio
                       <span className="char-count">
-                        {profileData.bio.length}/150
+                        {profileData.bio.length}/240
                       </span>
                     </label>
                     <textarea
@@ -223,7 +286,7 @@ const SettingsPage = ({ user }) => {
                       value={profileData.bio}
                       onChange={handleProfileChange}
                       placeholder="Tell us about yourself..."
-                      maxLength={150}
+                      maxLength={240}
                       rows={4}
                     />
                   </div>
@@ -241,6 +304,43 @@ const SettingsPage = ({ user }) => {
                     <p className="input-hint">
                       Enter a URL to your profile picture
                     </p>
+                  </div>
+
+                  {/* Social Links */}
+                  <div className="input-group">
+                    <label htmlFor="links.instagram">Instagram URL</label>
+                    <input
+                      type="url"
+                      id="links.instagram"
+                      name="links.instagram"
+                      value={profileData.links.instagram}
+                      onChange={handleProfileChange}
+                      placeholder="https://instagram.com/username"
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="links.tiktok">TikTok URL</label>
+                    <input
+                      type="url"
+                      id="links.tiktok"
+                      name="links.tiktok"
+                      value={profileData.links.tiktok}
+                      onChange={handleProfileChange}
+                      placeholder="https://tiktok.com/@username"
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label htmlFor="links.website">Website URL</label>
+                    <input
+                      type="url"
+                      id="links.website"
+                      name="links.website"
+                      value={profileData.links.website}
+                      onChange={handleProfileChange}
+                      placeholder="https://yourwebsite.com"
+                    />
                   </div>
 
                   <button
