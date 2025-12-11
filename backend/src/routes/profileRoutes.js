@@ -20,11 +20,40 @@ router.get("/", (req, res) => {
 
 /**
  * GET /api/profile/me
- * Return current authenticated user's public data
+ * Return current authenticated user's public data WITH STATS
  */
 router.get("/me", auth, async (req, res, next) => {
   try {
     const u = req.user;
+
+    // Calculate stats for current user
+    const [vibesReceived, vibesSent, tagStats] = await Promise.all([
+      Vibe.countDocuments({
+        recipientId: u._id,
+        isVisible: true,
+      }),
+      Vibe.countDocuments({
+        senderId: u._id,
+        isVisible: true,
+      }),
+      // Get tag distribution
+      Vibe.aggregate([
+        { $match: { recipientId: u._id, isVisible: true } },
+        { $unwind: "$tags" },
+        { $group: { _id: "$tags", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 }
+      ])
+    ]);
+
+    // Calculate percentages for tags
+    const totalTagCount = tagStats.reduce((sum, tag) => sum + tag.count, 0);
+    const topTags = tagStats.map(tag => ({
+      tag: tag._id,
+      count: tag.count,
+      pct: totalTagCount > 0 ? Math.round((tag.count / totalTagCount) * 100) : 0
+    }));
+
     res.json({
       user: {
         id: u._id,
@@ -36,6 +65,12 @@ router.get("/me", auth, async (req, res, next) => {
         links: u.links,
         createdAt: u.createdAt,
         updatedAt: u.updatedAt,
+        stats: {
+          vibesReceived,
+          vibesSent,
+          slayScore: vibesReceived * 10,
+          topTags
+        }
       },
     });
   } catch (err) {
@@ -60,10 +95,33 @@ router.get(
         return res.status(404).json({ message: "User not found" });
       }
 
-      const vibesReceived = await Vibe.countDocuments({
-        recipientId: user._id,
-        isVisible: true,
-      });
+      // Calculate comprehensive stats
+      const [vibesReceived, vibesSent, tagStats] = await Promise.all([
+        Vibe.countDocuments({
+          recipientId: user._id,
+          isVisible: true,
+        }),
+        Vibe.countDocuments({
+          senderId: user._id,
+          isVisible: true,
+        }),
+        // Get tag distribution
+        Vibe.aggregate([
+          { $match: { recipientId: user._id, isVisible: true } },
+          { $unwind: "$tags" },
+          { $group: { _id: "$tags", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+          { $limit: 5 }
+        ])
+      ]);
+
+      // Calculate percentages for tags
+      const totalTagCount = tagStats.reduce((sum, tag) => sum + tag.count, 0);
+      const topTags = tagStats.map(tag => ({
+        tag: tag._id,
+        count: tag.count,
+        pct: totalTagCount > 0 ? Math.round((tag.count / totalTagCount) * 100) : 0
+      }));
 
       res.json({
         user: {
@@ -76,7 +134,9 @@ router.get(
           createdAt: user.createdAt,
           stats: {
             vibesReceived,
+            vibesSent,
             slayScore: vibesReceived * 10,
+            topTags
           },
         },
       });
