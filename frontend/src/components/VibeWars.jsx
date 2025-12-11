@@ -12,6 +12,68 @@ const VibeWars = () => {
   const [error, setError] = useState(null);
   const [timeLeft, setTimeLeft] = useState('');
 
+  // ✅ Backend data-nı frontend format-a çevir
+  const transformWarData = (warData) => {
+    if (!warData) return null;
+
+    const c1Votes = warData.contestant1?.vibe?.votes || 0;
+    const c2Votes = warData.contestant2?.vibe?.votes || 0;
+    const totalVotes = c1Votes + c2Votes || 1; // 0-a bölünməni əngəllə
+
+    return {
+      id: warData._id || 'current-war',
+      contestant1: {
+        id: 'contestant-1',
+        name: warData.contestant1?.user?.name || 'Contestant 1',
+        handle: warData.contestant1?.user?.handle || 'user1',
+        avatarUrl: warData.contestant1?.user?.avatarUrl || '',
+        vibe: {
+          text: warData.contestant1?.vibe?.text || 'Amazing vibe!',
+          tags: warData.contestant1?.vibe?.tags || []
+        },
+        votes: c1Votes,
+        votePercentage: Math.round((c1Votes / totalVotes) * 100)
+      },
+      contestant2: {
+        id: 'contestant-2',
+        name: warData.contestant2?.user?.name || 'Contestant 2',
+        handle: warData.contestant2?.user?.handle || 'user2',
+        avatarUrl: warData.contestant2?.user?.avatarUrl || '',
+        vibe: {
+          text: warData.contestant2?.vibe?.text || 'Great vibe!',
+          tags: warData.contestant2?.vibe?.tags || []
+        },
+        votes: c2Votes,
+        votePercentage: Math.round((c2Votes / totalVotes) * 100)
+      },
+      endTime: warData.endsAt || new Date(Date.now() + 3600000).toISOString(),
+      totalVotes: totalVotes,
+      userVote: warData.votes?.find(v => v.user === user?._id) || null,
+      status: 'active'
+    };
+  };
+
+  // ✅ History data transform
+  const transformHistoryData = (wars) => {
+    return wars.map((war, index) => {
+      const winnerVotes = war.winner?.vibe?.votes || 0;
+      const loserVotes = war.loser?.vibe?.votes || 0;
+      const total = winnerVotes + loserVotes || 1;
+
+      return {
+        id: war._id || `war-${index}`,
+        winner: {
+          name: war.winner?.user?.name || 'Winner',
+          handle: war.winner?.user?.handle || 'winner',
+          avatarUrl: war.winner?.user?.avatarUrl || ''
+        },
+        totalVotes: total,
+        winPercentage: Math.round((winnerVotes / total) * 100),
+        endedAt: war.endedAt
+      };
+    });
+  };
+
   // Fetch current war from database
   useEffect(() => {
     fetchCurrentWar();
@@ -22,10 +84,13 @@ const VibeWars = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get('/wars/current'); // ✅ Real API
-      setCurrentWar(response.data.war);
+      const response = await api.get('/wars/current');
+      
+      // ✅ Transform backend data
+      const transformedWar = transformWarData(response.data.war);
+      setCurrentWar(transformedWar);
     } catch (err) {
-      console.error('Error fetching war:', err);
+      console.error('❌ Error fetching war:', err);
       setError('Could not load current war');
     } finally {
       setLoading(false);
@@ -34,30 +99,35 @@ const VibeWars = () => {
 
   const fetchWarHistory = async () => {
     try {
-      const response = await api.get('/wars/history?limit=10'); // ✅ Real API
-      setWarHistory(response.data.wars);
+      const response = await api.get('/wars/history?limit=10');
+      
+      // ✅ Transform backend data
+      const transformedHistory = transformHistoryData(response.data.wars || []);
+      setWarHistory(transformedHistory);
     } catch (err) {
-      console.error('Error fetching history:', err);
+      console.error('❌ Error fetching history:', err);
     }
   };
 
   const handleVote = async (contestantId) => {
     if (!user) {
-      alert('Please sign in to vote!');
+      alert('Please sign in to vote! 🔒');
       return;
     }
 
     try {
       setVoting(true);
       await api.post(`/wars/${currentWar.id}/vote`, {
+        contestant: contestantId === 'contestant-1' ? 1 : 2,
         contestantId: contestantId
-      }); // ✅ Real API
+      });
       
       // Refresh war data
       await fetchCurrentWar();
+      alert('Vote recorded! 💖');
     } catch (err) {
-      console.error('Error voting:', err);
-      alert(err.response?.data?.message || 'Failed to vote');
+      console.error('❌ Error voting:', err);
+      alert(err.response?.data?.message || 'Failed to vote. Please try again.');
     } finally {
       setVoting(false);
     }
@@ -73,7 +143,7 @@ const VibeWars = () => {
       const distance = end - now;
 
       if (distance < 0) {
-        setTimeLeft('War Ended');
+        setTimeLeft('War Ended! 🏁');
         clearInterval(timer);
         fetchCurrentWar(); // Refresh to get new war
         return;
@@ -108,10 +178,14 @@ const VibeWars = () => {
     return (
       <div className="vibe-wars-page">
         <div className="container">
-          <div className="error-state glass-card">
-            <h2>❌ {error}</h2>
-            <button onClick={fetchCurrentWar} className="btn btn-primary">
-              Try Again
+          <div className="glass-card" style={{ textAlign: 'center', padding: '3rem' }}>
+            <h2 style={{ color: 'hsl(var(--pink-500))', marginBottom: '1rem' }}>❌ {error}</h2>
+            <button 
+              onClick={fetchCurrentWar} 
+              className="btn-vote"
+              style={{ maxWidth: '300px', margin: '0 auto' }}
+            >
+              🔄 Try Again
             </button>
           </div>
         </div>
@@ -215,8 +289,8 @@ const VibeWars = () => {
             <div className="vote-section">
               {!hasVoted ? (
                 <button
-                  className="btn-vote"
-                  onClick={() => handleVote(currentWar.contestant1.id)}
+                  className={`btn-vote ${(!user || voting) ? 'disabled' : ''}`}
+                  onClick={() => handleVote('contestant-1')}
                   disabled={!user || voting}
                 >
                   {voting ? '⏳ Voting...' : '💖 Vote for ' + currentWar.contestant1.name}
@@ -270,8 +344,8 @@ const VibeWars = () => {
             <div className="vote-section">
               {!hasVoted ? (
                 <button
-                  className="btn-vote"
-                  onClick={() => handleVote(currentWar.contestant2.id)}
+                  className={`btn-vote ${(!user || voting) ? 'disabled' : ''}`}
+                  onClick={() => handleVote('contestant-2')}
                   disabled={!user || voting}
                 >
                   {voting ? '⏳ Voting...' : '💖 Vote for ' + currentWar.contestant2.name}
@@ -300,8 +374,8 @@ const VibeWars = () => {
         )}
 
         {!user && (
-          <div className="auth-prompt glass-card">
-            <p>🔒 Sign in to participate in Vibe Wars!</p>
+          <div className="voted-message glass-card" style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 114, 182, 0.15))' }}>
+            <p style={{ color: 'hsl(var(--pink-600))' }}>🔒 Sign in to participate in Vibe Wars!</p>
           </div>
         )}
       </div>
