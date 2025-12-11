@@ -1,13 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../utils/api';
 import './Dashboard.css';
 
-const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null }) => {
-  const [vibes, setVibes] = useState(initialVibes);
-  const [stats, setStats] = useState(initialStats);
-  const [loading, setLoading] = useState(false);
+const Dashboard = ({ user }) => {
+  const [vibes, setVibes] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('received');
-  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    fetchVibes();
+  }, [activeTab]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch user stats
+      const statsResponse = await api.get('/users/me/stats');
+      setStats(statsResponse.data);
+
+      // Fetch received vibes
+      await fetchVibes();
+
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchVibes = async () => {
+    try {
+      const endpoint = activeTab === 'received' ? '/vibes/received' : '/vibes/sent';
+      const vibesResponse = await api.get(endpoint, {
+        params: { page: 1, limit: 10 }
+      });
+      setVibes(vibesResponse.data.vibes || []);
+    } catch (err) {
+      console.error('Error fetching vibes:', err);
+    }
+  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -26,40 +67,18 @@ const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null 
 
   const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
 
-  // Demo stats for display
-  const demoStats = stats || {
-    totalTags: 42,
-    top3: [{ tag: 'Slay' }],
-    stats: [
-      { tag: 'Slay', pct: 35 },
-      { tag: 'Kind', pct: 25 },
-      { tag: 'Smart', pct: 20 },
-      { tag: 'Funny', pct: 12 },
-      { tag: 'Creative', pct: 8 }
-    ]
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return 'Recently';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000); // difference in seconds
+
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
+    return date.toLocaleDateString();
   };
-
-  const demoUser = user || { name: 'Slayer', handle: 'slayer123' };
-
-  // Demo vibes data
-  const demoVibes = vibes.length > 0 ? vibes : [
-    {
-      id: 1,
-      from: { name: 'Sarah Chen', handle: 'sarahc' },
-      message: "You're absolutely slaying today! Keep being amazing! ✨",
-      tags: ['Slay', 'Iconic'],
-      timestamp: '2 hours ago',
-      anonymous: false
-    },
-    {
-      id: 2,
-      from: null,
-      message: "Your positive energy is contagious! 💕",
-      tags: ['Kind', 'Wholesome'],
-      timestamp: '5 hours ago',
-      anonymous: true
-    }
-  ];
 
   if (loading) {
     return (
@@ -81,6 +100,25 @@ const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null 
     );
   }
 
+  if (error) {
+    return (
+      <div className="dashboard">
+        <div className="page-container">
+          <div className="container">
+            <div className="glass-card">
+              <div className="error-state">
+                <h3>⚠️ {error}</h3>
+                <button onClick={fetchDashboardData} className="btn btn-primary">
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
       <div className="page-container">
@@ -89,7 +127,7 @@ const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null 
           <div className="glass-card welcome-section">
             <div className="welcome-content">
               <h1 className="welcome-title">
-                {getGreeting()}, {demoUser.name}! 👑
+                {getGreeting()}, {user?.name?.split(' ')[0] || 'Slayer'}! 👑
               </h1>
               <p className="welcome-subtitle">
                 Ready to spread some positive vibes today?
@@ -98,38 +136,40 @@ const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null 
                 <Link to="/send" className="btn btn-primary">
                   ✨ Send Vibe
                 </Link>
-                <Link to={`/profile/${demoUser.handle}`} className="btn btn-secondary">
+                <Link to={`/profile/${user?.handle || 'me'}`} className="btn btn-secondary">
                   👤 View Profile
                 </Link>
               </div>
             </div>
             <div className="welcome-stats">
               <div className="stat-bubble">
-                <span className="stat-value">{demoStats.totalTags}</span>
+                <span className="stat-value">{stats?.totalVibes || 0}</span>
                 <span className="stat-name">Total Vibes</span>
               </div>
               <div className="stat-bubble">
-                <span className="stat-value">#{Math.floor(Math.random() * 50) + 1}</span>
+                <span className="stat-value">#{stats?.rank || '-'}</span>
                 <span className="stat-name">Rank</span>
               </div>
             </div>
           </div>
 
           {/* Tag Cloud Section */}
-          <div className="glass-card tag-cloud-section">
-            <h2>Your Top Vibes 🌟</h2>
-            <div className="tags-cloud">
-              {demoStats.stats.map((stat, index) => (
-                <span
-                  key={index}
-                  className={`tag-bubble ${index === 0 ? 'popular' : ''}`}
-                  style={{ fontSize: `${0.9 + stat.pct / 100}rem` }}
-                >
-                  {stat.tag} ({stat.pct}%)
-                </span>
-              ))}
+          {stats?.stats && stats.stats.length > 0 && (
+            <div className="glass-card tag-cloud-section">
+              <h2>Your Top Vibes 🌟</h2>
+              <div className="tags-cloud">
+                {stats.stats.map((stat, index) => (
+                  <span
+                    key={stat.tag}
+                    className={`tag-bubble ${index === 0 ? 'popular' : ''}`}
+                    style={{ fontSize: `${0.9 + stat.pct / 100}rem` }}
+                  >
+                    {stat.tag} ({stat.pct}%)
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Vibes Section */}
           <div className="vibes-section">
@@ -152,31 +192,34 @@ const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null 
             </div>
 
             <div className="vibes-list">
-              {demoVibes.length > 0 ? (
-                demoVibes.map((vibe) => (
-                  <div key={vibe.id} className="glass-card vibe-item">
+              {vibes.length > 0 ? (
+                vibes.map((vibe) => (
+                  <div key={vibe._id} className="glass-card vibe-item">
                     <div className="vibe-header">
                       <div className="vibe-sender">
-                        {vibe.anonymous ? (
+                        {vibe.isAnonymous || !vibe.senderId ? (
                           <span className="anonymous">🎭 Anonymous</span>
                         ) : (
                           <span>
-                            <strong>{vibe.from.name}</strong> @{vibe.from.handle}
+                            <strong>{activeTab === 'received' ? vibe.senderId?.name : vibe.recipientId?.name}</strong> 
+                            {' '}@{activeTab === 'received' ? vibe.senderId?.handle : vibe.recipientId?.handle}
                           </span>
                         )}
                       </div>
-                      <span className="vibe-time">{vibe.timestamp}</span>
+                      <span className="vibe-time">{formatTimestamp(vibe.createdAt)}</span>
                     </div>
                     <p className="vibe-message">
-                      {vibe.message || "You're amazing! Keep slaying! 💕"}
+                      {vibe.text}
                     </p>
-                    <div className="vibe-tags">
-                      {vibe.tags.map((tag, idx) => (
-                        <span key={idx} className="tag-badge">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                    {vibe.tags && vibe.tags.length > 0 && (
+                      <div className="vibe-tags">
+                        {vibe.tags.map((tag, idx) => (
+                          <span key={idx} className="tag-badge">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
@@ -189,7 +232,7 @@ const Dashboard = ({ user, vibes: initialVibes = [], stats: initialStats = null 
                       : "Send your first vibe to spread the love!"}
                   </p>
                   <Link
-                    to={activeTab === 'received' ? `/profile/${demoUser.handle}` : '/send'}
+                    to={activeTab === 'received' ? `/profile/${user?.handle}` : '/send'}
                     className="btn btn-primary"
                   >
                     {activeTab === 'received' ? 'View Profile' : 'Send Vibe'}
