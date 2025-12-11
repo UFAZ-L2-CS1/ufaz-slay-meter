@@ -179,8 +179,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 28px;
-  border-radius: 14px;
+
+  /* 🔹 padding sadəcə mətni əhatə edəcək qədər */
+  padding: 12px 28px;
+  border-radius: 50px;
+
   font-size: 15px;
   font-weight: 700;
   text-decoration: none;
@@ -189,6 +192,11 @@
   transition: all 0.3s ease;
   gap: 8px;
   font-family: inherit;
+
+  /* 🔹 genişlik mətndən asılı olsun */
+  width: fit-content;   /* əsas sətir budur */
+  max-width: 300px;     /* çox uzun sözlər üçün limit */
+  margin: 0 auto;
 }
 
 /* === Perfect balanced buttons for Dashboard (Send Vibe & View Profile) === */
