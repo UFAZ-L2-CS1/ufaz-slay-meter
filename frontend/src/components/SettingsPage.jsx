@@ -25,22 +25,48 @@ const SettingsPage = () => {
     }
   });
 
-  // Load user data when component mounts
+  // ✅ FIXED: Load user data whenever user changes
   useEffect(() => {
-    if (user) {
-      setProfileData({
-        name: user.name || '',
-        handle: user.handle || '',
-        bio: user.bio || '',
-        avatarUrl: user.avatarUrl || '',
-        links: {
-          instagram: user.links?.instagram || '',
-          tiktok: user.links?.tiktok || '',
-          website: user.links?.website || ''
+    const loadUserData = async () => {
+      try {
+        // Fetch fresh user data from the server
+        const response = await api.get('/profile/me');
+        const userData = response.data.user;
+        
+        setProfileData({
+          name: userData.name || '',
+          handle: userData.handle || '',
+          bio: userData.bio || '',
+          avatarUrl: userData.avatarUrl || '',
+          links: {
+            instagram: userData.links?.instagram || '',
+            tiktok: userData.links?.tiktok || '',
+            website: userData.links?.website || ''
+          }
+        });
+      } catch (err) {
+        console.error('Error loading user data:', err);
+        // Fallback to context user if API fails
+        if (user) {
+          setProfileData({
+            name: user.name || '',
+            handle: user.handle || '',
+            bio: user.bio || '',
+            avatarUrl: user.avatarUrl || '',
+            links: {
+              instagram: user.links?.instagram || '',
+              tiktok: user.links?.tiktok || '',
+              website: user.links?.website || ''
+            }
+          });
         }
-      });
+      }
+    };
+
+    if (user) {
+      loadUserData();
     }
-  }, [user]);
+  }, [user]); // Re-run when user changes
 
   // Privacy Settings
   const [privacySettings, setPrivacySettings] = useState({
@@ -98,7 +124,7 @@ const SettingsPage = () => {
     setSuccess('');
 
     try {
-      // ✅ FIXED: Actually call the API
+      // Save the profile
       const response = await api.patch('/profile', {
         name: profileData.name,
         handle: profileData.handle,
@@ -107,17 +133,32 @@ const SettingsPage = () => {
         links: profileData.links
       });
 
-      // Update user in context
-      if (setUser && response.data.user) {
-        setUser(response.data.user);
+      // ✅ FIXED: Update user in context AND reload fresh data
+      const updatedUser = response.data.user;
+      
+      if (setUser) {
+        setUser(updatedUser);
       }
+
+      // ✅ Update the form with the fresh data from server
+      setProfileData({
+        name: updatedUser.name || '',
+        handle: updatedUser.handle || '',
+        bio: updatedUser.bio || '',
+        avatarUrl: updatedUser.avatarUrl || '',
+        links: {
+          instagram: updatedUser.links?.instagram || '',
+          tiktok: updatedUser.links?.tiktok || '',
+          website: updatedUser.links?.website || ''
+        }
+      });
 
       setSuccess('Profile updated successfully!');
       
-      // Redirect to profile after 1.5 seconds
-      setTimeout(() => {
-        navigate(`/profile/${response.data.user.handle}`);
-      }, 1500);
+      // Optional: Remove redirect or keep it with longer delay
+      // setTimeout(() => {
+      //   navigate(`/profile/${updatedUser.handle}`);
+      // }, 1500);
 
     } catch (err) {
       console.error('Error updating profile:', err);
