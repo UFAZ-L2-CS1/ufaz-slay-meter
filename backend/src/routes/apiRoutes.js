@@ -94,18 +94,15 @@ router.get("/vibes/received", auth, async (req, res) => {
       .limit(limit)
       .lean();
 
-    const total = await Vibe.countDocuments({
-      recipientId: req.user._id,
-      isVisible: true
-    });
+    // Format vibes with relative time
+    const formattedVibes = vibes.map(vibe => ({
+      ...vibe,
+      from: vibe.senderId,
+      timestamp: formatRelativeTime(vibe.createdAt),
+      anonymous: vibe.isAnonymous
+    }));
 
-    res.json({
-      vibes,
-      page,
-      limit,
-      total,
-      pages: Math.ceil(total / limit)
-    });
+    res.json({ vibes: formattedVibes });
   } catch (error) {
     console.error("Error fetching received vibes:", error);
     res.status(500).json({ message: "Error fetching vibes" });
@@ -128,23 +125,35 @@ router.get("/vibes/sent", auth, async (req, res) => {
       .limit(limit)
       .lean();
 
-    const total = await Vibe.countDocuments({
-      senderId: req.user._id,
-      isVisible: true
-    });
+    // Format vibes with relative time
+    const formattedVibes = vibes.map(vibe => ({
+      ...vibe,
+      to: vibe.recipientId,
+      timestamp: formatRelativeTime(vibe.createdAt),
+      anonymous: vibe.isAnonymous
+    }));
 
-    res.json({
-      vibes,
-      page,
-      limit,
-      total,
-      pages: Math.ceil(total / limit)
-    });
+    res.json({ vibes: formattedVibes });
   } catch (error) {
     console.error("Error fetching sent vibes:", error);
     res.status(500).json({ message: "Error fetching vibes" });
   }
 });
+
+// Helper function to format relative time
+function formatRelativeTime(date) {
+  const now = new Date();
+  const diffMs = now - new Date(date);
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  return new Date(date).toLocaleDateString();
+}
 
 // Get trending tags
 router.get("/tags/trending", async (req, res) => {
