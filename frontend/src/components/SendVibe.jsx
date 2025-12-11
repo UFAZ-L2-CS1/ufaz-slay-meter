@@ -100,7 +100,6 @@ const SendVibe = () => {
     setError(null);
 
     try {
-      // ✅ FIXED: Use correct endpoint based on authentication and anonymous status
       const endpoint = !user || isAnonymous ? "/vibes/anon" : "/vibes";
 
       await api.post(endpoint, {
@@ -185,7 +184,6 @@ const SendVibe = () => {
                       autoComplete="off"
                     />
                     
-                    {/* Autocomplete suggestions */}
                     {suggestions.length > 0 && (
                       <ul className="suggestions-list">
                         {suggestions.map((u) => (
@@ -232,6 +230,23 @@ const SendVibe = () => {
                     maxLength="280"
                     required
                   />
+                  
+                  {/* ✅ ADDED: Vibe Templates */}
+                  <div className="templates">
+                    <p className="templates-label">✨ Quick Templates:</p>
+                    <div className="template-chips">
+                      {vibeTemplates.map((template, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className="template-chip"
+                          onClick={() => setFormData({ ...formData, text: template })}
+                        >
+                          {template.substring(0, 50)}...
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Selected Tags Display */}
@@ -314,6 +329,50 @@ const SendVibe = () => {
               </form>
             )}
           </div>
+
+          {/* ✅ ADDED: Preview Section */}
+          {!success && (
+            <div className="vibe-preview-section glass-card">
+              <div className="preview-header">
+                <span className="preview-sender">
+                  From: {isAnonymous ? "Anonymous 🎭" : user?.name || "You"}
+                </span>
+                <span className="preview-recipient">
+                  To: @{formData.recipientHandle || "username"}
+                </span>
+              </div>
+
+              <div className="preview-text">
+                {formData.text || "Your vibe message will appear here..."}
+              </div>
+
+              {formData.tags.length > 0 && (
+                <div className="preview-tags">
+                  {formData.tags.map((tag) => (
+                    <span key={tag} className="preview-tag">#{tag}</span>
+                  ))}
+                </div>
+              )}
+
+              {formData.emojis.length > 0 && (
+                <div className="preview-emojis">
+                  {formData.emojis.map((emoji, idx) => (
+                    <span key={idx}>{emoji}</span>
+                  ))}
+                </div>
+              )}
+
+              <div className="vibe-tips glass-card" style={{ marginTop: '1.5rem' }}>
+                <h4>💡 Vibe Tips</h4>
+                <ul>
+                  <li>Be genuine and specific</li>
+                  <li>Focus on their strengths</li>
+                  <li>Make it personal!</li>
+                  <li>Spread positivity ✨</li>
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
