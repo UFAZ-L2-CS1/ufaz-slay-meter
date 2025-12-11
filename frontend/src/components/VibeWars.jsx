@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import './VibeWars.css';
 
-// Yardımcı fonksiyon: Kullanıcı handle'ının ilk harfini alır
+// Helper function: Gets the initial letter of the user handle
 const getInitial = (handle) => handle ? handle[0].toUpperCase() : 'X';
 
 const VibeWars = () => {
@@ -15,7 +15,7 @@ const VibeWars = () => {
   const [message, setMessage] = useState('');
 
   const [timeLeft, setTimeLeft] = useState('');
-  const [warEnded, setWarEnded] = useState(false); // Savaşın bitip bitmediğini izlemek için yeni state
+  const [warEnded, setWarEnded] = useState(false); // State to track if the current war has ended
 
   const fetchCurrentWar = async () => {
     try {
@@ -25,7 +25,7 @@ const VibeWars = () => {
         setCurrentWar(null);
       } else {
         setCurrentWar(res.data.war);
-        // Savaş durumu kontrolü
+        // Check if the war has already ended upon fetching
         const endsAtTime = new Date(res.data.war.endsAt).getTime();
         if (Date.now() >= endsAtTime) {
           setWarEnded(true);
@@ -43,7 +43,6 @@ const VibeWars = () => {
 
   const fetchWarHistory = async () => {
     try {
-      // API'den gelen verinin winner, contestant1, contestant2 yapısını kontrol edin
       const res = await api.get('/wars/history?limit=10');
       setWarHistory(res.data.wars || []);
     } catch (err) {
@@ -56,7 +55,7 @@ const VibeWars = () => {
     fetchWarHistory();
   }, []);
 
-  // Geri sayım sayacı
+  // Countdown Timer
   useEffect(() => {
     if (!currentWar?.endsAt || warEnded) {
       setTimeLeft(warEnded ? 'War Ended 🏁' : '');
@@ -69,10 +68,9 @@ const VibeWars = () => {
       
       if (diff <= 0) {
         setTimeLeft('War Ended 🏁');
-        setWarEnded(true); // Savaş bitti
+        setWarEnded(true); // Set state to ended
         clearInterval(tick);
-        // Savaş bittiğinde mevcut savaşı yeniden çekmek isteyebilirsiniz (sonuçları görmek için)
-        // fetchCurrentWar(); 
+        // Consider refetching current war here to update results if necessary
         return;
       }
       const h = Math.floor(diff / 3600000);
@@ -176,14 +174,22 @@ const VibeWars = () => {
           <h2>Past Wars (Top 10)</h2>
           <div className="history-list">
             {warHistory.map((war, index) => {
+                // Defensive coding: Safely read votes, defaulting to 0 if data is undefined
+                const c1Votes = war.contestant1?.votes || 0;
+                const c2Votes = war.contestant2?.votes || 0;
+
               const winner = war.winner === 'contestant1'
                 ? war.contestant1
                 : war.winner === 'contestant2'
                 ? war.contestant2
                 : null;
-              const totalVotes = war.contestant1.votes + war.contestant2.votes;
-              const winnerPercentage = winner && totalVotes > 0
-                ? ((winner.votes / totalVotes) * 100).toFixed(1)
+                
+              const totalVotes = c1Votes + c2Votes;
+              
+                // Defensive coding: Use c1Votes or c2Votes for calculation if winner exists
+              const winnerVotes = winner?.votes || 0;
+              const winnerPercentage = (winner && totalVotes > 0)
+                ? ((winnerVotes / totalVotes) * 100).toFixed(1)
                 : 'N/A';
               
               return (

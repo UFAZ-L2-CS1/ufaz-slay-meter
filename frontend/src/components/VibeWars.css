@@ -1,18 +1,30 @@
 /* VibeWars.css - Pink Theme */
 
 .vibe-wars-page {
+<<<<<<< HEAD
   /* This line was fixed to use standard spaces */
+=======
+  /* This line was cleaned to fix the syntax error */
+>>>>>>> cfa37f2b (yene fixing)
   min-height: 100vh;
   background: linear-gradient(135deg, hsl(var(--pink-200)), hsl(var(--pink-400)), hsl(var(--pink-500)));
   padding: 6rem 1rem 3rem;
 }
 
 .vibe-wars-page .container {
+<<<<<<< HEAD
   max-width: 1200px; /* Constrained width for better centering */
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center; /* Center alignment */
+=======
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+>>>>>>> cfa37f2b (yene fixing)
 }
 
 /* Header Section */
@@ -572,4 +584,8 @@
   .winner-info {
     width: 100%;
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> cfa37f2b (yene fixing)
