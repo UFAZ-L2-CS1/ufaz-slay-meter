@@ -1,4 +1,4 @@
-/* Navigation Styles - Pink Theme */
+/* Navigation Styles - Pink Theme - OPTIMIZED */
 .navigation {
   position: fixed;
   top: 0;
@@ -9,26 +9,28 @@
   box-shadow: 0 4px 20px rgba(236, 72, 153, 0.15);
   z-index: 1000;
   border-bottom: 2px solid rgba(236, 72, 153, 0.1);
+  height: 60px; /* Fixed height for consistency */
 }
 
-/* Daha kompakt header */
+/* Kompakt və mərkəzləşdirilmiş container */
 .nav-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0.75rem 2rem; /* əvvəl 1rem idi, indi bir az sıx */
+  padding: 0 2rem;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
 }
 
-/* Logo */
+/* Logo - daha kiçik */
 .nav-logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
-  font-size: 1.5rem;
+  font-size: 1.3rem; /* 1.5rem-dən kiçildildi */
   font-weight: 900;
   background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
   -webkit-background-clip: text;
@@ -36,7 +38,7 @@
   background-clip: text;
   transition: transform 0.3s ease;
   white-space: nowrap;
-  position: relative;
+  flex-shrink: 0;
 }
 
 .nav-logo:hover {
@@ -44,26 +46,264 @@
 }
 
 .nav-logo span {
-  font-size: 1.75rem;
+  font-size: 1.5rem; /* 1.75rem-dən kiçildildi */
   animation: heartBeat 1.5s ease-in-out infinite;
 }
 
-/* digər hissələr eyni qalır... */
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  10%, 30% {
+    transform: scale(1.1);
+  }
+  20%, 40% {
+    transform: scale(1);
+  }
+}
 
-/* --- Mobil görünüş üçün dəyişikliklər --- */
+/* Navigation Links - Mərkəzləşdirilmiş */
+.nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* MƏRKƏZƏ GƏTİRİR */
+  gap: 1rem; /* 2rem-dən azaldıldı */
+  flex: 1; /* Boş sahəni doldurur */
+  margin: 0 auto; /* Əlavə mərkəzləşdirmə */
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem; /* 0.75rem 1.5rem-dən azaldıldı */
+  text-decoration: none;
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  font-size: 0.95rem; /* 1rem-dən bir az kiçildildi */
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-link:hover {
+  color: hsl(330, 90%, 55%);
+  background: rgba(236, 72, 153, 0.1);
+}
+
+.nav-link:hover::before {
+  width: 80%;
+}
+
+.nav-link.active {
+  color: hsl(330, 90%, 55%);
+  background: rgba(236, 72, 153, 0.15);
+}
+
+.nav-link.active::before {
+  width: 80%;
+}
+
+.nav-link svg {
+  width: 18px; /* 20px-dən kiçildildi */
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Sign In Button - kompakt */
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.btn-signin {
+  padding: 0.5rem 1.5rem; /* 0.75rem 2rem-dən azaldıldı */
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.95rem; /* 1rem-dən kiçildildi */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+  white-space: nowrap;
+}
+
+.btn-signin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+}
+
+/* User Menu */
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: rgba(236, 72, 153, 0.1);
+  border: 2px solid rgba(236, 72, 153, 0.2);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-menu-trigger:hover {
+  background: rgba(236, 72, 153, 0.15);
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+.user-avatar {
+  width: 32px; /* 36px-dən kiçildildi */
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.user-name {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  font-size: 0.9rem;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2);
+  border: 2px solid rgba(236, 72, 153, 0.1);
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1001;
+}
+
+.user-menu-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+.user-menu-item:last-child {
+  border-bottom: none;
+}
+
+.user-menu-item:hover {
+  background: rgba(236, 72, 153, 0.1);
+}
+
+.user-menu-item svg {
+  width: 18px;
+  height: 18px;
+  color: hsl(330, 90%, 55%);
+}
+
+/* Mobile Menu Toggle - kompakt */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: hsl(330, 90%, 55%);
+  flex-shrink: 0;
+}
+
+.mobile-menu-toggle svg {
+  width: 24px; /* 28px-dən kiçildildi */
+  height: 24px;
+}
+
+/* Wednesday Banner - yeni hündürlüyə uyğun */
+.wednesday-banner {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  color: white;
+  padding: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 999;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+/* Responsive - Mobil */
 @media (max-width: 768px) {
+  .navigation {
+    height: 55px; /* Mobilde daha kiçik */
+  }
+
+  .nav-container {
+    padding: 0 1rem;
+  }
+
+  .nav-logo {
+    font-size: 1.1rem;
+  }
+
+  .nav-logo span {
+    font-size: 1.3rem;
+  }
+
   .mobile-menu-toggle {
     display: block;
   }
 
   .nav-links {
     position: fixed;
-    top: 60px; /* əvvəl 70px idi */
+    top: 55px;
     left: 0;
     right: 0;
     background: white;
     flex-direction: column;
     align-items: stretch;
+    justify-content: flex-start;
     padding: 1rem;
     gap: 0.5rem;
     box-shadow: 0 8px 24px rgba(236, 72, 153, 0.2);
@@ -71,7 +311,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    max-height: calc(100vh - 60px); /* əvvəl 70px idi */
+    max-height: calc(100vh - 55px);
     overflow-y: auto;
     border-bottom: 3px solid rgba(236, 72, 153, 0.2);
   }
@@ -82,11 +322,60 @@
     pointer-events: all;
   }
 
+  .nav-link {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
+
+  .nav-auth {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-signin {
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  .user-menu-trigger {
+    width: 100%;
+    justify-content: center;
+  }
+
   .wednesday-banner {
-    position: fixed;
-    top: 60px; /* əvvəl 70px idi */
-    left: 0;
-    right: 0;
-    z-index: 999;
+    top: 55px;
   }
 }
+
+@media (max-width: 480px) {
+  .nav-logo {
+    font-size: 1rem;
+  }
+
+  .nav-logo span {
+    font-size: 1.2rem;
+  }
+
+  .user-name {
+    display: none; /* Çox kiçik ekranlarda gizlənir */
+  }
+}
+
+/* Tablet view - orta ekranlar */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .nav-container {
+    padding: 0 1.5rem;
+  }
+
+  .nav-links {
+    gap: 0.75rem;
+  }
+
+  .nav-link {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* End of Navigation.css */
