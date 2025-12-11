@@ -1,6 +1,7 @@
 import { Router } from "express";
 import User from "../models/User.js";
 import Vibe from "../models/Vibe.js";
+import auth from "../middleware/auth.js";
 
 const router = Router();
 
@@ -19,6 +20,129 @@ router.get("/stats/global", async (req, res) => {
   } catch (error) {
     console.error("Error fetching global stats:", error);
     res.status(500).json({ message: "Error fetching stats" });
+  }
+});
+
+// ✅ NEW: Get current user's dashboard stats
+router.get("/users/me/stats", auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Get total vibes received by this user
+    const totalVibes = await Vibe.countDocuments({
+      recipientId: userId,
+      isVisible: true
+    });
+    
+    // Get tag distribution for vibes received
+    const tagsPipeline = [
+      { $match: { recipientId: userId, isVisible: true } },
+      { $unwind: "$tags" },
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ];
+    
+    const tagStats = await Vibe.aggregate(tagsPipeline);
+    
+    // Calculate percentages
+    const totalTagCount = tagStats.reduce((sum, tag) => sum + tag.count, 0);
+    const stats = tagStats.map(tag => ({
+      tag: tag._id,
+      count: tag.count,
+      pct: totalTagCount > 0 ? Math.round((tag.count / totalTagCount) * 100) : 0
+    }));
+    
+    // Get user's rank
+    const allUsers = await Vibe.aggregate([
+      { $match: { isVisible: true } },
+      { $group: {
+        _id: "$recipientId",
+        vibeCount: { $sum: 1 }
+      }},
+      { $sort: { vibeCount: -1 } }
+    ]);
+    
+    const userRank = allUsers.findIndex(u => u._id.toString() === userId.toString()) + 1;
+    
+    res.json({
+      totalVibes,
+      rank: userRank > 0 ? userRank : null,
+      totalUsers: allUsers.length,
+      stats,
+      top3: stats.slice(0, 3)
+    });
+  } catch (error) {
+    console.error("Error fetching user stats:", error);
+    res.status(500).json({ message: "Error fetching user stats" });
+  }
+});
+
+// ✅ NEW: Get vibes received by current user
+router.get("/vibes/received", auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const vibes = await Vibe.find({
+      recipientId: req.user._id,
+      isVisible: true
+    })
+      .populate('senderId', 'name handle avatarUrl')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    const total = await Vibe.countDocuments({
+      recipientId: req.user._id,
+      isVisible: true
+    });
+
+    res.json({
+      vibes,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error("Error fetching received vibes:", error);
+    res.status(500).json({ message: "Error fetching vibes" });
+  }
+});
+
+// ✅ NEW: Get vibes sent by current user
+router.get("/vibes/sent", auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const vibes = await Vibe.find({
+      senderId: req.user._id,
+      isVisible: true
+    })
+      .populate('recipientId', 'name handle avatarUrl')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    const total = await Vibe.countDocuments({
+      senderId: req.user._id,
+      isVisible: true
+    });
+
+    res.json({
+      vibes,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error("Error fetching sent vibes:", error);
+    res.status(500).json({ message: "Error fetching vibes" });
   }
 });
 
@@ -116,7 +240,7 @@ router.get("/vibes/public", async (req, res) => {
   }
 });
 
-// ✅ NEW: Search users and vibes
+// Search users and vibes
 router.get("/search", async (req, res) => {
   try {
     const query = req.query.q || '';
