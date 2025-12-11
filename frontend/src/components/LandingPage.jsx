@@ -72,27 +72,19 @@ const LandingPage = ({ onAuthClick, user }) => {
               Send anonymous vibes to your UFAZ friends and let them know how amazing they are!
             </p>
           </div>
-          <div className="hero-buttons">
-            {user ? (
-              <>
-                <Link to="/dashboard" className="btn btn-fetch">
-                  Go to Dashboard 🚀
-                </Link>
-                <Link to="/send" className="btn btn-secondary">
-                  Send a Vibe 💕
-                </Link>
-              </>
-            ) : (
-              <>
-                <button onClick={onAuthClick} className="btn btn-fetch">
-                  Get Started 🚀
-                </button>
-                <button onClick={onAuthClick} className="btn btn-secondary">
-                  Sign In
-                </button>
-              </>
-            )}
-          </div>
+          
+          {/* ✅ FIXED: Hide buttons when user is logged in */}
+          {!user && (
+            <div className="hero-buttons">
+              <button onClick={onAuthClick} className="btn btn-fetch">
+                Get Started 🚀
+              </button>
+              <button onClick={onAuthClick} className="btn btn-secondary">
+                Sign In
+              </button>
+            </div>
+          )}
+          
           <div className="quotes-carousel">
             <p className="quote-text" key={currentQuote}>
               {quotes[currentQuote]}
@@ -237,17 +229,15 @@ const LandingPage = ({ onAuthClick, user }) => {
           <p className="cta-subtitle">
             Join UFAZ Slay Meter today and start spreading amazing vibes!
           </p>
-          <div className="cta-buttons">
-            {user ? (
-              <Link to="/dashboard" className="btn btn-fetch">
-                Go to Dashboard 🚀
-              </Link>
-            ) : (
+          
+          {/* ✅ FIXED: Hide button when user is logged in */}
+          {!user && (
+            <div className="cta-buttons">
               <button onClick={onAuthClick} className="btn btn-fetch">
                 Join Now - It's Free! 💕
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </section>
     </div>
