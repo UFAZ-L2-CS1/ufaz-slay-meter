@@ -246,7 +246,14 @@
   position: relative;
   overflow: hidden;
   animation: slideUp 0.5s ease-out both;
+
+  /* 🔹 Əlavə olunmuş düzəlişlər */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
+
 
 .user-card::before {
   content: '';
@@ -365,8 +372,10 @@
 /* User Actions Buttons */
 .user-actions {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 0.75rem;
-  margin-top: 1rem;
+  margin-top: auto;
 }
 
 .btn-view-profile,
