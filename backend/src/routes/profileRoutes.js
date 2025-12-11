@@ -161,10 +161,24 @@ router.patch(
       .matches(/^[a-zA-Z0-9_]+$/)
       .withMessage("Handle may contain letters, numbers, underscores only."),
     body("bio").optional().isLength({ max: 240 }),
-    body("avatarUrl").optional().isURL().withMessage("avatarUrl must be a URL"),
-    body("links.instagram").optional().isURL(),
-    body("links.tiktok").optional().isURL(),
-    body("links.website").optional().isURL(),
+    // ✅ FIXED: Allow empty strings for avatarUrl
+    body("avatarUrl")
+      .optional({ checkFalsy: true })
+      .isURL()
+      .withMessage("avatarUrl must be a valid URL"),
+    // ✅ FIXED: Allow empty strings for social links
+    body("links.instagram")
+      .optional({ checkFalsy: true })
+      .isURL()
+      .withMessage("Instagram must be a valid URL"),
+    body("links.tiktok")
+      .optional({ checkFalsy: true })
+      .isURL()
+      .withMessage("TikTok must be a valid URL"),
+    body("links.website")
+      .optional({ checkFalsy: true })
+      .isURL()
+      .withMessage("Website must be a valid URL"),
   ],
   validate,
   async (req, res, next) => {
@@ -174,8 +188,27 @@ router.patch(
 
       if (name !== undefined) updates.name = name.trim();
       if (bio !== undefined) updates.bio = bio.trim();
-      if (avatarUrl !== undefined) updates.avatarUrl = avatarUrl.trim();
-      if (links !== undefined) updates.links = links;
+      
+      // ✅ FIXED: Only update avatarUrl if it's not empty
+      if (avatarUrl !== undefined && avatarUrl.trim() !== '') {
+        updates.avatarUrl = avatarUrl.trim();
+      } else if (avatarUrl === '') {
+        updates.avatarUrl = ''; // Allow clearing the avatar
+      }
+
+      // ✅ FIXED: Filter out empty link values
+      if (links !== undefined) {
+        updates.links = {};
+        if (links.instagram && links.instagram.trim() !== '') {
+          updates.links.instagram = links.instagram.trim();
+        }
+        if (links.tiktok && links.tiktok.trim() !== '') {
+          updates.links.tiktok = links.tiktok.trim();
+        }
+        if (links.website && links.website.trim() !== '') {
+          updates.links.website = links.website.trim();
+        }
+      }
 
       if (handle !== undefined) {
         const normalized = handle.trim().toLowerCase();
