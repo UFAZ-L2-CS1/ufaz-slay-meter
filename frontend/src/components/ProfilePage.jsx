@@ -148,8 +148,20 @@ const ProfilePage = () => {
               {vibes.map((vibe) => (
                 <div key={vibe._id} className="vibe-item">
                   <div className="vibe-header">
+                    {/* ✅ FIXED: Show sender name with link or anonymous */}
                     <span className="vibe-from">
-                      {vibe.isAnonymous ? '🎭 Anonymous' : `${vibe.senderId?.name || 'Someone'}`}
+                      {vibe.isAnonymous ? (
+                        '🎭 Anonymous'
+                      ) : vibe.senderId ? (
+                        <>
+                          From:{' '}
+                          <Link to={`/profile/${vibe.senderId.handle}`} className="sender-link">
+                            {vibe.senderId.name}
+                          </Link>
+                        </>
+                      ) : (
+                        'From: Someone'
+                      )}
                     </span>
                     <span className="vibe-date">
                       {new Date(vibe.createdAt).toLocaleDateString()}
@@ -160,6 +172,13 @@ const ProfilePage = () => {
                     <div className="vibe-tags">
                       {vibe.tags.map((tag, idx) => (
                         <span key={idx} className="vibe-tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  {vibe.emojis && vibe.emojis.length > 0 && (
+                    <div className="vibe-emojis">
+                      {vibe.emojis.map((emoji, idx) => (
+                        <span key={idx} className="vibe-emoji">{emoji}</span>
                       ))}
                     </div>
                   )}
