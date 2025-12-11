@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './AuthModal.css';
 
-const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
+const AuthModal = ({ onClose, onLogin, onRegister }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -38,23 +38,6 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
       onClose();
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Something went wrong!');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      if (onGoogleLogin) {
-        await onGoogleLogin();
-        onClose();
-      } else {
-        setError('Google login is not configured. Please use email/password.');
-      }
-    } catch (err) {
-      setError('Google login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -128,7 +111,7 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
               id="email"
               type="email"
               name="email"
-              placeholder="youremail@gmail.com"
+              placeholder="youremail@ufaz.az"
               value={formData.email}
               onChange={handleChange}
               required
@@ -163,21 +146,7 @@ const AuthModal = ({ onClose, onLogin, onRegister, onGoogleLogin }) => {
           </button>
         </form>
 
-        <div className="auth-divider">
-          <span>OR</span>
-        </div>
-
-        <div className="social-auth">
-          <button
-            type="button"
-            className="social-btn"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-          >
-            <span className="google-icon">G</span>
-            Continue with Google
-          </button>
-        </div>
+        {/* Removed Google button and OR divider */}
 
         <div className="auth-footer">
           <p>{isLogin ? "Don't have an account?" : "Already have an account?"}</p>
