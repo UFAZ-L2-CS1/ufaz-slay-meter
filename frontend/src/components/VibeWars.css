@@ -1,556 +1,597 @@
-/* VibeWars.css - Pink Theme */
+/* VibeWars.css - Pink Theme (FINAL FIXED & OPTIMIZED FOR CENTERING) */
 
 .vibe-wars-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, hsl(var(--pink-200)), hsl(var(--pink-400)), hsl(var(--pink-500)));
-  padding: 6rem 1rem 3rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, hsl(var(--pink-200)), hsl(var(--pink-400)), hsl(var(--pink-500)));
+  /* Margin to clear fixed header (Assuming ~65px height for navigation bar) */
+  margin-top: 65px; 
+  padding: 2.5rem 1rem 3rem; 
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
 }
 
 .vibe-wars-page .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
-/* Header Section */
+/* Header Section (Sayfa başlıkları) */
 .vibe-wars-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  animation: fadeInDown 0.6s ease-out;
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeInDown 0.6s ease-out;
 }
 
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .vibe-wars-page .page-title {
-  font-size: 3.5rem;
-  font-weight: 900;
-  margin-bottom: 1rem;
-  color: white;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .vibe-wars-page .shimmer-text {
-  background: linear-gradient(90deg, #fff 0%, hsl(var(--pink-200)) 50%, #fff 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmerMove 3s linear infinite;
+  background: linear-gradient(90deg, #fff 0%, hsl(var(--pink-200)) 50%, #fff 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerMove 3s linear infinite;
 }
 
 @keyframes shimmerMove {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .vibe-wars-page .page-subtitle {
-  font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 500;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  text-align: center;
 }
 
 /* Glass Card */
 .vibe-wars-page .glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 2.5rem;
-  box-shadow: 0 20px 60px rgba(236, 72, 153, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  animation: slideUp 0.5s ease-out;
-  margin-bottom: 2rem;
-  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 60px rgba(236, 72, 153, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: slideUp 0.5s ease-out;
+  margin-bottom: 2rem;
+  width: 100%;
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Loading State */
 .loading-state {
-  min-height: 50vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .slay-loader {
-  text-align: center;
-  animation: pulse 1.5s ease-in-out infinite;
+  text-align: center;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 .slay-loader span {
-  font-size: 4rem;
-  display: block;
-  margin-bottom: 1rem;
-  animation: rotate 2s linear infinite;
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+  animation: rotate 2s linear infinite;
 }
 
 @keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
 }
 
 .slay-loader p {
-  font-size: 1.25rem;
-  color: white;
-  font-weight: 600;
+  font-size: 1.25rem;
+  color: white;
+  font-weight: 600;
 }
 
 /* War Timer */
 .war-timer {
-  text-align: center;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 114, 182, 0.15));
-  border-radius: 16px;
-  margin-bottom: 2.5rem;
-  border: 2px solid rgba(236, 72, 153, 0.3);
-  animation: timerPulse 2s ease-in-out infinite;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  text-align: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(244, 114, 182, 0.15));
+  border-radius: 16px;
+  margin-bottom: 2.5rem;
+  border: 2px solid rgba(236, 72, 153, 0.3);
+  animation: timerPulse 2s ease-in-out infinite;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @keyframes timerPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
-  }
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
+  }
 }
 
 .timer-label {
-  display: block;
-  font-size: 0.9rem;
-  color: hsl(var(--muted-foreground));
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.9rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
 }
 
 .timer-value {
-  display: block;
-  font-size: 2rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .timer-value.ended {
-  color: #ef4444;
-  background: none;
-  -webkit-text-fill-color: #ef4444;
+  color: #ef4444;
+  background: none;
+  -webkit-text-fill-color: #ef4444;
 }
 
 /* War Arena */
 .war-arena {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 2rem;
-  width: 100%;
-  max-width: 1000px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
 }
 
 /* VS Divider */
 .vs-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
 }
 
 .vs-divider span {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
-  color: white;
-  font-size: 1.75rem;
-  font-weight: 900;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5);
-  animation: vsRotate 3s ease-in-out infinite;
-  border: 4px solid white;
+    /* FIX 2: VS dairəsi ölçüsü kiçildildi */
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  color: white;
+  font-size: 1.5rem; /* Font ölçüsü kiçildildi */
+  font-weight: 900;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5);
+  animation: vsRotate 3s ease-in-out infinite;
+  border: 4px solid white;
 }
 
 @keyframes vsRotate {
-  0%, 100% {
-    transform: rotate(-5deg) scale(1);
-  }
-  50% {
-    transform: rotate(5deg) scale(1.1);
-  }
+  0%, 100% {
+    transform: rotate(-5deg) scale(1);
+  }
+  50% {
+    transform: rotate(5deg) scale(1.1);
+  }
 }
 
 /* Contestant Cards */
 .contestant {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
-  border-radius: 20px;
-  padding: 2rem;
-  border: 2px solid rgba(236, 72, 153, 0.2);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
+  border-radius: 20px;
+  padding: 2rem;
+  border: 2px solid rgba(236, 72, 153, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .contestant::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, hsl(var(--pink-400)), hsl(var(--pink-500)), hsl(var(--pink-600)));
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, hsl(var(--pink-400)), hsl(var(--pink-500)), hsl(var(--pink-600)));
 }
 
 .contestant-1::before {
-  background: linear-gradient(90deg, hsl(var(--pink-300)), hsl(var(--pink-500)));
+  background: linear-gradient(90deg, hsl(var(--pink-300)), hsl(var(--pink-500)));
 }
 
 .contestant-2::before {
-  background: linear-gradient(90deg, hsl(var(--pink-500)), hsl(var(--pink-700)));
+  background: linear-gradient(90deg, hsl(var(--pink-500)), hsl(var(--pink-700)));
 }
 
 .contestant:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.3);
-  border-color: hsl(var(--pink-400));
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.3);
+  border-color: hsl(var(--pink-400));
 }
 
 /* Contestant Header */
 .contestant-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid rgba(236, 72, 153, 0.1);
+    /* FIX 3: Flexbox ile h3 ortalandı */
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(236, 72, 153, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .contestant-header h3 {
-  font-size: 1.8rem;
-  color: hsl(var(--foreground));
-  margin: 0;
-  font-weight: 800;
+  font-size: 1.8rem;
+  color: hsl(var(--foreground));
+  margin: 0;
+  font-weight: 800;
+  text-align: center; 
 }
 
 /* Vibe Content */
 .vibe-wars-page .vibe-content {
-  margin-bottom: 1.5rem;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .vibe-wars-page .vibe-text {
-  color: hsl(var(--foreground));
-  line-height: 1.7;
-  font-size: 1rem;
-  margin: 0;
-  text-align: center;
+    /* FIX 3: Flexbox ile vibe metni ortalandı */
+  color: hsl(var(--foreground));
+  line-height: 1.7;
+  font-size: 1rem;
+  margin: 0;
+  text-align: center; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Vote Button */
+/* Vote Button stilleri aynı kalacak */
 .btn-vote {
-  width: 100%;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
-  color: white;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
-  position: relative;
-  overflow: hidden;
+  width: 100%;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-vote::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
 }
 
 .btn-vote:hover:not(.disabled)::before {
-  width: 300px;
-  height: 300px;
+  width: 300px;
+  height: 300px;
 }
 
 .btn-vote:hover:not(.disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.6);
 }
 
 .btn-vote.disabled {
-  background: linear-gradient(135deg, hsl(var(--pink-200)), hsl(var(--pink-300)));
-  cursor: not-allowed;
-  opacity: 0.7;
-  box-shadow: none;
+  background: linear-gradient(135deg, hsl(var(--pink-200)), hsl(var(--pink-300)));
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
 }
+
 
 /* No War State */
 .no-war {
-  text-align: center;
-  padding: 4rem 2rem;
+  text-align: center;
+  padding: 4rem 2rem;
 }
 
 .no-war h2 {
-  font-size: 2rem;
-  color: hsl(var(--pink-500));
-  margin-bottom: 1rem;
-  font-weight: 700;
+  font-size: 2rem;
+  color: hsl(var(--pink-500));
+  margin-bottom: 1rem;
+  font-weight: 700;
+  text-align: center;
 }
 
 .no-war p {
-  color: hsl(var(--muted-foreground));
-  font-size: 1.1rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 1.1rem;
+  text-align: center;
 }
 
 /* War History */
 .war-history {
-  max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 .war-history h2 {
-  font-size: 1.75rem;
-  color: hsl(var(--foreground));
-  margin: 0 0 1.5rem 0;
-  font-weight: 700;
-  text-align: center;
+  font-size: 1.75rem;
+  color: hsl(var(--foreground));
+  margin: 0 0 1.5rem 0;
+  font-weight: 700;
+  text-align: center;
 }
 
 .history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .history-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
-  border-radius: 16px;
-  border: 2px solid rgba(236, 72, 153, 0.2);
-  transition: all 0.3s ease;
-  gap: 1rem;
-  flex-wrap: wrap;
-  text-decoration: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
+  border-radius: 16px;
+  border: 2px solid rgba(236, 72, 153, 0.2);
+  transition: all 0.3s ease;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  text-decoration: none;
 }
 
 .history-item:hover {
-  transform: translateX(4px);
-  border-color: hsl(var(--pink-400));
-  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.2);
+  transform: translateX(4px);
+  border-color: hsl(var(--pink-400));
+  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.2);
 }
 
 .winner-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 200px;
 }
 
 .winner-rank {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
 }
 
 .winner-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border: 3px solid white;
-  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(var(--pink-400)), hsl(var(--pink-600)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
 }
 
 .winner-avatar span {
-  font-size: 1.25rem;
-  color: white;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-size: 1.25rem;
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .winner-info h4 {
-  margin: 0;
-  color: hsl(var(--foreground));
-  font-weight: 700;
-  font-size: 1rem;
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: left;
 }
 
 .winner-info p {
-  margin: 0;
-  color: hsl(var(--pink-500));
-  font-size: 0.85rem;
-  font-weight: 600;
+  margin: 0;
+  color: hsl(var(--pink-500));
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
 }
 
 .war-stats {
-  display: flex;
-  flex-direction: column;
-  text-align: right;
-  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  min-width: 120px;
+  justify-content: center;
 }
 
 .war-stats span {
-  font-size: 0.85rem;
-  color: hsl(var(--muted-foreground));
-  font-weight: 600;
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
 }
 
 .win-percentage {
-  color: hsl(var(--pink-500)) !important;
-  font-size: 1rem !important;
-  font-weight: 700 !important;
+  color: hsl(var(--pink-500)) !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .war-arena {
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-  }
+  .war-arena {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
 
-  .vs-divider {
-    order: 2;
-    padding: 1rem 0;
-  }
+  .vs-divider {
+    order: 2;
+    padding: 1rem 0;
+  }
 
-  .vs-divider span {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-  }
+  .vs-divider span {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
 
-  .contestant-1,
-  .contestant-2 {
-    width: 100%;
-    max-width: 450px;
-  }
+  .contestant-1,
+  .contestant-2 {
+    width: 100%;
+    max-width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 @media (max-width: 768px) {
-  .vibe-wars-page {
-    padding: 5rem 1rem 2rem;
+  .vibe-wars-page {
+    margin-top: 55px;
+    padding: 2rem 1rem 2rem;
+  }
+
+  .vibe-wars-page .glass-card {
+    padding: 1.5rem;
+  }
+
+  .vibe-wars-page .page-title {
+    font-size: 2.5rem;
+  }
+
+  .contestant {
+    padding: 1.5rem;
+  }
+
+  .timer-value {
+    font-size: 1.5rem;
+  }
+
+  .history-item {
+    flex-direction: column;
+    align-items: center; 
+  }
+
+  .winner-info {
+    width: 100%;
+    justify-content: center; 
+  }
+    
+  .winner-info > div {
+    text-align: center; 
   }
 
-  .vibe-wars-page .glass-card {
-    padding: 1.5rem;
+  .winner-info h4, .winner-info p {
+    text-align: center; /* Mobil görünümde metinleri ortala */
   }
 
-  .vibe-wars-page .page-title {
-    font-size: 2.5rem;
-  }
-
-  .contestant {
-    padding: 1.5rem;
-  }
-
-  .timer-value {
-    font-size: 1.5rem;
-  }
-
-  .history-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .war-stats {
-    width: 100%;
-    text-align: left;
-    margin-top: 0.5rem;
-  }
+  .war-stats {
+    width: 100%;
+    text-align: center; 
+    margin-top: 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .vibe-wars-page .page-title {
-    font-size: 2rem;
-  }
+  .vibe-wars-page .page-title {
+    font-size: 2rem;
+  }
 
-  .vibe-wars-page .page-subtitle {
-    font-size: 1rem;
-  }
+  .vibe-wars-page .page-subtitle {
+    font-size: 1rem;
+  }
 
-  .btn-vote {
-    font-size: 1rem;
-    padding: 0.875rem 1.5rem;
-  }
+  .btn-vote {
+    font-size: 1rem;
+    padding: 0.875rem 1.5rem;
+  }
 
-  .winner-info {
-    width: 100%;
-  }
+  .winner-info {
+    width: 100%;
+  }
 }
