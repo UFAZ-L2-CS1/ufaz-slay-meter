@@ -9,11 +9,12 @@ import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import vibeRoutes from "./routes/vibeRoutes.js";
 import userRoutes from "./routes/usersRoutes.js";
-import exploreRoutes from "./routes/exploreRoutes.js";  // ✅ ƏLAVƏ EDİLDİ
-import warsRoutes from "./routes/warsRoutes.js";        // ✅ ƏLAVƏ EDİLDİ
+import exploreRoutes from "./routes/exploreRoutes.js";
+import warsRoutes from "./routes/warsRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
+import { initWarScheduler } from "./middleware/warScheduler.js"; // ✅ düzgün path
 
 dotenv.config();
 const app = express();
@@ -58,25 +59,31 @@ app.get("/api/test", (req, res) => {
   });
 });
 
-// ✅ CRITICAL: Specific routes BEFORE catch-all /api route
-// Route sıralaması çox vacibdir!
+// ✅ ROUTES ORDER (very important)
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/vibes", vibeRoutes);
-app.use("/api/explore", exploreRoutes);   // ✅ ƏLAVƏ EDİLDİ
-app.use("/api/wars", warsRoutes);         // ✅ ƏLAVƏ EDİLDİ
+app.use("/api/explore", exploreRoutes);
+app.use("/api/wars", warsRoutes);
 
-// ✅ General /api routes LAST (catch-all for stats, search, leaderboard, etc.)
+// ✅ General /api routes LAST (catch-all)
 app.use("/api", apiRoutes);
 
-// --- Centralized error handler (MUST be last) ---
+// --- Centralized error handler ---
 app.use(errorHandler);
 
-// --- Start server after DB ---
+// --- Start server after DB connection ---
 const PORT = process.env.PORT || 5000;
+
 connectDB().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
+  console.log("✅ MongoDB connected");
+
+  // ✅ War scheduler-i işə sal
+  initWarScheduler();
+
+  // ✅ Serveri başlat
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server listening on http://localhost:${PORT}`);
   });
 });
