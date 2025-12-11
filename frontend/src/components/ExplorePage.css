@@ -1,5 +1,38 @@
-/* Add to your existing ExplorePage.css */
+/* ExplorePage.css - Complete */
 
+/* Page Layout */
+.explore-page {
+  min-height: 100vh;
+  padding: 6rem 2rem 2rem;
+  background: linear-gradient(135deg, hsl(330, 100%, 95%), hsl(330, 100%, 90%), hsl(270, 60%, 90%));
+}
+
+.explore-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.explore-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.explore-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.explore-subtitle {
+  font-size: 1.1rem;
+  color: hsl(330, 20%, 50%);
+}
+
+/* Search Section - Your Original Styles */
 .search-section {
   position: relative;
   margin: 2rem 0;
@@ -40,7 +73,7 @@
   transform: scale(1.05);
 }
 
-/* ✅ NEW: Autocomplete Styles */
+/* Autocomplete Styles */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -126,4 +159,369 @@
 .suggestion-handle {
   font-size: 0.9rem;
   color: #666;
+}
+
+/* Tabs */
+.explore-tabs {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.tab-button {
+  padding: 0.75rem 2rem;
+  background: white;
+  border: 2px solid rgba(236, 72, 153, 0.2);
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: hsl(330, 20%, 50%);
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+}
+
+.tab-button:hover:not(.active) {
+  border-color: hsl(330, 90%, 55%);
+  transform: translateY(-2px);
+}
+
+/* Users Grid */
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.user-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid rgba(236, 72, 153, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.user-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+}
+
+.user-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(236, 72, 153, 0.2);
+  border-color: hsl(330, 90%, 55%);
+}
+
+.user-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 2rem;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+  overflow: hidden;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: hsl(330, 90%, 45%);
+  margin: 0 0 0.25rem 0;
+  text-decoration: none;
+  display: block;
+  transition: color 0.2s;
+}
+
+.user-name:hover {
+  color: hsl(270, 60%, 50%);
+}
+
+.user-handle {
+  font-size: 0.9rem;
+  color: hsl(330, 20%, 60%);
+  margin: 0;
+}
+
+.user-bio {
+  color: hsl(330, 20%, 40%);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.user-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(244, 114, 182, 0.05));
+  border-radius: 12px;
+}
+
+.user-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: hsl(330, 20%, 60%);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-view-profile,
+.btn-send-vibe {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-view-profile {
+  background: white;
+  color: hsl(330, 90%, 55%);
+  border: 2px solid hsl(330, 90%, 55%);
+}
+
+.btn-view-profile:hover {
+  background: hsl(330, 90%, 55%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.btn-send-vibe {
+  background: linear-gradient(135deg, hsl(330, 90%, 55%), hsl(270, 60%, 55%));
+  color: white;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+}
+
+.btn-send-vibe:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+}
+
+/* Vibes List */
+.vibes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.vibe-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1);
+  border: 2px solid rgba(236, 72, 153, 0.1);
+  transition: all 0.3s ease;
+}
+
+.vibe-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.15);
+}
+
+.vibe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: hsl(330, 20%, 60%);
+}
+
+.vibe-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: hsl(330, 20%, 30%);
+  margin-bottom: 1rem;
+}
+
+.vibe-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.vibe-tag {
+  padding: 0.25rem 0.75rem;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.1));
+  color: hsl(330, 90%, 50%);
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.vibe-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.vibe-action-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding: 0.5rem;
+}
+
+.vibe-action-btn:hover {
+  transform: scale(1.2);
+}
+
+/* Loading & Error States */
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.loading-state {
+  font-size: 1.5rem;
+  color: hsl(330, 90%, 55%);
+}
+
+.error-state {
+  color: hsl(0, 70%, 50%);
+}
+
+.empty-state {
+  color: hsl(330, 20%, 60%);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: hsl(330, 20%, 50%);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-hint {
+  color: hsl(330, 20%, 60%);
+  font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .explore-page {
+    padding: 5rem 1rem 1rem;
+  }
+
+  .explore-title {
+    font-size: 2rem;
+  }
+
+  .users-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .user-stats {
+    gap: 1rem;
+  }
+
+  .explore-tabs {
+    gap: 0.5rem;
+  }
+
+  .tab-button {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .user-card {
+    padding: 1.5rem;
+  }
+
+  .user-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .user-name {
+    font-size: 1.1rem;
+  }
 }
