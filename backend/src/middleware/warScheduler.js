@@ -53,10 +53,10 @@ async function createDailyWar() {
 
     // War schedule: 9:30 AM - 10:30 AM
     const startTime = new Date(today);
-    startTime.setHours(9, 30, 0, 0);
+    startTime.setHours(1, 20, 0, 0);
 
     const endTime = new Date(startTime);
-    endTime.setHours(10, 30, 0, 0);
+    endTime.setHours(2, 20, 0, 0);
 
     // Check if today's war exists
     const existing = await War.findOne({
