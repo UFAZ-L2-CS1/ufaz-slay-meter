@@ -9,11 +9,13 @@ import Vibe from "../models/Vibe.js";
 
 const router = Router();
 
+/**
+ * Today's war schedule – must match warScheduler (full day)
+ */
 function getTodayWarSchedule() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  // Must match warScheduler: whole day
   const startTime = new Date(today);
   startTime.setHours(0, 0, 0, 0);
 
@@ -23,6 +25,9 @@ function getTodayWarSchedule() {
   return { startTime, endTime };
 }
 
+/**
+ * Select 2 random users with vibes
+ */
 async function selectRandomContestants() {
   const usersWithVibes = await Vibe.aggregate([
     { $match: { isVisible: true } },
@@ -58,6 +63,9 @@ async function selectRandomContestants() {
   };
 }
 
+/**
+ * Ensure today's war exists and has correct status
+ */
 async function ensureTodayWar() {
   const { startTime, endTime } = getTodayWarSchedule();
 
@@ -67,18 +75,15 @@ async function ensureTodayWar() {
 
   if (!war) {
     console.log("📅 Creating new war for today...");
-
     try {
       const contestants = await selectRandomContestants();
-
       war = await War.create({
         contestant1: contestants.contestant1,
         contestant2: contestants.contestant2,
         startTime,
         endTime,
-        status: "active", // ✅ whole-day war is active
+        status: "active", // full‑day war
       });
-
       console.log("✅ War created successfully:", war._id);
     } catch (error) {
       console.error("❌ Failed to create war:", error.message);
@@ -107,6 +112,9 @@ router.get("/", (req, res) => {
   });
 });
 
+/**
+ * Get current war
+ */
 router.get("/current", async (req, res) => {
   try {
     const war = await ensureTodayWar();
@@ -118,7 +126,7 @@ router.get("/current", async (req, res) => {
       { path: "contestant2.vibeId", select: "text tags emojis" },
     ]);
 
-    const response = {
+    res.json({
       war: {
         _id: war._id,
         contestant1: {
@@ -151,16 +159,16 @@ router.get("/current", async (req, res) => {
         status: war.status,
         votes: war.votes,
       },
-    };
-
-    res.json(response);
+    });
   } catch (error) {
     console.error("Error fetching current war:", error);
     res.status(500).json({ message: "Error fetching current war" });
   }
 });
 
-// ✅ Vote endpoint – like button style
+/**
+ * Vote in war
+ */
 router.post(
   "/:id/vote",
   auth,
@@ -222,6 +230,9 @@ router.post(
   }
 );
 
+/**
+ * War history
+ */
 router.get("/history", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -232,6 +243,8 @@ router.get("/history", async (req, res) => {
       .populate([
         { path: "contestant1.userId", select: "name handle avatarUrl" },
         { path: "contestant2.userId", select: "name handle avatarUrl" },
+        { path: "contestant1.vibeId", select: "text" },
+        { path: "contestant2.vibeId", select: "text" },
       ]);
 
     const history = wars.map((war) => {
@@ -248,6 +261,7 @@ router.get("/history", async (req, res) => {
               avatarUrl: war.contestant1.userId?.avatarUrl || "",
             },
             vibe: {
+              text: war.contestant1.vibeId?.text || "",
               votes: war.contestant1.votes,
             },
           },
@@ -258,6 +272,7 @@ router.get("/history", async (req, res) => {
               avatarUrl: war.contestant2.userId?.avatarUrl || "",
             },
             vibe: {
+              text: war.contestant2.vibeId?.text || "",
               votes: war.contestant2.votes,
             },
           },
@@ -267,24 +282,26 @@ router.get("/history", async (req, res) => {
       }
 
       const isWinner1 = war.winner === 1;
-      const winner = isWinner1 ? war.contestant1 : war.contestant2;
-      const winnerVotes = isWinner1 ? war.contestant1.votes : war.contestant2.votes;
+      const winnerContestant = isWinner1 ? war.contestant1 : war.contestant2;
+      const loserContestant = isWinner1 ? war.contestant2 : war.contestant1;
+      const winnerVotes = winnerContestant.votes;
 
       return {
         _id: war._id,
         winner: {
           user: {
-            name: winner.userId?.name || "Unknown",
-            handle: winner.userId?.handle || "unknown",
-            avatarUrl: winner.userId?.avatarUrl || "",
+            name: winnerContestant.userId?.name || "Unknown",
+            handle: winnerContestant.userId?.handle || "unknown",
+            avatarUrl: winnerContestant.userId?.avatarUrl || "",
           },
           vibe: {
+            text: winnerContestant.vibeId?.text || "",
             votes: winnerVotes,
           },
         },
         loser: {
           vibe: {
-            votes: isWinner1 ? war.contestant2.votes : war.contestant1.votes,
+            votes: loserContestant.votes,
           },
         },
         totalVotes,
