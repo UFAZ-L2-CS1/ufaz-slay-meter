@@ -9,9 +9,6 @@ import Vibe from "../models/Vibe.js";
 
 const router = Router();
 
-/**
- * ✅ Helper: Get today's war schedule (9:30 AM - 10:30 AM)
- */
 function getTodayWarSchedule() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -25,9 +22,6 @@ function getTodayWarSchedule() {
   return { startTime, endTime };
 }
 
-/**
- * ✅ Helper: Select 2 random users with vibes
- */
 async function selectRandomContestants() {
   const usersWithVibes = await Vibe.aggregate([
     { $match: { isVisible: true } },
@@ -63,9 +57,6 @@ async function selectRandomContestants() {
   };
 }
 
-/**
- * ✅ Helper: Create today's war if it doesn't exist
- */
 async function ensureTodayWar() {
   const { startTime, endTime } = getTodayWarSchedule();
   
@@ -116,7 +107,6 @@ router.get("/", (req, res) => {
   });
 });
 
-// Get current vibe war
 router.get("/current", async (req, res) => {
   try {
     const war = await ensureTodayWar();
@@ -170,7 +160,7 @@ router.get("/current", async (req, res) => {
   }
 });
 
-// Vote in vibe war
+// ✅ FIXED: Vote endpoint with real-time status checking
 router.post(
   "/:id/vote",
   auth,
@@ -189,6 +179,20 @@ router.post(
       if (!war) {
         return res.status(404).json({ message: "War not found" });
       }
+
+      // ✅ FIX: Update war status based on current time BEFORE checking
+      const now = new Date();
+      if (now >= war.startTime && now < war.endTime) {
+        war.status = "active";
+      } else if (now >= war.endTime) {
+        war.status = "ended";
+        if (war.winner === null) {
+          war.calculateWinner();
+        }
+      } else {
+        war.status = "scheduled";
+      }
+      await war.save();
 
       if (war.status !== "active") {
         return res.status(400).json({ 
@@ -234,7 +238,6 @@ router.post(
   }
 );
 
-// ✅ FIXED: Get war history - handles null winner and invalid dates
 router.get("/history", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -250,7 +253,6 @@ router.get("/history", async (req, res) => {
     const history = wars.map((war) => {
       const totalVotes = war.contestant1.votes + war.contestant2.votes;
       
-      // ✅ FIX: Handle null/undefined winner (draw/tie case)
       if (war.winner === null || war.winner === undefined) {
         return {
           _id: war._id,
@@ -280,7 +282,6 @@ router.get("/history", async (req, res) => {
         };
       }
 
-      // Winner exists
       const isWinner1 = war.winner === 1;
       const winner = isWinner1 ? war.contestant1 : war.contestant2;
       const winnerVotes = isWinner1 ? war.contestant1.votes : war.contestant2.votes;
