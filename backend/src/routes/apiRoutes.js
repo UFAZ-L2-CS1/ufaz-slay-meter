@@ -1,6 +1,7 @@
 import { Router } from "express";
 import User from "../models/User.js";
 import Vibe from "../models/Vibe.js";
+import War from "../models/War.js";
 import auth from "../middleware/auth.js";
 
 const router = Router();
@@ -27,14 +28,12 @@ router.get("/stats/global", async (req, res) => {
 router.get("/users/me/stats", auth, async (req, res) => {
   try {
     const userId = req.user._id;
-    
-    // Get total vibes received by this user
+
     const totalVibes = await Vibe.countDocuments({
       recipientId: userId,
       isVisible: true
     });
-    
-    // Get tag distribution for vibes received
+
     const tagsPipeline = [
       { $match: { recipientId: userId, isVisible: true } },
       { $unwind: "$tags" },
@@ -42,29 +41,30 @@ router.get("/users/me/stats", auth, async (req, res) => {
       { $sort: { count: -1 } },
       { $limit: 5 }
     ];
-    
+
     const tagStats = await Vibe.aggregate(tagsPipeline);
-    
-    // Calculate percentages
+
     const totalTagCount = tagStats.reduce((sum, tag) => sum + tag.count, 0);
     const stats = tagStats.map(tag => ({
       tag: tag._id,
       count: tag.count,
       pct: totalTagCount > 0 ? Math.round((tag.count / totalTagCount) * 100) : 0
     }));
-    
-    // Get user's rank
+
     const allUsers = await Vibe.aggregate([
       { $match: { isVisible: true } },
-      { $group: {
-        _id: "$recipientId",
-        vibeCount: { $sum: 1 }
-      }},
+      {
+        $group: {
+          _id: "$recipientId",
+          vibeCount: { $sum: 1 }
+        }
+      },
       { $sort: { vibeCount: -1 } }
     ]);
-    
-    const userRank = allUsers.findIndex(u => u._id.toString() === userId.toString()) + 1;
-    
+
+    const userRank =
+      allUsers.findIndex(u => u._id.toString() === userId.toString()) + 1;
+
     res.json({
       totalVibes,
       rank: userRank > 0 ? userRank : null,
@@ -83,18 +83,17 @@ router.get("/vibes/received", auth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    
+
     const vibes = await Vibe.find({
       recipientId: req.user._id,
       isVisible: true
     })
-      .populate('senderId', 'name handle avatarUrl')
+      .populate("senderId", "name handle avatarUrl")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
 
-    // Format vibes with relative time
     const formattedVibes = vibes.map(vibe => ({
       ...vibe,
       from: vibe.senderId,
@@ -114,18 +113,17 @@ router.get("/vibes/sent", auth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    
+
     const vibes = await Vibe.find({
       senderId: req.user._id,
       isVisible: true
     })
-      .populate('recipientId', 'name handle avatarUrl')
+      .populate("recipientId", "name handle avatarUrl")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
 
-    // Format vibes with relative time
     const formattedVibes = vibes.map(vibe => ({
       ...vibe,
       to: vibe.recipientId,
@@ -148,10 +146,11 @@ function formatRelativeTime(date) {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+  if (diffHours < 24)
+    return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   return new Date(date).toLocaleDateString();
 }
 
@@ -168,11 +167,10 @@ router.get("/tags/trending", async (req, res) => {
     ];
 
     const tags = await Vibe.aggregate(pipeline);
-    
-    // Add trend indicators (mock for now, could be based on time comparisons)
+
     const tagsWithTrends = tags.map((tag, index) => ({
       ...tag,
-      trend: index < 3 ? 'up' : index > 6 ? 'down' : 'stable'
+      trend: index < 3 ? "up" : index > 6 ? "down" : "stable"
     }));
 
     res.json({ tags: tagsWithTrends });
@@ -221,23 +219,22 @@ router.get("/vibes/public", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const type = req.query.type || 'recent';
+    const type = req.query.type || "recent";
 
-    let sortCriteria = { createdAt: -1 }; // Default to recent
+    let sortCriteria = { createdAt: -1 };
     let filter = { isVisible: true };
 
-    if (type === 'popular') {
-      sortCriteria = { 'reactions.length': -1, createdAt: -1 };
-    } else if (type === 'wednesday' && new Date().getDay() === 3) {
-      // Only show today's vibes on Wednesday
+    if (type === "popular") {
+      sortCriteria = { "reactions.length": -1, createdAt: -1 };
+    } else if (type === "wednesday" && new Date().getDay() === 3) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       filter.createdAt = { $gte: today };
     }
 
     const vibes = await Vibe.find(filter)
-      .populate('senderId', 'name handle avatarUrl')
-      .populate('recipientId', 'name handle')
+      .populate("senderId", "name handle avatarUrl")
+      .populate("recipientId", "name handle")
       .sort(sortCriteria)
       .skip((page - 1) * limit)
       .limit(limit);
@@ -252,56 +249,56 @@ router.get("/vibes/public", async (req, res) => {
 // Search users and vibes
 router.get("/search", async (req, res) => {
   try {
-    const query = req.query.q || '';
-    
+    const query = req.query.q || "";
+
     if (!query.trim()) {
       return res.json({ users: [], vibes: [] });
     }
 
     const users = await User.find({
       $or: [
-        { handle: { $regex: query, $options: 'i' } },
-        { name: { $regex: query, $options: 'i' } }
+        { handle: { $regex: query, $options: "i" } },
+        { name: { $regex: query, $options: "i" } }
       ]
     })
-    .select('name handle avatarUrl bio')
-    .limit(20)
-    .lean();
+      .select("name handle avatarUrl bio")
+      .limit(20)
+      .lean();
 
     const vibes = await Vibe.find({
       isVisible: true,
       $or: [
-        { text: { $regex: query, $options: 'i' } },
+        { text: { $regex: query, $options: "i" } },
         { tags: { $in: [query.toLowerCase()] } }
       ]
     })
-    .populate('senderId', 'name handle avatarUrl')
-    .populate('recipientId', 'name handle avatarUrl')
-    .limit(20)
-    .lean();
+      .populate("senderId", "name handle avatarUrl")
+      .populate("recipientId", "name handle avatarUrl")
+      .limit(20)
+      .lean();
 
     res.json({ users, vibes });
   } catch (error) {
-    console.error('Error searching:', error);
-    res.status(500).json({ message: 'Search failed' });
+    console.error("Error searching:", error);
+    res.status(500).json({ message: "Search failed" });
   }
 });
 
 // Get leaderboard for vibes
 router.get("/leaderboard/vibes", async (req, res) => {
   try {
-    const timeframe = req.query.timeframe || 'all';
+    const timeframe = req.query.timeframe || "all";
     let dateFilter = {};
 
     const now = new Date();
     switch (timeframe) {
-      case 'day':
+      case "day":
         dateFilter = { $gte: new Date(now.setHours(0, 0, 0, 0)) };
         break;
-      case 'week':
+      case "week":
         dateFilter = { $gte: new Date(now.setDate(now.getDate() - 7)) };
         break;
-      case 'month':
+      case "month":
         dateFilter = { $gte: new Date(now.setMonth(now.getMonth() - 1)) };
         break;
     }
@@ -313,11 +310,13 @@ router.get("/leaderboard/vibes", async (req, res) => {
 
     const pipeline = [
       { $match: matchStage },
-      { $group: { 
-        _id: "$recipientId",
-        vibeCount: { $sum: 1 },
-        totalReactions: { $sum: { $size: "$reactions" } }
-      }},
+      {
+        $group: {
+          _id: "$recipientId",
+          vibeCount: { $sum: 1 },
+          totalReactions: { $sum: { $size: "$reactions" } }
+        }
+      },
       {
         $lookup: {
           from: "users",
@@ -334,7 +333,9 @@ router.get("/leaderboard/vibes", async (req, res) => {
           handle: "$user.handle",
           avatarUrl: "$user.avatarUrl",
           vibeCount: 1,
-          slayScore: { $add: ["$vibeCount", { $multiply: ["$totalReactions", 0.5] }] }
+          slayScore: {
+            $add: ["$vibeCount", { $multiply: ["$totalReactions", 0.5] }]
+          }
         }
       },
       { $sort: { slayScore: -1, vibeCount: -1 } },
@@ -349,12 +350,97 @@ router.get("/leaderboard/vibes", async (req, res) => {
   }
 });
 
-// Get leaderboard for wars
+// ✅ FIXED: Get leaderboard for wars - aggregates per-user war stats
 router.get("/leaderboard/wars", async (req, res) => {
   try {
-    // This would need the VibeWar model to be implemented
-    // For now, return empty array
-    res.json({ leaders: [] });
+    const timeframe = req.query.timeframe || "all";
+    let dateFilter = {};
+
+    const now = new Date();
+    switch (timeframe) {
+      case "day":
+        dateFilter = { $gte: new Date(now.setHours(0, 0, 0, 0)) };
+        break;
+      case "week":
+        dateFilter = { $gte: new Date(now.setDate(now.getDate() - 7)) };
+        break;
+      case "month":
+        dateFilter = { $gte: new Date(now.setMonth(now.getMonth() - 1)) };
+        break;
+    }
+
+    const matchStage = { status: "ended", winner: { $ne: null } };
+    if (Object.keys(dateFilter).length > 0) {
+      matchStage.endTime = dateFilter;
+    }
+
+    // Fetch all ended wars with winners
+    const wars = await War.find(matchStage)
+      .populate("contestant1.userId", "name handle avatarUrl")
+      .populate("contestant2.userId", "name handle avatarUrl")
+      .lean();
+
+    // Build user war stats map
+    const userStatsMap = {};
+
+    wars.forEach(war => {
+      const winner =
+        war.winner === 1 ? war.contestant1.userId : war.contestant2.userId;
+      const loser =
+        war.winner === 1 ? war.contestant2.userId : war.contestant1.userId;
+
+      if (winner && winner._id) {
+        const wid = winner._id.toString();
+        if (!userStatsMap[wid]) {
+          userStatsMap[wid] = {
+            id: winner._id,
+            name: winner.name,
+            handle: winner.handle,
+            avatarUrl: winner.avatarUrl || "",
+            warsWon: 0,
+            warsLost: 0,
+            totalWars: 0
+          };
+        }
+        userStatsMap[wid].warsWon += 1;
+        userStatsMap[wid].totalWars += 1;
+      }
+
+      if (loser && loser._id) {
+        const lid = loser._id.toString();
+        if (!userStatsMap[lid]) {
+          userStatsMap[lid] = {
+            id: loser._id,
+            name: loser.name,
+            handle: loser.handle,
+            avatarUrl: loser.avatarUrl || "",
+            warsWon: 0,
+            warsLost: 0,
+            totalWars: 0
+          };
+        }
+        userStatsMap[lid].warsLost += 1;
+        userStatsMap[lid].totalWars += 1;
+      }
+    });
+
+    // Convert to array and calculate win rates
+    const leaders = Object.values(userStatsMap).map(user => ({
+      ...user,
+      winRate:
+        user.totalWars > 0
+          ? Math.round((user.warsWon / user.totalWars) * 100)
+          : 0
+    }));
+
+    // Sort by wars won, then by win rate
+    leaders.sort((a, b) => {
+      if (b.warsWon !== a.warsWon) return b.warsWon - a.warsWon;
+      return b.winRate - a.winRate;
+    });
+
+    // Return top 20
+    res.json({ leaders: leaders.slice(0, 20) });
   } catch (error) {
     console.error("Error fetching war leaderboard:", error);
     res.status(500).json({ message: "Error fetching war leaderboard" });
@@ -367,20 +453,20 @@ router.get("/vibe-wars/current", async (req, res) => {
     // For demo purposes, create a mock war
     // In production, this would fetch from database
     const mockWar = {
-      _id: 'current',
+      _id: "current",
       contestant1: {
-        user: { name: 'User 1', handle: 'user1' },
+        user: { name: "User 1", handle: "user1" },
         vibe: {
-          text: 'You have amazing energy!',
-          tags: ['energetic', 'inspiring'],
+          text: "You have amazing energy!",
+          tags: ["energetic", "inspiring"],
           votes: Math.floor(Math.random() * 50)
         }
       },
       contestant2: {
-        user: { name: 'User 2', handle: 'user2' },
+        user: { name: "User 2", handle: "user2" },
         vibe: {
-          text: 'Your creativity is unmatched!',
-          tags: ['creative', 'talented'],
+          text: "Your creativity is unmatched!",
+          tags: ["creative", "talented"],
           votes: Math.floor(Math.random() * 50)
         }
       },
@@ -400,7 +486,7 @@ router.post("/vibe-wars/:id/vote", async (req, res) => {
   try {
     const { contestant } = req.body;
     // In production, this would update the database
-    res.json({ success: true, message: 'Vote recorded' });
+    res.json({ success: true, message: "Vote recorded" });
   } catch (error) {
     console.error("Error recording vote:", error);
     res.status(500).json({ message: "Error recording vote" });
