@@ -61,7 +61,7 @@ const LandingPage = ({ onAuthClick, user }) => {
       <section className="hero">
         <div className="hero-content">
           <div className="hero-title">
-            <h1 className="title-main">UFAZ Slay Meter</h1>
+            <h1 className="title-main">UFAZien's Slay Meter</h1>
             <span className="title-sparkle">✨</span>
           </div>
           <h2 className="hero-subtitle">
