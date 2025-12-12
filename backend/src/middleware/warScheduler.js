@@ -44,19 +44,26 @@ async function selectRandomContestants() {
 }
 
 /**
- * ✅ Create today's war
+ * ✅ FIXED: Create today's war with correct time schedule
  */
 async function createDailyWar() {
   try {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // War schedule: 9:30 AM - 10:30 AM
+    // ✅ FIX: War schedule 9:30 AM - 10:30 AM (not 2:20 AM)
     const startTime = new Date(today);
-    startTime.setHours(2, 20, 0, 0);
+    startTime.setHours(9, 30, 0, 0);
 
     const endTime = new Date(startTime);
-    endTime.setHours(2, 20, 0, 0);
+    endTime.setHours(10, 30, 0, 0); // ✅ Changed from 2:20 to 10:30
+
+    // ✅ Debug logging
+    console.log("📅 War Schedule:", {
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      now: now.toISOString(),
+    });
 
     // Check if today's war exists
     const existing = await War.findOne({
@@ -64,12 +71,20 @@ async function createDailyWar() {
     });
 
     if (existing) {
-      console.log("⚠️ War already exists for today");
+      console.log("⚠️ War already exists for today:", existing._id);
       return existing;
     }
 
     // Select contestants
     const contestants = await selectRandomContestants();
+
+    // ✅ FIX: Set correct initial status based on current time
+    let initialStatus = "scheduled";
+    if (now >= startTime && now < endTime) {
+      initialStatus = "active";
+    } else if (now >= endTime) {
+      initialStatus = "ended";
+    }
 
     // Create war
     const war = await War.create({
@@ -77,10 +92,10 @@ async function createDailyWar() {
       contestant2: contestants.contestant2,
       startTime,
       endTime,
-      status: "active",
+      status: initialStatus,
     });
 
-    console.log("✅ Daily war created:", war._id);
+    console.log("✅ Daily war created:", war._id, "Status:", initialStatus);
     return war;
   } catch (error) {
     console.error("❌ Failed to create daily war:", error.message);
@@ -116,18 +131,17 @@ async function endExpiredWars() {
 export function initWarScheduler() {
   console.log("🚀 War Scheduler initialized");
 
-  // 1. Create daily war at 9:00 AM (30 mins before start)
-cron.schedule("20 2 * * *", async () => {
-  console.log("⏰ Creating daily war (Asia/Baku)...");
-  try {
-    await createDailyWar();
-  } catch (error) {
-    console.error("❌ Failed to create daily war:", error);
-  }
-}, {
-  timezone: "Asia/Baku" // 🔥 vacibdir
-});
-
+  // ✅ FIX: Create daily war at 9:00 AM (30 mins before start at 9:30)
+  cron.schedule("0 9 * * *", async () => {
+    console.log("⏰ Creating daily war (Asia/Baku timezone)...");
+    try {
+      await createDailyWar();
+    } catch (error) {
+      console.error("❌ Failed to create daily war:", error);
+    }
+  }, {
+    timezone: "Asia/Baku"
+  });
 
   // 2. Check every minute to end expired wars
   cron.schedule("* * * * *", async () => {
@@ -137,6 +151,7 @@ cron.schedule("20 2 * * *", async () => {
   // 3. Create today's war immediately if it doesn't exist (on server start)
   setTimeout(async () => {
     try {
+      console.log("🔄 Checking for today's war on server start...");
       await createDailyWar();
     } catch (error) {
       console.error("❌ Initial war creation failed:", error);

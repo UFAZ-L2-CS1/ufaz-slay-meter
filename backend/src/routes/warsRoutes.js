@@ -234,7 +234,7 @@ router.post(
   }
 );
 
-// Get war history
+// ✅ FIXED: Get war history - handles null winner and invalid dates
 router.get("/history", async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -248,9 +248,40 @@ router.get("/history", async (req, res) => {
       ]);
 
     const history = wars.map((war) => {
-      const totalVotes = war.contestant1.votes + war.contestant2.votes || 1;
-      const isWinner1 = war.winner === 1;
+      const totalVotes = war.contestant1.votes + war.contestant2.votes;
       
+      // ✅ FIX: Handle null/undefined winner (draw/tie case)
+      if (war.winner === null || war.winner === undefined) {
+        return {
+          _id: war._id,
+          winner: null,
+          contestant1: {
+            user: {
+              name: war.contestant1.userId?.name || "Unknown",
+              handle: war.contestant1.userId?.handle || "unknown",
+              avatarUrl: war.contestant1.userId?.avatarUrl || "",
+            },
+            vibe: {
+              votes: war.contestant1.votes,
+            },
+          },
+          contestant2: {
+            user: {
+              name: war.contestant2.userId?.name || "Unknown",
+              handle: war.contestant2.userId?.handle || "unknown",
+              avatarUrl: war.contestant2.userId?.avatarUrl || "",
+            },
+            vibe: {
+              votes: war.contestant2.votes,
+            },
+          },
+          totalVotes,
+          endedAt: war.endTime,
+        };
+      }
+
+      // Winner exists
+      const isWinner1 = war.winner === 1;
       const winner = isWinner1 ? war.contestant1 : war.contestant2;
       const winnerVotes = isWinner1 ? war.contestant1.votes : war.contestant2.votes;
 
@@ -258,9 +289,9 @@ router.get("/history", async (req, res) => {
         _id: war._id,
         winner: {
           user: {
-            name: winner.userId.name,
-            handle: winner.userId.handle,
-            avatarUrl: winner.userId.avatarUrl || "",
+            name: winner.userId?.name || "Unknown",
+            handle: winner.userId?.handle || "unknown",
+            avatarUrl: winner.userId?.avatarUrl || "",
           },
           vibe: {
             votes: winnerVotes,
@@ -271,6 +302,7 @@ router.get("/history", async (req, res) => {
             votes: isWinner1 ? war.contestant2.votes : war.contestant1.votes,
           },
         },
+        totalVotes,
         endedAt: war.endTime,
       };
     });
