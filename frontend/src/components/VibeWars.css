@@ -151,7 +151,7 @@
   font-weight: 600;
 }
 
-/* War Timer */
+/* War Timer - FIXED FOR VISIBILITY */
 .war-timer {
   text-align: center;
   padding: 1.5rem;
@@ -189,10 +189,11 @@
   }
 }
 
+/* CRITICAL FIX: Timer label - now visible with solid color */
 .timer-label {
   display: block;
   font-size: 0.9rem;
-  color: hsl(var(--muted-foreground));
+  color: #6b7280 !important; /* Solid gray - VISIBLE */
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -200,21 +201,17 @@
 }
 
 .timer-label.ended {
-  color: #ef4444;
+  color: #ef4444 !important;
 }
 
+/* CRITICAL FIX: Timer value - now visible with solid color */
 .timer-value {
   display: block;
   font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(
-    135deg,
-    hsl(var(--pink-400)),
-    hsl(var(--pink-600))
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ec4899 !important; /* Solid pink - VISIBLE */
+  background: none !important;
+  -webkit-text-fill-color: #ec4899 !important;
 }
 
 .timer-value.ended {
@@ -347,6 +344,32 @@
   align-items: center;
 }
 
+/* Vote Stats Section - NEW */
+.vote-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+  border-top: 1px solid rgba(236, 72, 153, 0.2);
+  border-bottom: 1px solid rgba(236, 72, 153, 0.2);
+}
+
+.vote-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ec4899; /* Solid pink for visibility */
+}
+
+.vote-percentage {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #6b7280; /* Solid gray for visibility */
+  padding: 0.25rem 0.5rem;
+  background: rgba(236, 72, 153, 0.1);
+  border-radius: 8px;
+}
+
 /* Vote Button */
 .btn-vote {
   width: 100%;
@@ -392,6 +415,22 @@
   cursor: not-allowed;
   opacity: 0.7;
   box-shadow: none;
+}
+
+/* Message Card Animation - NEW */
+.message-card {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* No War State */
@@ -636,45 +675,6 @@
 
   .winner-info {
     width: 100%;
-  }
-}
-.vote-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  margin-bottom: 1rem;
-  border-top: 1px solid rgba(236, 72, 153, 0.2);
-  border-bottom: 1px solid rgba(236, 72, 153, 0.2);
-}
-
-.vote-count {
-  font-size: 1rem;
-  font-weight: 700;
-  color: hsl(var(--pink-500));
-}
-
-.vote-percentage {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: hsl(var(--muted-foreground));
-  padding: 0.25rem 0.5rem;
-  background: rgba(236, 72, 153, 0.1);
-  border-radius: 8px;
-}
-
-.message-card {
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 

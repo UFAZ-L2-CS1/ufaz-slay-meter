@@ -92,7 +92,6 @@ const VibeWars = () => {
         setTimeLeft("War Ended 🏁");
         setWarEnded(true);
         clearInterval(tick);
-        // Trigger refresh when war ends
         fetchCurrentWar();
         fetchWarHistory();
         return;
@@ -129,7 +128,6 @@ const VibeWars = () => {
       setVoting(true);
       await api.post(`/wars/${currentWar._id}/vote`, { contestant: side });
       
-      // Immediately fetch updated war data
       await fetchCurrentWar();
       
       setMessage("💖 Your vote is recorded!");
@@ -153,7 +151,6 @@ const VibeWars = () => {
   // Check if user has voted
   const hasUserVoted = () => {
     if (!user || !currentWar || !currentWar.votes) return false;
-    // Check if user's ID is in the votes array
     const voted = currentWar.votes.some(v => {
       return String(v.userId) === String(user._id) || 
              String(v.userId) === String(user.id);
@@ -212,7 +209,7 @@ const VibeWars = () => {
                 display: 'block', 
                 marginTop: '0.5rem', 
                 fontSize: '0.9rem', 
-                color: 'var(--muted-foreground)' 
+                color: '#6b7280'
               }}>
                 Total Votes: {getTotalVotes()}
               </span>
@@ -366,46 +363,3 @@ const VibeWars = () => {
 };
 
 export default VibeWars;
-
-/* Add these CSS rules to your VibeWars.css file:
-
-.vote-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  margin-bottom: 1rem;
-  border-top: 1px solid rgba(236, 72, 153, 0.2);
-  border-bottom: 1px solid rgba(236, 72, 153, 0.2);
-}
-
-.vote-count {
-  font-size: 1rem;
-  font-weight: 700;
-  color: hsl(var(--pink-500));
-}
-
-.vote-percentage {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: hsl(var(--muted-foreground));
-  padding: 0.25rem 0.5rem;
-  background: rgba(236, 72, 153, 0.1);
-  border-radius: 8px;
-}
-
-.message-card {
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-*/
