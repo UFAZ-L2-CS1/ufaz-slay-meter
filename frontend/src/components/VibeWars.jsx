@@ -3,8 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import "./VibeWars.css";
 
-const getInitial = (handle) =>
-  handle ? handle[0].toUpperCase() : "X";
+const getInitial = (handle) => handle ? handle[0].toUpperCase() : "X";
 
 const VibeWars = () => {
   const { user } = useAuth();
@@ -187,61 +186,61 @@ const VibeWars = () => {
         </>
       )}
 
+      {/* ✅ FIXED: Past Wars History with proper null handling and date validation */}
       {warHistory.length > 0 && (
         <div className="war-history glass-card">
           <h2>Past Wars (Top 10)</h2>
           <div className="history-list">
             {warHistory.map((war, index) => {
-              const c1Votes = war.contestant1?.votes || 0;
-              const c2Votes = war.contestant2?.votes || 0;
-              const winner =
-                war.winner === "contestant1"
-                  ? war.contestant1
-                  : war.winner === "contestant2"
-                  ? war.contestant2
-                  : null;
-              const total = c1Votes + c2Votes;
-              const winnerVotes = winner?.votes || 0;
-              const percent =
-                winner && total > 0
-                  ? ((winnerVotes / total) * 100).toFixed(1)
-                  : "N/A";
+              // ✅ FIX: Safe date parsing
+              const endDate = war.endedAt ? new Date(war.endedAt) : null;
+              const isValidDate = endDate && !isNaN(endDate.getTime());
+              const formattedDate = isValidDate 
+                ? endDate.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                : 'Date Unknown';
+
+              // ✅ FIX: Handle winner = null (draw/tie)
+              const totalVotes = war.totalVotes || 0;
+              const winner = war.winner;
+
               return (
                 <div key={war._id} className="history-item">
                   <div className="winner-info">
                     <span className="winner-rank">#{index + 1}</span>
                     <div className="winner-avatar">
                       <span>
-                        {getInitial(
-                          winner ? winner.user.handle : "X"
-                        )}
+                        {winner 
+                          ? getInitial(winner.user?.handle) 
+                          : "✖"}
                       </span>
                     </div>
                     <div>
                       <h4>
-                        {winner
-                          ? `@${winner.user.handle}`
+                        {winner 
+                          ? `@${winner.user?.handle || "unknown"}` 
                           : "Draw"}
                       </h4>
                       <p>
-                        {winner
-                          ? winner.vibe.text.slice(0, 30) +
-                            (winner.vibe.text.length > 30 ? "..." : "")
+                        {winner 
+                          ? (winner.vibe?.text || "No vibe text")
                           : "No winner / Tie"}
                       </p>
                     </div>
                   </div>
                   <div className="war-stats">
-                    <span>Total Votes: {total}</span>
-                    {winner && (
+                    <span>Total Votes: {totalVotes}</span>
+                    {winner && winner.vibe?.votes && (
                       <span className="win-percentage">
-                        {percent}% Win
+                        {totalVotes > 0 
+                          ? ((winner.vibe.votes / totalVotes) * 100).toFixed(1)
+                          : "0"}% Win
                       </span>
                     )}
-                    <span>
-                      Ended:{" "}
-                      {new Date(war.endsAt).toLocaleDateString()}
-                    </span>
+                    <span>Ended: {formattedDate}</span>
                   </div>
                 </div>
               );
