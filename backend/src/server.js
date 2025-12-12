@@ -1,4 +1,3 @@
-// backend/src/server.js
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -13,8 +12,8 @@ import exploreRoutes from "./routes/exploreRoutes.js";
 import warsRoutes from "./routes/warsRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
-import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
-import { initWarScheduler } from "./middleware/warScheduler.js"; // ✅ düzgün path
+import { apiLimiter } from "./middleware/rateLimit.js";
+import { initWarScheduler } from "./middleware/warScheduler.js";
 
 dotenv.config();
 const app = express();
@@ -25,7 +24,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   "http://localhost:5173",
-  "http://127.0.0.1:5173"
+  "http://127.0.0.1:5173",
 ].filter(Boolean);
 
 app.use(
@@ -44,6 +43,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // --- Global rate limiter ---
+// Keep, but very relaxed now via apiLimiter config
 app.use(apiLimiter);
 
 // --- Healthcheck ---
@@ -60,7 +60,8 @@ app.get("/api/test", (req, res) => {
 });
 
 // ✅ ROUTES ORDER (very important)
-app.use("/api/auth", authLimiter, authRoutes);
+// Remove authLimiter here so login/register are not throttled at all
+app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/vibes", vibeRoutes);
@@ -79,10 +80,10 @@ const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
   console.log("✅ MongoDB connected");
 
-  // ✅ War scheduler-i işə sal
+  // ✅ Start war scheduler
   initWarScheduler();
 
-  // ✅ Serveri başlat
+  // ✅ Start server
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server listening on http://localhost:${PORT}`);
   });
