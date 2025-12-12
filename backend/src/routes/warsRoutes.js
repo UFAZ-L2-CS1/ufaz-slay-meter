@@ -16,14 +16,17 @@ function getTodayWarSchedule() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+  // Start at 11:10:00 local day
   const startTime = new Date(today);
-  startTime.setHours(0, 0, 0, 0);
+  startTime.setHours(11, 10, 0, 0);
 
+  // End at end of the same day
   const endTime = new Date(today);
   endTime.setHours(23, 59, 59, 999);
 
   return { startTime, endTime };
 }
+
 
 /**
  * Select 2 random users with vibes

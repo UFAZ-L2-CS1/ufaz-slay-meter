@@ -1,4 +1,3 @@
-// backend/src/middleware/warScheduler.js
 import cron from "node-cron";
 import War from "../models/War.js";
 import Vibe from "../models/Vibe.js";
@@ -44,21 +43,22 @@ async function selectRandomContestants() {
 
 /**
  * ✅ Create today's war
- * War is ACTIVE the whole day (00:00–23:59), so voting is always allowed that day.
+ * Starts at 11:10 AM (Asia/Baku) and runs until the end of the day (23:59:59.999)
  */
 async function createDailyWar() {
   try {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // War schedule: whole day
+    // Start at 11:10:00 local day
     const startTime = new Date(today);
-    startTime.setHours(0, 0, 0, 0);
+    startTime.setHours(11, 10, 0, 0);
 
+    // End at end of the same day
     const endTime = new Date(today);
     endTime.setHours(23, 59, 59, 999);
 
-    console.log("📅 War Schedule (daily full-day):", {
+    console.log("📅 War Schedule (daily):", {
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
       now: now.toISOString(),
@@ -77,16 +77,18 @@ async function createDailyWar() {
     // Select contestants
     const contestants = await selectRandomContestants();
 
-    // For a whole‑day war we can mark it active immediately
+    // For a scheduled war that starts at 11:10, mark active immediately if now >= startTime
+    const initialStatus = now >= startTime && now < endTime ? "active" : "scheduled";
+
     const war = await War.create({
       contestant1: contestants.contestant1,
       contestant2: contestants.contestant2,
       startTime,
       endTime,
-      status: "active",
+      status: initialStatus,
     });
 
-    console.log("✅ Daily war created:", war._id, "Status: active");
+    console.log("✅ Daily war created:", war._id, "Status:", war.status);
     return war;
   } catch (error) {
     console.error("❌ Failed to create daily war:", error.message);
@@ -122,11 +124,11 @@ async function endExpiredWars() {
 export function initWarScheduler() {
   console.log("🚀 War Scheduler initialized");
 
-  // Create daily war shortly after midnight (00:05) in Asia/Baku
+  // Create daily war at 11:10 AM in Asia/Baku
   cron.schedule(
-    "5 0 * * *",
+    "10 11 * * *",
     async () => {
-      console.log("⏰ Creating daily war (Asia/Baku timezone)...");
+      console.log("⏰ Creating daily war (Asia/Baku timezone at 11:10)...");
       try {
         await createDailyWar();
       } catch (error) {
