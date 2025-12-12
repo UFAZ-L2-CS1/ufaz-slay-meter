@@ -10,7 +10,7 @@ import Vibe from "../models/Vibe.js";
 const router = Router();
 
 /**
- * Today's war schedule – must match warScheduler (full day)
+ * Today's war schedule – must match warScheduler
  */
 function getTodayWarSchedule() {
   const now = new Date();
@@ -27,38 +27,59 @@ function getTodayWarSchedule() {
   return { startTime, endTime };
 }
 
-
 /**
- * Select 2 random users with vibes
+ * Select 2 DIFFERENT random users with vibes
+ * Prevents same user appearing multiple times
  */
 async function selectRandomContestants() {
+  // Get all users with visible vibes
   const usersWithVibes = await Vibe.aggregate([
     { $match: { isVisible: true } },
     { $group: { _id: "$recipientId", vibeCount: { $sum: 1 } } },
     { $match: { vibeCount: { $gte: 1 } } },
-    { $sample: { size: 2 } },
   ]);
 
   if (usersWithVibes.length < 2) {
     throw new Error("Not enough users with vibes to create a war");
   }
 
-  const userId1 = usersWithVibes[0]._id;
-  const userId2 = usersWithVibes[1]._id;
+  // Shuffle the array to get truly random selection
+  const shuffled = usersWithVibes.sort(() => Math.random() - 0.5);
+  
+  // Take first 2 users
+  const userId1 = shuffled[0]._id;
+  const userId2 = shuffled[1]._id;
 
-  const [vibe1] = await Vibe.find({ recipientId: userId1, isVisible: true })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .then((vibes) => vibes.sort(() => 0.5 - Math.random()).slice(0, 1));
+  // Make sure they're different
+  if (String(userId1) === String(userId2)) {
+    throw new Error("Cannot select same user twice");
+  }
 
-  const [vibe2] = await Vibe.find({ recipientId: userId2, isVisible: true })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .then((vibes) => vibes.sort(() => 0.5 - Math.random()).slice(0, 1));
+  // Get random vibes for each user
+  const vibes1 = await Vibe.find({ 
+    recipientId: userId1, 
+    isVisible: true 
+  }).limit(10);
+  
+  const vibes2 = await Vibe.find({ 
+    recipientId: userId2, 
+    isVisible: true 
+  }).limit(10);
 
-  if (!vibe1 || !vibe2) {
+  if (!vibes1.length || !vibes2.length) {
     throw new Error("Could not find vibes for selected users");
   }
+
+  // Pick random vibe from each user's vibes
+  const vibe1 = vibes1[Math.floor(Math.random() * vibes1.length)];
+  const vibe2 = vibes2[Math.floor(Math.random() * vibes2.length)];
+
+  console.log("✅ Selected contestants:", {
+    user1: userId1.toString(),
+    user2: userId2.toString(),
+    vibe1: vibe1._id.toString(),
+    vibe2: vibe2._id.toString(),
+  });
 
   return {
     contestant1: { userId: userId1, vibeId: vibe1._id },
@@ -71,38 +92,57 @@ async function selectRandomContestants() {
  */
 async function ensureTodayWar() {
   const { startTime, endTime } = getTodayWarSchedule();
+  const now = new Date();
 
+  // Find war for today
   let war = await War.findOne({
-    startTime: { $gte: startTime, $lt: endTime },
+    startTime: { $gte: startTime, $lte: endTime },
   });
 
   if (!war) {
     console.log("📅 Creating new war for today...");
     try {
       const contestants = await selectRandomContestants();
+      
+      // Determine initial status
+      let status = "scheduled";
+      if (now >= startTime && now < endTime) {
+        status = "active";
+      } else if (now >= endTime) {
+        status = "ended";
+      }
+
       war = await War.create({
         contestant1: contestants.contestant1,
         contestant2: contestants.contestant2,
         startTime,
         endTime,
-        status: "active", // full‑day war
+        status,
       });
-      console.log("✅ War created successfully:", war._id);
+      
+      console.log("✅ War created:", war._id, "Status:", status);
     } catch (error) {
       console.error("❌ Failed to create war:", error.message);
       throw error;
     }
   } else {
-    const now = new Date();
-    if (now >= war.endTime && war.status !== "ended") {
+    // Update war status if needed
+    let statusChanged = false;
+    
+    if (now >= endTime && war.status !== "ended") {
       war.status = "ended";
-      if (war.winner === null) {
+      if (war.winner === null || war.winner === undefined) {
         war.calculateWinner();
       }
-      await war.save();
-    } else if (now < war.endTime && war.status !== "active") {
+      statusChanged = true;
+    } else if (now >= startTime && now < endTime && war.status === "scheduled") {
       war.status = "active";
+      statusChanged = true;
+    }
+
+    if (statusChanged) {
       await war.save();
+      console.log("✅ War status updated:", war._id, "->", war.status);
     }
   }
 
@@ -159,6 +199,7 @@ router.get("/current", async (req, res) => {
           },
         },
         endsAt: war.endTime,
+        startTime: war.startTime,
         status: war.status,
         votes: war.votes,
       },
@@ -170,7 +211,7 @@ router.get("/current", async (req, res) => {
 });
 
 /**
- * Vote in war
+ * Vote in war - PREVENTS DUPLICATE VOTING
  */
 router.post(
   "/:id/vote",
@@ -189,30 +230,42 @@ router.post(
       }
 
       const now = new Date();
+      
+      // Check if war has ended
       if (now >= war.endTime || war.status === "ended") {
         return res.status(400).json({ message: "This war has ended" });
       }
 
+      // Check if war has started
+      if (now < war.startTime || war.status === "scheduled") {
+        return res.status(400).json({ message: "This war hasn't started yet" });
+      }
+
+      // Prevent contestants from voting for themselves
       if (
         String(war.contestant1.userId) === String(userId) ||
         String(war.contestant2.userId) === String(userId)
       ) {
-        return res
-          .status(400)
-          .json({ message: "You cannot vote for yourself" });
+        return res.status(400).json({ 
+          message: "You cannot vote in a war you're participating in" 
+        });
       }
 
-      if (war.hasUserVoted(userId)) {
-        return res
-          .status(400)
-          .json({ message: "You have already voted in this war" });
+      // Check if user already voted - THIS IS THE KEY FIX
+      const hasVoted = war.hasUserVoted(userId);
+      if (hasVoted) {
+        return res.status(400).json({ 
+          message: "You have already voted in this war" 
+        });
       }
 
+      // Record the vote
       war.votes.push({
         userId,
         contestantNumber: contestant,
       });
 
+      // Update vote count
       if (contestant === 1) {
         war.contestant1.votes += 1;
       } else {
@@ -221,10 +274,16 @@ router.post(
 
       await war.save();
 
+      console.log(`✅ Vote recorded: User ${userId} voted for contestant ${contestant}`);
+
       res.json({
         success: true,
         message: "Vote recorded",
         contestant,
+        currentVotes: {
+          contestant1: war.contestant1.votes,
+          contestant2: war.contestant2.votes,
+        },
       });
     } catch (error) {
       console.error("Error recording vote:", error);
@@ -232,6 +291,30 @@ router.post(
     }
   }
 );
+
+/**
+ * Check if user has voted in current war
+ */
+router.get("/current/my-vote", auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const war = await ensureTodayWar();
+
+    if (!war) {
+      return res.json({ hasVoted: false, vote: null });
+    }
+
+    const userVote = war.getUserVote(userId);
+    
+    res.json({
+      hasVoted: !!userVote,
+      vote: userVote ? userVote.contestantNumber : null,
+    });
+  } catch (error) {
+    console.error("Error checking vote status:", error);
+    res.status(500).json({ message: "Error checking vote status" });
+  }
+});
 
 /**
  * War history
@@ -287,7 +370,6 @@ router.get("/history", async (req, res) => {
       const isWinner1 = war.winner === 1;
       const winnerContestant = isWinner1 ? war.contestant1 : war.contestant2;
       const loserContestant = isWinner1 ? war.contestant2 : war.contestant1;
-      const winnerVotes = winnerContestant.votes;
 
       return {
         _id: war._id,
@@ -299,11 +381,17 @@ router.get("/history", async (req, res) => {
           },
           vibe: {
             text: winnerContestant.vibeId?.text || "",
-            votes: winnerVotes,
+            votes: winnerContestant.votes,
           },
         },
         loser: {
+          user: {
+            name: loserContestant.userId?.name || "Unknown",
+            handle: loserContestant.userId?.handle || "unknown",
+            avatarUrl: loserContestant.userId?.avatarUrl || "",
+          },
           vibe: {
+            text: loserContestant.vibeId?.text || "",
             votes: loserContestant.votes,
           },
         },
