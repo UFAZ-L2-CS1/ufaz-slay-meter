@@ -10,19 +10,22 @@ import Vibe from "../models/Vibe.js";
 const router = Router();
 
 /**
- * Today's war schedule – must match warScheduler
+ * Today's war schedule – 2-hour slots
  */
-function getTodayWarSchedule() {
+function getCurrentWarSchedule() {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  // Start at 11:10:00 local day
-  const startTime = new Date(today);
-  startTime.setHours(11, 10, 0, 0);
-
-  // End at end of the same day
-  const endTime = new Date(today);
-  endTime.setHours(23, 59, 59, 999);
+  
+  // Calculate the current 2-hour slot
+  const currentHour = now.getHours();
+  const slotStart = Math.floor(currentHour / 2) * 2; // 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22
+  
+  // Start time is beginning of current 2-hour slot
+  const startTime = new Date(now);
+  startTime.setHours(slotStart, 0, 0, 0);
+  
+  // End time is 2 hours later
+  const endTime = new Date(startTime);
+  endTime.setHours(startTime.getHours() + 2, 0, 0, 0);
 
   return { startTime, endTime };
 }
@@ -88,29 +91,31 @@ async function selectRandomContestants() {
 }
 
 /**
- * Ensure today's war exists and has correct status
+ * Ensure current war exists and has correct status
  */
-async function ensureTodayWar() {
-  const { startTime, endTime } = getTodayWarSchedule();
+async function ensureCurrentWar() {
+  const { startTime, endTime } = getCurrentWarSchedule();
   const now = new Date();
 
-  // Find war for today
+  console.log("🔍 Looking for war:", {
+    startTime: startTime.toISOString(),
+    endTime: endTime.toISOString(),
+    now: now.toISOString(),
+  });
+
+  // Find war for current 2-hour slot
   let war = await War.findOne({
-    startTime: { $gte: startTime, $lte: endTime },
+    startTime: startTime,
+    endTime: endTime,
   });
 
   if (!war) {
-    console.log("📅 Creating new war for today...");
+    console.log("📅 Creating new war for current slot...");
     try {
       const contestants = await selectRandomContestants();
       
-      // Determine initial status
-      let status = "scheduled";
-      if (now >= startTime && now < endTime) {
-        status = "active";
-      } else if (now >= endTime) {
-        status = "ended";
-      }
+      // Current slot should be active
+      const status = "active";
 
       war = await War.create({
         contestant1: contestants.contestant1,
@@ -126,6 +131,8 @@ async function ensureTodayWar() {
       throw error;
     }
   } else {
+    console.log("✅ Found existing war:", war._id, "Status:", war.status);
+    
     // Update war status if needed
     let statusChanged = false;
     
@@ -135,7 +142,7 @@ async function ensureTodayWar() {
         war.calculateWinner();
       }
       statusChanged = true;
-    } else if (now >= startTime && now < endTime && war.status === "scheduled") {
+    } else if (now >= startTime && now < endTime && war.status !== "active") {
       war.status = "active";
       statusChanged = true;
     }
@@ -160,7 +167,7 @@ router.get("/", (req, res) => {
  */
 router.get("/current", async (req, res) => {
   try {
-    const war = await ensureTodayWar();
+    const war = await ensureCurrentWar();
 
     await war.populate([
       { path: "contestant1.userId", select: "name handle avatarUrl" },
@@ -298,7 +305,7 @@ router.post(
 router.get("/current/my-vote", auth, async (req, res) => {
   try {
     const userId = req.user._id;
-    const war = await ensureTodayWar();
+    const war = await ensureCurrentWar();
 
     if (!war) {
       return res.json({ hasVoted: false, vote: null });
