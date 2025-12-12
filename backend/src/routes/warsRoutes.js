@@ -3,6 +3,7 @@ import { Router } from "express";
 import { body, param } from "express-validator";
 import validate from "../middleware/validate.js";
 import auth from "../middleware/auth.js";
+import { warVoteLimiter, apiLimiter } from "../middleware/rateLimit.js";
 import War from "../models/War.js";
 import User from "../models/User.js";
 import Vibe from "../models/Vibe.js";
@@ -14,7 +15,6 @@ const router = Router();
  */
 function getCurrentWarSchedule() {
   const now = new Date();
-  
   // Calculate the current 2-hour slot
   const currentHour = now.getHours();
   const slotStart = Math.floor(currentHour / 2) * 2; // 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22
@@ -26,7 +26,7 @@ function getCurrentWarSchedule() {
   // End time is 2 hours later
   const endTime = new Date(startTime);
   endTime.setHours(startTime.getHours() + 2, 0, 0, 0);
-
+  
   return { startTime, endTime };
 }
 
@@ -52,21 +52,21 @@ async function selectRandomContestants() {
   // Take first 2 users
   const userId1 = shuffled[0]._id;
   const userId2 = shuffled[1]._id;
-
+  
   // Make sure they're different
   if (String(userId1) === String(userId2)) {
     throw new Error("Cannot select same user twice");
   }
 
   // Get random vibes for each user
-  const vibes1 = await Vibe.find({ 
-    recipientId: userId1, 
-    isVisible: true 
+  const vibes1 = await Vibe.find({
+    recipientId: userId1,
+    isVisible: true
   }).limit(10);
-  
-  const vibes2 = await Vibe.find({ 
-    recipientId: userId2, 
-    isVisible: true 
+
+  const vibes2 = await Vibe.find({
+    recipientId: userId2,
+    isVisible: true
   }).limit(10);
 
   if (!vibes1.length || !vibes2.length) {
@@ -113,10 +113,8 @@ async function ensureCurrentWar() {
     console.log("📅 Creating new war for current slot...");
     try {
       const contestants = await selectRandomContestants();
-      
       // Current slot should be active
       const status = "active";
-
       war = await War.create({
         contestant1: contestants.contestant1,
         contestant2: contestants.contestant2,
@@ -124,7 +122,7 @@ async function ensureCurrentWar() {
         endTime,
         status,
       });
-      
+
       console.log("✅ War created:", war._id, "Status:", status);
     } catch (error) {
       console.error("❌ Failed to create war:", error.message);
@@ -156,7 +154,7 @@ async function ensureCurrentWar() {
   return war;
 }
 
-router.get("/", (req, res) => {
+router.get("/", apiLimiter, (req, res) => {
   res.json({
     message: "Wars API is alive ✅ Use /current or /history endpoints.",
   });
@@ -165,10 +163,9 @@ router.get("/", (req, res) => {
 /**
  * Get current war
  */
-router.get("/current", async (req, res) => {
+router.get("/current", apiLimiter, async (req, res) => {
   try {
     const war = await ensureCurrentWar();
-
     await war.populate([
       { path: "contestant1.userId", select: "name handle avatarUrl" },
       { path: "contestant2.userId", select: "name handle avatarUrl" },
@@ -222,6 +219,8 @@ router.get("/current", async (req, res) => {
  */
 router.post(
   "/:id/vote",
+  apiLimiter,
+  warVoteLimiter,
   auth,
   [param("id").isMongoId(), body("contestant").isInt().isIn([1, 2])],
   validate,
@@ -230,14 +229,14 @@ router.post(
       const { id } = req.params;
       const { contestant } = req.body;
       const userId = req.user._id;
-
       const war = await War.findById(id);
+
       if (!war) {
         return res.status(404).json({ message: "War not found" });
       }
 
       const now = new Date();
-      
+
       // Check if war has ended
       if (now >= war.endTime || war.status === "ended") {
         return res.status(400).json({ message: "This war has ended" });
@@ -253,16 +252,16 @@ router.post(
         String(war.contestant1.userId) === String(userId) ||
         String(war.contestant2.userId) === String(userId)
       ) {
-        return res.status(400).json({ 
-          message: "You cannot vote in a war you're participating in" 
+        return res.status(400).json({
+          message: "You cannot vote in a war you're participating in"
         });
       }
 
       // Check if user already voted - THIS IS THE KEY FIX
       const hasVoted = war.hasUserVoted(userId);
       if (hasVoted) {
-        return res.status(400).json({ 
-          message: "You have already voted in this war" 
+        return res.status(400).json({
+          message: "You have already voted in this war"
         });
       }
 
@@ -282,7 +281,6 @@ router.post(
       await war.save();
 
       console.log(`✅ Vote recorded: User ${userId} voted for contestant ${contestant}`);
-
       res.json({
         success: true,
         message: "Vote recorded",
@@ -302,7 +300,7 @@ router.post(
 /**
  * Check if user has voted in current war
  */
-router.get("/current/my-vote", auth, async (req, res) => {
+router.get("/current/my-vote", apiLimiter, auth, async (req, res) => {
   try {
     const userId = req.user._id;
     const war = await ensureCurrentWar();
@@ -312,7 +310,6 @@ router.get("/current/my-vote", auth, async (req, res) => {
     }
 
     const userVote = war.getUserVote(userId);
-    
     res.json({
       hasVoted: !!userVote,
       vote: userVote ? userVote.contestantNumber : null,
@@ -326,10 +323,9 @@ router.get("/current/my-vote", auth, async (req, res) => {
 /**
  * War history
  */
-router.get("/history", async (req, res) => {
+router.get("/history", apiLimiter, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-
     const wars = await War.find({ status: "ended" })
       .sort({ endTime: -1 })
       .limit(limit)
