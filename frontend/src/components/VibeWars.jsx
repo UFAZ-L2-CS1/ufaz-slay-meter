@@ -152,8 +152,23 @@ const VibeWars = () => {
 
   // Check if user has voted
   const hasUserVoted = () => {
-    if (!user || !currentWar) return false;
-    return currentWar.votes?.some(v => String(v.userId) === String(user._id));
+    if (!user || !currentWar || !currentWar.votes) return false;
+    // Check if user's ID is in the votes array
+    const voted = currentWar.votes.some(v => {
+      return String(v.userId) === String(user._id) || 
+             String(v.userId) === String(user.id);
+    });
+    return voted;
+  };
+
+  // Get which contestant user voted for
+  const getUserVote = () => {
+    if (!user || !currentWar || !currentWar.votes) return null;
+    const vote = currentWar.votes.find(v => 
+      String(v.userId) === String(user._id) || 
+      String(v.userId) === String(user.id)
+    );
+    return vote ? vote.contestantNumber : null;
   };
 
   if (loading) {
@@ -232,8 +247,12 @@ const VibeWars = () => {
                 onClick={() => handleVote(1)}
                 disabled={voting || warEnded || hasUserVoted()}
               >
-                {hasUserVoted() 
-                  ? "✓ Already Voted" 
+                {warEnded 
+                  ? "War Ended 🏁"
+                  : hasUserVoted() && getUserVote() === 1
+                  ? "✓ You Voted Here" 
+                  : hasUserVoted()
+                  ? "Already Voted"
                   : `💖 Vote for ${currentWar.contestant1.user.handle}`}
               </button>
             </div>
@@ -269,8 +288,12 @@ const VibeWars = () => {
                 onClick={() => handleVote(2)}
                 disabled={voting || warEnded || hasUserVoted()}
               >
-                {hasUserVoted() 
-                  ? "✓ Already Voted" 
+                {warEnded 
+                  ? "War Ended 🏁"
+                  : hasUserVoted() && getUserVote() === 2
+                  ? "✓ You Voted Here" 
+                  : hasUserVoted()
+                  ? "Already Voted"
                   : `💖 Vote for ${currentWar.contestant2.user.handle}`}
               </button>
             </div>
