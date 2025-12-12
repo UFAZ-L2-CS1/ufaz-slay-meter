@@ -290,6 +290,9 @@ http://localhost:5000/api
 ### Authentication Endpoints
 
 #### Register
+
+.
+
 POST /api/auth/register
 Content-Type: application/json
 
