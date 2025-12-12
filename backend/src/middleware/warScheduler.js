@@ -1,7 +1,6 @@
 // backend/src/middleware/warScheduler.js
 import cron from "node-cron";
 import War from "../models/War.js";
-import User from "../models/User.js";
 import Vibe from "../models/Vibe.js";
 
 /**
@@ -44,22 +43,22 @@ async function selectRandomContestants() {
 }
 
 /**
- * ✅ FIXED: Create today's war with correct time schedule
+ * ✅ Create today's war
+ * War is ACTIVE the whole day (00:00–23:59), so voting is always allowed that day.
  */
 async function createDailyWar() {
   try {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // ✅ FIX: War schedule 9:30 AM - 10:30 AM (not 2:20 AM)
+    // War schedule: whole day
     const startTime = new Date(today);
-    startTime.setHours(9, 30, 0, 0);
+    startTime.setHours(0, 0, 0, 0);
 
-    const endTime = new Date(startTime);
-    endTime.setHours(10, 30, 0, 0); // ✅ Changed from 2:20 to 10:30
+    const endTime = new Date(today);
+    endTime.setHours(23, 59, 59, 999);
 
-    // ✅ Debug logging
-    console.log("📅 War Schedule:", {
+    console.log("📅 War Schedule (daily full-day):", {
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
       now: now.toISOString(),
@@ -78,24 +77,16 @@ async function createDailyWar() {
     // Select contestants
     const contestants = await selectRandomContestants();
 
-    // ✅ FIX: Set correct initial status based on current time
-    let initialStatus = "scheduled";
-    if (now >= startTime && now < endTime) {
-      initialStatus = "active";
-    } else if (now >= endTime) {
-      initialStatus = "ended";
-    }
-
-    // Create war
+    // For a whole‑day war we can mark it active immediately
     const war = await War.create({
       contestant1: contestants.contestant1,
       contestant2: contestants.contestant2,
       startTime,
       endTime,
-      status: initialStatus,
+      status: "active",
     });
 
-    console.log("✅ Daily war created:", war._id, "Status:", initialStatus);
+    console.log("✅ Daily war created:", war._id, "Status: active");
     return war;
   } catch (error) {
     console.error("❌ Failed to create daily war:", error.message);
@@ -131,24 +122,28 @@ async function endExpiredWars() {
 export function initWarScheduler() {
   console.log("🚀 War Scheduler initialized");
 
-  // ✅ FIX: Create daily war at 9:00 AM (30 mins before start at 9:30)
-  cron.schedule("0 9 * * *", async () => {
-    console.log("⏰ Creating daily war (Asia/Baku timezone)...");
-    try {
-      await createDailyWar();
-    } catch (error) {
-      console.error("❌ Failed to create daily war:", error);
+  // Create daily war shortly after midnight (00:05) in Asia/Baku
+  cron.schedule(
+    "5 0 * * *",
+    async () => {
+      console.log("⏰ Creating daily war (Asia/Baku timezone)...");
+      try {
+        await createDailyWar();
+      } catch (error) {
+        console.error("❌ Failed to create daily war:", error);
+      }
+    },
+    {
+      timezone: "Asia/Baku",
     }
-  }, {
-    timezone: "Asia/Baku"
-  });
+  );
 
-  // 2. Check every minute to end expired wars
+  // Check every minute to end expired wars
   cron.schedule("* * * * *", async () => {
     await endExpiredWars();
   });
 
-  // 3. Create today's war immediately if it doesn't exist (on server start)
+  // Create today's war immediately if it doesn't exist (on server start)
   setTimeout(async () => {
     try {
       console.log("🔄 Checking for today's war on server start...");

@@ -12,13 +12,14 @@ const router = Router();
 function getTodayWarSchedule() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
+
+  // Must match warScheduler: whole day
   const startTime = new Date(today);
-  startTime.setHours(9, 30, 0, 0);
-  
-  const endTime = new Date(startTime);
-  endTime.setHours(10, 30, 0, 0);
-  
+  startTime.setHours(0, 0, 0, 0);
+
+  const endTime = new Date(today);
+  endTime.setHours(23, 59, 59, 999);
+
   return { startTime, endTime };
 }
 
@@ -59,45 +60,44 @@ async function selectRandomContestants() {
 
 async function ensureTodayWar() {
   const { startTime, endTime } = getTodayWarSchedule();
-  
+
   let war = await War.findOne({
     startTime: { $gte: startTime, $lt: endTime },
   });
 
   if (!war) {
     console.log("📅 Creating new war for today...");
-    
+
     try {
       const contestants = await selectRandomContestants();
-      
+
       war = await War.create({
         contestant1: contestants.contestant1,
         contestant2: contestants.contestant2,
         startTime,
         endTime,
-        status: "scheduled",
+        status: "active", // ✅ whole-day war is active
       });
-      
+
       console.log("✅ War created successfully:", war._id);
     } catch (error) {
       console.error("❌ Failed to create war:", error.message);
       throw error;
     }
+  } else {
+    const now = new Date();
+    if (now >= war.endTime && war.status !== "ended") {
+      war.status = "ended";
+      if (war.winner === null) {
+        war.calculateWinner();
+      }
+      await war.save();
+    } else if (now < war.endTime && war.status !== "active") {
+      war.status = "active";
+      await war.save();
+    }
   }
 
-  const now = new Date();
-  if (now >= war.startTime && now < war.endTime) {
-    war.status = "active";
-  } else if (now >= war.endTime) {
-    war.status = "ended";
-    if (war.winner === null) {
-      war.calculateWinner();
-    }
-  } else {
-    war.status = "scheduled";
-  }
-  
-  await war.save();
   return war;
 }
 
@@ -110,7 +110,7 @@ router.get("/", (req, res) => {
 router.get("/current", async (req, res) => {
   try {
     const war = await ensureTodayWar();
-    
+
     await war.populate([
       { path: "contestant1.userId", select: "name handle avatarUrl" },
       { path: "contestant2.userId", select: "name handle avatarUrl" },
@@ -160,14 +160,11 @@ router.get("/current", async (req, res) => {
   }
 });
 
-// ✅ FIXED: Vote endpoint with real-time status checking
+// ✅ Vote endpoint – like button style
 router.post(
   "/:id/vote",
   auth,
-  [
-    param("id").isMongoId(),
-    body("contestant").isInt().isIn([1, 2]),
-  ],
+  [param("id").isMongoId(), body("contestant").isInt().isIn([1, 2])],
   validate,
   async (req, res) => {
     try {
@@ -180,37 +177,24 @@ router.post(
         return res.status(404).json({ message: "War not found" });
       }
 
-      // ✅ FIX: Update war status based on current time BEFORE checking
       const now = new Date();
-      if (now >= war.startTime && now < war.endTime) {
-        war.status = "active";
-      } else if (now >= war.endTime) {
-        war.status = "ended";
-        if (war.winner === null) {
-          war.calculateWinner();
-        }
-      } else {
-        war.status = "scheduled";
-      }
-      await war.save();
-
-      if (war.status !== "active") {
-        return res.status(400).json({ 
-          message: war.status === "ended" 
-            ? "This war has ended" 
-            : "This war hasn't started yet" 
-        });
-      }
-
-      if (war.hasUserVoted(userId)) {
-        return res.status(400).json({ message: "You have already voted in this war" });
+      if (now >= war.endTime || war.status === "ended") {
+        return res.status(400).json({ message: "This war has ended" });
       }
 
       if (
         String(war.contestant1.userId) === String(userId) ||
         String(war.contestant2.userId) === String(userId)
       ) {
-        return res.status(400).json({ message: "You cannot vote for yourself" });
+        return res
+          .status(400)
+          .json({ message: "You cannot vote for yourself" });
+      }
+
+      if (war.hasUserVoted(userId)) {
+        return res
+          .status(400)
+          .json({ message: "You have already voted in this war" });
       }
 
       war.votes.push({
@@ -252,7 +236,7 @@ router.get("/history", async (req, res) => {
 
     const history = wars.map((war) => {
       const totalVotes = war.contestant1.votes + war.contestant2.votes;
-      
+
       if (war.winner === null || war.winner === undefined) {
         return {
           _id: war._id,
